@@ -73,10 +73,23 @@ def merge_presentations(file_order, output_filename):
         return True, output_path, None
 
     except Exception as e:
+        # If any error occurs during the process, perform a full cleanup.
+        try:
+            if destination_prs:
+                destination_prs.Close()
+            if source_prs:
+                source_prs.Close()
+            if powerpoint:
+                powerpoint.Quit()
+        except Exception:
+            # Ignore potential errors during cleanup, as the primary error is more important.
+            pass
         return False, "", str(e)
 
     finally:
-        # Clean up: close presentations but keep PowerPoint open for slideshow
+        # On a successful run, this block will still execute.
+        # We only clean up the source presentation object here.
+        # The main powerpoint instance is left open intentionally for the slideshow launch.
         if source_prs:
             try:
                 source_prs.Close()
