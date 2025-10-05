@@ -21,9 +21,9 @@ def merge_presentations(file_order, output_filename):
     Returns:
         tuple: (success: bool, output_path: str, error_message: str or None)
     """
-    logging.info("Starter 'merge_presentations'-prosessen.")
-    logging.info(f"Antall filer som skal slås sammen: {len(file_order)}")
-    logging.info(f"Output-filnavn: {output_filename}")
+    logging.info("Starting 'merge_presentations' process.")
+    logging.info(f"Number of files to be merged: {len(file_order)}")
+    logging.info(f"Output filename: {output_filename}")
 
     powerpoint = None
     destination_prs = None
@@ -31,27 +31,27 @@ def merge_presentations(file_order, output_filename):
 
     try:
         # Initialize PowerPoint application
-        logging.info("Initialiserer PowerPoint-applikasjonen via COM...")
+        logging.info("Initializing PowerPoint application via COM...")
         powerpoint = win32com.client.Dispatch("PowerPoint.Application")
         powerpoint.Visible = True
-        logging.info("PowerPoint-applikasjonen er synlig.")
+        logging.info("PowerPoint application is visible.")
 
         # Create a new presentation
-        logging.info("Oppretter ny (tom) destinasjonspresentasjon.")
+        logging.info("Creating new (empty) destination presentation.")
         destination_prs = powerpoint.Presentations.Add()
 
         # Remove the default blank slide if it exists
         if destination_prs.Slides.Count > 0:
-            logging.info("Fjerner standard blankt lysbilde fra destinasjonen.")
+            logging.info("Removing default blank slide from destination.")
             destination_prs.Slides(1).Delete()
 
         # Process each source file in order
         for i, file_path in enumerate(file_order, 1):
             abs_path = os.path.abspath(file_path)
-            logging.info(f"--- Behandler fil {i}/{len(file_order)}: {os.path.basename(abs_path)} ---")
+            logging.info(f"--- Processing file {i}/{len(file_order)}: {os.path.basename(abs_path)} ---")
             try:
                 # Open source presentation
-                logging.info(f"Åpner kildepresentasjon: {abs_path}")
+                logging.info(f"Opening source presentation: {abs_path}")
                 source_prs = powerpoint.Presentations.Open(
                     abs_path,
                     ReadOnly=True,
@@ -59,59 +59,59 @@ def merge_presentations(file_order, output_filename):
                 )
                 
                 num_slides = source_prs.Slides.Count
-                logging.info(f"Fant {num_slides} lysbilder i kildepresentasjonen.")
+                logging.info(f"Found {num_slides} slides in source presentation.")
 
                 # Copy all slides from source to destination in one operation
                 if num_slides > 0:
-                    logging.info(f"Starter kopiering av {num_slides} lysbilder...")
+                    logging.info(f"Starting copy of {num_slides} slides...")
                     source_prs.Slides.Range().Copy()
                     destination_prs.Slides.Paste()
-                    logging.info("Alle lysbilder fra kilden ble limt inn i destinasjonen.")
+                    logging.info("All slides from source were pasted into destination.")
                 else:
-                    logging.warning(f"Ingen lysbilder funnet i {os.path.basename(abs_path)}. Hopper over.")
+                    logging.warning(f"No slides found in {os.path.basename(abs_path)}. Skipping.")
 
                 # Close source presentation
-                logging.info(f"Lukker kildepresentasjon: {os.path.basename(abs_path)}")
+                logging.info(f"Closing source presentation: {os.path.basename(abs_path)}")
                 source_prs.Close()
                 source_prs = None
 
             except Exception as e:
                 logging.error(
-                    f"En feil oppstod under behandling av filen {os.path.basename(file_path)}",
+                    f"An error occurred while processing file {os.path.basename(file_path)}",
                     exc_info=True
                 )
                 if source_prs:
                     source_prs.Close()
                 # Re-raise to be caught by the outer try-except block
                 raise Exception(
-                    f"Klarte ikke å behandle filen {os.path.basename(file_path)}: {str(e)}"
+                    f"Failed to process file {os.path.basename(file_path)}: {str(e)}"
                 )
 
         # Save the merged presentation
         output_path = os.path.abspath(output_filename)
-        logging.info(f"Lagrer den sammenslåtte presentasjonen til: {output_path}")
+        logging.info(f"Saving merged presentation to: {output_path}")
         destination_prs.SaveAs(output_path)
-        logging.info("Lagring vellykket.")
+        logging.info("Save successful.")
 
         return True, output_path, None
 
     except Exception as e:
-        error_message = f"En feil oppstod under sammenslåingen: {str(e)}"
+        error_message = f"An error occurred during merging: {str(e)}"
         logging.critical(error_message, exc_info=True)
         # If any error occurs during the process, perform a full cleanup.
         try:
-            logging.info("Feil oppstod. Starter opprydding av COM-objekter.")
+            logging.info("Error occurred. Starting cleanup of COM objects.")
             if destination_prs:
                 destination_prs.Close()
-                logging.info("Lukket destinasjonspresentasjon.")
+                logging.info("Closed destination presentation.")
             if source_prs:
                 source_prs.Close()
-                logging.info("Lukket kildepresentasjon.")
+                logging.info("Closed source presentation.")
             if powerpoint:
                 powerpoint.Quit()
-                logging.info("Avsluttet PowerPoint-applikasjonen.")
+                logging.info("Quit PowerPoint application.")
         except Exception as cleanup_error:
-            logging.error(f"En feil oppstod under opprydding: {cleanup_error}", exc_info=True)
+            logging.error(f"An error occurred during cleanup: {cleanup_error}", exc_info=True)
             pass
         return False, "", str(e)
 
@@ -126,32 +126,32 @@ def launch_slideshow(output_path):
     Returns:
         tuple: (success: bool, error_message: str or None)
     """
-    logging.info("Starter 'launch_slideshow'-prosessen.")
+    logging.info("Starting 'launch_slideshow' process.")
     powerpoint = None
     presentation = None
 
     try:
         # Get PowerPoint application instance
-        logging.info("Henter instans av PowerPoint-applikasjonen...")
+        logging.info("Getting PowerPoint application instance...")
         powerpoint = win32com.client.Dispatch("PowerPoint.Application")
         powerpoint.Visible = True
 
         # Open the presentation
         abs_path = os.path.abspath(output_path)
-        logging.info(f"Åpner presentasjon for visning: {abs_path}")
+        logging.info(f"Opening presentation for viewing: {abs_path}")
         presentation = powerpoint.Presentations.Open(
             abs_path,
             WithWindow=True
         )
 
         # Start the slideshow
-        logging.info("Starter lysbildefremvisning...")
+        logging.info("Starting slideshow...")
         presentation.SlideShowSettings.Run()
-        logging.info("Lysbildefremvisning startet vellykket.")
+        logging.info("Slideshow started successfully.")
 
         return True, None
 
     except Exception as e:
-        error_message = f"Kunne ikke starte lysbildefremvisning for {output_path}: {str(e)}"
+        error_message = f"Could not start slideshow for {output_path}: {str(e)}"
         logging.error(error_message, exc_info=True)
         return False, str(e)
