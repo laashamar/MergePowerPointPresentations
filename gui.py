@@ -4,7 +4,7 @@ GUI module for PowerPoint Merger application.
 This module contains all the GUI components and windows for the
 step-by-step PowerPoint merging workflow.
 """
-
+import logging
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -17,6 +17,7 @@ def show_number_of_files_window(callback):
     Args:
         callback: Function to call with the number of files when Next is clicked
     """
+    logging.info("Viser 'Antall filer'-vindu (Steg 1).")
     window = tk.Tk()
     window.title("Step 1: Number of Files")
     window.geometry("400x150")
@@ -32,20 +33,26 @@ def show_number_of_files_window(callback):
     # Entry box
     entry = tk.Entry(window, font=("Arial", 12), width=10)
     entry.pack(pady=10)
+    entry.focus_set()
 
     def on_next():
         """Handle Next button click."""
+        num_str = entry.get()
+        logging.info(f"Bruker trykket 'Next' med input: '{num_str}'.")
         try:
             # Validate input is a positive integer
-            num = int(entry.get())
+            num = int(num_str)
             if num <= 0:
                 raise ValueError("Number must be positive")
+            logging.info(f"Input validert. Antall filer: {num}.")
             window.destroy()
             callback(num)
         except ValueError:
+            error_msg = "Vennligst skriv inn et gyldig positivt heltall."
+            logging.error(f"Ugyldig input for antall filer: '{num_str}'. Viser feilmelding.")
             messagebox.showerror(
                 "Invalid Input",
-                "Please enter a valid positive number."
+                error_msg
             )
 
     # Next button
@@ -57,6 +64,7 @@ def show_number_of_files_window(callback):
         width=10
     )
     next_btn.pack(pady=10)
+    window.bind('<Return>', lambda event=None: next_btn.invoke())
 
     window.mainloop()
 
@@ -69,6 +77,7 @@ def show_file_selection_window(num_files, callback):
         num_files: Expected number of files to select
         callback: Function to call with the selected files list when OK is clicked
     """
+    logging.info(f"Viser 'Velg filer'-vindu (Steg 2). Forventer {num_files} filer.")
     window = tk.Tk()
     window.title("Step 2: Select Files")
     window.geometry("600x400")
@@ -100,14 +109,23 @@ def show_file_selection_window(num_files, callback):
 
     def add_files_from_disk():
         """Handle Add Files button click."""
+        logging.info("Åpner fildialog for å velge filer.")
         files = filedialog.askopenfilenames(
             title="Select PowerPoint Files",
             filetypes=[("PowerPoint Files", "*.pptx")]
         )
+        if not files:
+            logging.info("Ingen filer ble valgt i fildialogen.")
+            return
+
+        logging.info(f"{len(files)} fil(er) valgt: {files}")
         for file in files:
             if file not in selected_files:
                 selected_files.append(file)
                 listbox.insert(tk.END, file)
+                logging.info(f"La til fil i listen: {file}")
+            else:
+                logging.warning(f"Filen er allerede i listen og ble ignorert: {file}")
 
     # Add Files button
     add_btn = tk.Button(
@@ -120,27 +138,26 @@ def show_file_selection_window(num_files, callback):
 
     def on_ok():
         """Handle OK button click."""
+        logging.info("Bruker trykket 'OK' i filvalg-vinduet.")
         if len(selected_files) != num_files:
-            messagebox.showerror(
-                "Invalid Selection",
-                f"Please select exactly {num_files} file(s). "
-                f"You have selected {len(selected_files)} file(s)."
-            )
+            error_msg = (f"Vennligst velg nøyaktig {num_files} fil(er). "
+                         f"Du har valgt {len(selected_files)} fil(er).")
+            logging.error(f"Feil antall filer valgt. {error_msg}")
+            messagebox.showerror("Invalid Selection", error_msg)
         else:
-            # Validate all files are valid .pptx files
+            logging.info("Korrekt antall filer valgt. Validerer filstier.")
             for file in selected_files:
                 if not os.path.exists(file):
-                    messagebox.showerror(
-                        "File Not Found",
-                        f"File does not exist: {file}"
-                    )
+                    error_msg = f"Filen finnes ikke: {file}"
+                    logging.error(error_msg)
+                    messagebox.showerror("File Not Found", error_msg)
                     return
-                if not file.endswith('.pptx'):
-                    messagebox.showerror(
-                        "Invalid File",
-                        f"File is not a .pptx file: {file}"
-                    )
+                if not file.lower().endswith('.pptx'):
+                    error_msg = f"Filen er ikke en .pptx-fil: {file}"
+                    logging.error(error_msg)
+                    messagebox.showerror("Invalid File", error_msg)
                     return
+            logging.info("Alle filstier er validert. Fortsetter til neste steg.")
             window.destroy()
             callback(selected_files)
 
@@ -164,6 +181,7 @@ def show_filename_window(callback):
     Args:
         callback: Function to call with the filename when Next is clicked
     """
+    logging.info("Viser 'Nytt filnavn'-vindu (Steg 3).")
     window = tk.Tk()
     window.title("New Filename")
     window.geometry("400x150")
@@ -179,21 +197,25 @@ def show_filename_window(callback):
     # Entry box
     entry = tk.Entry(window, font=("Arial", 12), width=30)
     entry.pack(pady=10)
+    entry.focus_set()
 
     def on_next():
         """Handle Next button click."""
         filename = entry.get().strip()
+        logging.info(f"Bruker trykket 'Next' med filnavn: '{filename}'.")
         if not filename:
-            messagebox.showerror(
-                "Invalid Input",
-                "Please enter a filename."
-            )
+            error_msg = "Vennligst skriv inn et filnavn."
+            logging.error("Filnavn-input var tomt.")
+            messagebox.showerror("Invalid Input", error_msg)
             return
 
         # Ensure .pptx extension
-        if not filename.endswith('.pptx'):
+        if not filename.lower().endswith('.pptx'):
+            original_filename = filename
             filename += '.pptx'
+            logging.info(f"La til '.pptx' til filnavnet. Fra '{original_filename}' til '{filename}'.")
 
+        logging.info(f"Filnavn validert: '{filename}'. Fortsetter til neste steg.")
         window.destroy()
         callback(filename)
 
@@ -206,6 +228,7 @@ def show_filename_window(callback):
         width=10
     )
     next_btn.pack(pady=10)
+    window.bind('<Return>', lambda event=None: next_btn.invoke())
 
     window.mainloop()
 
@@ -218,8 +241,9 @@ def show_reorder_window(selected_files, callback):
         selected_files: List of file paths to reorder
         callback: Function to call with the reordered files list when Create is clicked
     """
+    logging.info("Viser 'Endre rekkefølge'-vindu (Steg 4).")
     window = tk.Tk()
-    window.title("Step 3: Set Merge Order")
+    window.title("Step 4: Set Merge Order")
     window.geometry("600x450")
 
     # Label
@@ -233,6 +257,7 @@ def show_reorder_window(selected_files, callback):
 
     # Initialize file order
     file_order = selected_files.copy()
+    logging.info(f"Initiell filrekkefølge: {[os.path.basename(f) for f in file_order]}")
 
     # Listbox for displaying files
     listbox_frame = tk.Frame(window)
@@ -247,30 +272,30 @@ def show_reorder_window(selected_files, callback):
         yscrollcommand=scrollbar.set
     )
     listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-    scrollbar.config(command=listbox.yview)
 
     # Populate listbox with filenames (not full paths for readability)
     for file in file_order:
         listbox.insert(tk.END, os.path.basename(file))
+    
+    if listbox.size() > 0:
+        listbox.selection_set(0) # Select first item by default
 
     def move_up():
         """Move selected item up in the list."""
         selection = listbox.curselection()
         if not selection:
-            messagebox.showinfo(
-                "No Selection",
-                "Please select an item to move."
-            )
+            logging.warning("Move Up-knapp trykket uten at et element var valgt.")
+            messagebox.showinfo("No Selection", "Please select an item to move.")
             return
 
         index = selection[0]
         if index == 0:
-            # Already at the top
+            logging.info("Ignorerer 'Move Up' da elementet allerede er øverst.")
             return
 
+        logging.info(f"Flytter '{os.path.basename(file_order[index])}' opp fra posisjon {index}.")
         # Swap items in file_order list
-        file_order[index], file_order[index - 1] = \
-            file_order[index - 1], file_order[index]
+        file_order[index], file_order[index - 1] = file_order[index - 1], file_order[index]
 
         # Update listbox
         listbox.delete(0, tk.END)
@@ -279,25 +304,24 @@ def show_reorder_window(selected_files, callback):
 
         # Reselect the moved item
         listbox.selection_set(index - 1)
+        logging.info(f"Ny rekkefølge: {[os.path.basename(f) for f in file_order]}")
 
     def move_down():
         """Move selected item down in the list."""
         selection = listbox.curselection()
         if not selection:
-            messagebox.showinfo(
-                "No Selection",
-                "Please select an item to move."
-            )
+            logging.warning("Move Down-knapp trykket uten at et element var valgt.")
+            messagebox.showinfo("No Selection", "Please select an item to move.")
             return
 
         index = selection[0]
         if index == len(file_order) - 1:
-            # Already at the bottom
+            logging.info("Ignorerer 'Move Down' da elementet allerede er nederst.")
             return
 
+        logging.info(f"Flytter '{os.path.basename(file_order[index])}' ned fra posisjon {index}.")
         # Swap items in file_order list
-        file_order[index], file_order[index + 1] = \
-            file_order[index + 1], file_order[index]
+        file_order[index], file_order[index + 1] = file_order[index + 1], file_order[index]
 
         # Update listbox
         listbox.delete(0, tk.END)
@@ -306,6 +330,7 @@ def show_reorder_window(selected_files, callback):
 
         # Reselect the moved item
         listbox.selection_set(index + 1)
+        logging.info(f"Ny rekkefølge: {[os.path.basename(f) for f in file_order]}")
 
     # Button frame for Move Up and Move Down buttons
     button_frame = tk.Frame(window)
@@ -331,6 +356,8 @@ def show_reorder_window(selected_files, callback):
 
     def on_create():
         """Handle Create New File button click."""
+        logging.info("Bruker trykket 'Create New File'.")
+        logging.info(f"Endelig filrekkefølge for sammenslåing: {file_order}")
         window.destroy()
         callback(file_order)
 
@@ -340,7 +367,9 @@ def show_reorder_window(selected_files, callback):
         text="Create New File",
         command=on_create,
         font=("Arial", 12),
-        width=15
+        width=15,
+        bg="#4CAF50",
+        fg="white"
     )
     create_btn.pack(pady=10)
 
