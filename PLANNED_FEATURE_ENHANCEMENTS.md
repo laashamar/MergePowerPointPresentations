@@ -1,6 +1,6 @@
-# Issues & Feature Requests
+# Planned Feature Enhancements
 
-This document tracks known issues, planned features, and enhancements for the PowerPoint Presentation Merger. All items are focused on improving the application's functionality, usability, and user experience.
+This document tracks planned features and enhancements for the PowerPoint Presentation Merger. All items are focused on improving the application's functionality, usability, and user experience through new features and improvements.
 
 ## Issue Status Legend
 

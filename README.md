@@ -253,6 +253,20 @@ The application uses Microsoft's COM (Component Object Model) automation to:
 - `threading` - Background processing
 - `sys` - System integration
 
+## Documentation
+
+### Project Documentation
+
+- 📖 **[README.md](README.md)** - This file (usage guide and installation)
+- 🏗️ **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture and design patterns
+- 📝 **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
+- 🚀 **[PLANNED_FEATURE_ENHANCEMENTS.md](PLANNED_FEATURE_ENHANCEMENTS.md)** - Planned features and roadmap
+
+### Legacy Documentation
+
+- 🔧 **[REFACTOR.md](REFACTOR.md)** - Original refactoring instructions
+- 📊 **[REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md)** - Summary of completed refactoring
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
