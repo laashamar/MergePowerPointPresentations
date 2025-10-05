@@ -80,7 +80,7 @@ def merge_presentations(file_order, output_filename):
         if source_prs:
             try:
                 source_prs.Close()
-            except:
+            except Exception:
                 pass
 
 
