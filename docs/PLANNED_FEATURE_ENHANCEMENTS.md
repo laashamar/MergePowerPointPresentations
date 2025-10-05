@@ -246,8 +246,10 @@ Improve handling of presentation templates and themes during the merge process t
 2. **Batch Processing** (\#6) \- Power user features  
 3. **Template Preservation** (\#7) \- Advanced formatting handling
 
+---
+
 *Last updated: 2025-10-05*
 
-*For technical implementation details, see [ARCHITECTURE.md](http://docs.google.com/ARCHITECTURE.md)*
+*For technical implementation details, see [ARCHITECTURE.md](ARCHITECTURE.md)*
 
-*For current features and usage, see [README.md](http://docs.google.com/README.md)*
+*For current features and usage, see [README.md](README.md)*

@@ -20,7 +20,7 @@ When reporting a bug, please include as much detail as possible:
 
 ### **Suggesting Enhancements**
 
-If you have an idea for a new feature or an improvement to an existing one, feel free to open an issue to discuss it. We track planned enhancements in the [PLANNED\_FEATURE\_ENHANCEMENTS.md](https://www.google.com/search?q=PLANNED_FEATURE_ENHANCEMENTS.md) file.
+If you have an idea for a new feature or an improvement to an existing one, feel free to open an issue to discuss it. We track planned enhancements in the [PLANNED_FEATURE_ENHANCEMENTS.md](PLANNED_FEATURE_ENHANCEMENTS.md) file.
 
 ## **Your First Code Contribution**
 
