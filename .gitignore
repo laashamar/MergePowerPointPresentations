@@ -208,10 +208,8 @@ __marimo__/
 
 # PowerPoint files
 *.pptx
-sample*.pptx
-merged_output.pptx
-test*.pptx
+
 
 # Log files and logging scripts
 *.txt
-run_with_logging.py
+
