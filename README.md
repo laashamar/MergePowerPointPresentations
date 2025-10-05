@@ -1,74 +1,8 @@
 # PowerPoint Presentation Merger
 
-A Python GUI application for merging multiple PowerPoint (`.pptx`) files into a single presentation using COM automation for reliable and accurate merging.
-
-## Features
-
-- User-friendly GUI with step-by-step workflow
-- File dialog for easy file selection
-- Move Up/Down buttons for reordering presentations before merging
-- COM automation for perfect slide copying (preserves all formatting, animations, and content)
-- Automatic slideshow launch after merging
-- Comprehensive error handling
-
-## Requirements
-
-- Python 3.6 or higher
-- Windows OS (required for COM automation)
-- Microsoft PowerPoint installed on the system
-
-## Installation
-
-1. Clone this repository:
-```bash
-git clone https://github.com/laashamar/MergePowerPointPresentations.git
+A Python GUI application for merging multiple PowerPoint (.pptx) files into a single presentation using COM automation for reliable and accurate merging.FeaturesUser-friendly GUI with a step-by-step workflowFile dialog for easy file selectionMove Up/Down buttons for reordering presentations before mergingCOM automation for perfect slide copying (preserves all formatting, animations, and content)Automatic slideshow launch after mergingComprehensive error handling and optional live logging for debuggingRequirementsPython 3.6 or higher (only if running from source)Windows OS (required for COM automation)Microsoft PowerPoint installed on the systemInstallation (For Developers)Clone this repository:git clone [https://github.com/laashamar/MergePowerPointPresentations.git](https://github.com/laashamar/MergePowerPointPresentations.git)
 cd MergePowerPointPresentations
-```
-
-2. Install required dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-## Usage
-
-Run the application:
-```bash
-python main.py
-```
-
-The application will guide you through a 4-step process:
-
-### Step 1: Number of Files
-Enter the number of PowerPoint files you want to merge.
-
-### Step 2: Select Files
-Click "Add Files from Disk" to browse and select the `.pptx` files you want to merge.
-
-### Step 3: New Filename
-Enter a name for the merged presentation (`.pptx` extension is added automatically).
-
-### Step 4: Set Merge Order
-Use the "Move Up" and "Move Down" buttons to reorder the files. The files will be merged in the order shown.
-
-Click "Create New File" to merge the presentations and launch the slideshow.
-
-## Architecture
-
-The application is structured into modular components:
-
-- **main.py**: Entry point for the application
-- **app.py**: Application orchestration and state management
-- **gui.py**: All GUI windows and components
-- **core.py**: PowerPoint merging logic using COM automation
-
-## Notes
-
-- The application uses COM automation to ensure perfect copying of all slide content, formatting, and animations
-- The application automatically opens the merged presentation in slideshow mode
-- All slides from each presentation are copied in order
-- The GUI closes automatically after launching the slideshow
-
-## License
-
-MIT License - See LICENSE file for details
+Install required dependencies:pip install -r requirements.txt
+Running the ApplicationThis application provides multiple ways to run it, depending on your needs.For End-Users (Recommended)If you just want to use the application without dealing with Python or source code, you can use the pre-built executable file:Navigate to the dist folder.Double-click the program file (e.g., MergePowerPoint.exe) to run the application directly.For DevelopersIf you have cloned the repository and installed the dependencies, you can run the application from the source code.Basic UsageFor regular development use, run the application using main.py. This will start the GUI directly.python main.py
+Usage with Live Logging (For Debugging)This option is intended for developers who need to debug the application or see its internal operations in real-time. Running run_with_logging.py opens a separate console window that displays live log messages.A full log file (merge_powerpoint.log) will also be saved to your user's Downloads folder.python run_with_logging.py
+The WorkflowRegardless of how you start it, the application will guide you through a 4-step process:Step 1: Number of FilesEnter the number of PowerPoint files you want to merge.Step 2: Select FilesClick "Add Files from Disk" to browse and select the .pptx files.Step 3: New FilenameEnter a name for the merged presentation (the .pptx extension is added automatically).Step 4: Set Merge OrderUse the "Move Up" and "Move Down" buttons to arrange the files in the desired merge order.Finally, click "Create New File" to merge the presentations and launch the slideshow.ArchitectureThe application is structured into modular components:main.py: The standard entry point for the application.run_with_logging.py: An alternative entry point for running the app with a live logging window.app.py: Handles application orchestration and state management.gui.py: Contains all GUI windows and components.powerpoint_core.py: Implements the PowerPoint merging and slideshow logic using COM automation.logger.py: Configures the logging system used by run_with_logging.py.NotesThe application uses COM automation to ensure perfect copying of all slide content, formatting, and animations.The GUI closes automatically after launching the slideshow.LicenseMIT License - See the LICENSE file for details.
