@@ -1,21 +1,21 @@
 # PowerPoint Presentation Merger
 
-A Python GUI application for merging multiple PowerPoint (`.pptx`) files into a single presentation.
+A Python GUI application for merging multiple PowerPoint (`.pptx`) files into a single presentation using COM automation for reliable and accurate merging.
 
 ## Features
 
 - User-friendly GUI with step-by-step workflow
-- Drag-and-drop support for file selection
-- File dialog for traditional file selection
-- Drag-and-drop reordering of presentations before merging
+- File dialog for easy file selection
+- Move Up/Down buttons for reordering presentations before merging
+- COM automation for perfect slide copying (preserves all formatting, animations, and content)
 - Automatic slideshow launch after merging
 - Comprehensive error handling
 
 ## Requirements
 
 - Python 3.6 or higher
-- Windows OS (for PowerPoint slideshow launch)
-- PowerPoint installed on the system
+- Windows OS (required for COM automation)
+- Microsoft PowerPoint installed on the system
 
 ## Installation
 
@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 Run the application:
 ```bash
-python merge_presentations.py
+python main.py
 ```
 
 The application will guide you through a 4-step process:
@@ -43,20 +43,28 @@ The application will guide you through a 4-step process:
 Enter the number of PowerPoint files you want to merge.
 
 ### Step 2: Select Files
-Add files using either:
-- **Drag and Drop**: Drag `.pptx` files from File Explorer into the listbox
-- **File Dialog**: Click "Add Files from Disk" to browse and select files
+Click "Add Files from Disk" to browse and select the `.pptx` files you want to merge.
 
 ### Step 3: New Filename
 Enter a name for the merged presentation (`.pptx` extension is added automatically).
 
 ### Step 4: Set Merge Order
-Reorder the files by dragging them up or down in the list. The files will be merged in the order shown.
+Use the "Move Up" and "Move Down" buttons to reorder the files. The files will be merged in the order shown.
 
 Click "Create New File" to merge the presentations and launch the slideshow.
 
+## Architecture
+
+The application is structured into modular components:
+
+- **main.py**: Entry point for the application
+- **app.py**: Application orchestration and state management
+- **gui.py**: All GUI windows and components
+- **core.py**: PowerPoint merging logic using COM automation
+
 ## Notes
 
+- The application uses COM automation to ensure perfect copying of all slide content, formatting, and animations
 - The application automatically opens the merged presentation in slideshow mode
 - All slides from each presentation are copied in order
 - The GUI closes automatically after launching the slideshow

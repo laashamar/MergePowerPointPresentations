@@ -3,34 +3,38 @@
 ## PowerPoint Presentation Merger - Architecture Overview
 
 ### Design Pattern
-The application uses a **class-based architecture** with a single main class `PowerPointMerger` that manages the entire workflow state and GUI windows.
+The application uses a **modular architecture** with clear separation of concerns:
+- **GUI Layer** (`gui.py`): Handles all user interface components
+- **Application Layer** (`app.py`): Manages application state and workflow orchestration
+- **Core Layer** (`core.py`): Implements PowerPoint merging logic using COM automation
+- **Entry Point** (`main.py`): Application startup
 
-### Class Structure
+### Module Structure
 
 ```
-PowerPointMerger
-├── __init__()              # Initialize application state
-├── run()                   # Entry point - start first window
-├── show_number_of_files_window()
-├── show_file_selection_window()
-├── show_filename_window()
-├── show_reorder_window()
-├── merge_and_launch()      # Backend merge logic
-└── _copy_shape()           # Helper method for shape copying
+main.py                      # Entry point
+├── app.py                   # Application orchestration
+    ├── gui.py               # GUI windows
+    │   ├── show_number_of_files_window()
+    │   ├── show_file_selection_window()
+    │   ├── show_filename_window()
+    │   └── show_reorder_window()
+    └── core.py              # Backend logic
+        ├── merge_presentations()
+        └── launch_slideshow()
 ```
 
 ### State Management
-The class maintains four key state variables:
+The `PowerPointMergerApp` class in `app.py` maintains four key state variables:
 - `num_files`: Expected number of files to merge
 - `selected_files`: List of file paths selected by user
 - `output_filename`: Name for the merged presentation
 - `file_order`: Final order of files after user reordering
 
 ### GUI Framework
-- **Primary**: `tkinter` for standard GUI components
-- **Extended**: `tkinterdnd2` for drag-and-drop functionality
-  - File selection window uses `TkinterDnD.Tk()`
-  - Reordering window uses `TkinterDnD.Tk()`
+- **Primary**: `tkinter` for all GUI components
+- **File Selection**: Standard `tkinter.filedialog` for file selection
+- **Reordering**: Move Up/Down buttons using standard `tkinter` widgets
 
 ### Workflow Progression
 The application follows a strict sequential flow:
@@ -45,12 +49,19 @@ Each window is **modal** - the next window only opens after the previous one com
 ### Merge Algorithm
 
 ```python
+# Using COM automation with win32com.client
+PowerPoint = Dispatch("PowerPoint.Application")
+destination_prs = PowerPoint.Presentations.Add()
+
 for each source_file in file_order:
-    for each slide in source_file.slides:
-        1. Add new blank slide to destination
-        2. For each shape in source slide:
-            - Copy shape element
-            - Add to destination slide
+    source_prs = PowerPoint.Presentations.Open(source_file)
+    for each slide in source_prs.Slides:
+        slide.Copy()
+        destination_prs.Slides.Paste()
+    source_prs.Close()
+
+destination_prs.SaveAs(output_path)
+destination_prs.SlideShowSettings.Run()
 ```
 
 ### Error Handling Strategy
@@ -58,42 +69,36 @@ for each source_file in file_order:
 - **User Feedback**: Clear error messages via `messagebox.showerror()`
 - **Graceful Degradation**: If PowerPoint launch fails, presentation is still saved
 - **Try-Except Blocks**: Wrap file operations and merge logic
+- **Resource Cleanup**: Properly close COM objects to prevent resource leaks
 
 ### External Dependencies
-1. **python-pptx**: PowerPoint file manipulation
-   - `Presentation()`: Load/create presentations
-   - `slides`: Access slide collection
-   - `shapes`: Access shape collection
-   
-2. **tkinterdnd2**: Drag-and-drop support
-   - `DND_FILES`: File drop target type
-   - `TkinterDnD.Tk()`: Enhanced root window
-
-3. **subprocess**: Launch PowerPoint
-   - `Popen(['powerpnt.exe', '/s', path])`
+- **pywin32**: COM automation for PowerPoint interaction
+  - `win32com.client.Dispatch("PowerPoint.Application")`
+  - Direct PowerPoint COM automation
+- **tkinter**: Standard Python GUI library (included with Python)
+  - All standard widgets (no external extensions)
 
 ### Platform Considerations
-- **Windows-specific**: PowerPoint launch uses `powerpnt.exe`
-- **Cross-platform GUI**: tkinter components work on all platforms
-- **Cross-platform merge**: python-pptx works on all platforms
+- **Windows-specific**: COM automation requires Windows OS
+- **PowerPoint Required**: Microsoft PowerPoint must be installed
+- **No Cross-Platform Support**: COM automation is Windows-only
 
 ### Limitations & Design Decisions
-1. **Shape Copying**: Uses element-level copying due to python-pptx limitations
-   - No direct slide.clone() method available
-   - Element copying preserves most properties
+1. **COM-Based Approach**: Chosen for reliable and accurate slide copying
+   - Preserves all formatting, animations, and embedded content
+   - Native PowerPoint operations ensure perfect fidelity
    
-2. **Layout Handling**: Uses first available layout for new slides
-   - Simplifies implementation
-   - Works for most use cases
+2. **No Drag-and-Drop**: Removed unreliable `tkinterdnd2` library
+   - Replaced with Move Up/Down buttons
+   - More reliable and simpler implementation
    
 3. **No Undo**: Once merge is initiated, it cannot be cancelled
    - Simplifies state management
    - Acceptable for single-purpose tool
 
 ### Future Enhancement Opportunities
-- Preview of selected slides before merging
-- Progress bar during merge operation
-- Ability to select specific slides from each presentation
-- Support for custom slide layouts
-- Cross-platform slideshow launch
-- Batch merge operations
+- Add progress indicators during merge operations
+- Support for batch processing multiple merge operations
+- Undo/redo functionality in file reordering
+- Preview of presentations before merging
+- Custom slide selection (choose specific slides to merge)
