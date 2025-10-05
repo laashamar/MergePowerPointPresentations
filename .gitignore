@@ -211,3 +211,7 @@ __marimo__/
 sample*.pptx
 merged_output.pptx
 test*.pptx
+
+# Log files and logging scripts
+*.txt
+run_with_logging.py
