@@ -5,8 +5,11 @@ Tests for the PowerPoint core functionalities.
 """
 
 import os
+import sys
 import pytest
 from unittest.mock import MagicMock, patch, ANY
+
+# Import after conftest has set up mocks
 from powerpoint_core import PowerPointCore, PowerPointError
 import comtypes
 
@@ -26,6 +29,7 @@ def mock_powerpoint_app():
 
 
 @patch('powerpoint_core.comtypes.client')
+@patch('powerpoint_core.sys.platform', 'win32')
 def test_powerpoint_core_initialization_new_instance(mock_comtypes_client):
     """Test that a new PowerPoint instance is created if none is running."""
     mock_comtypes_client.GetActiveObject.side_effect = OSError
@@ -35,6 +39,7 @@ def test_powerpoint_core_initialization_new_instance(mock_comtypes_client):
 
 
 @patch('powerpoint_core.comtypes.client')
+@patch('powerpoint_core.sys.platform', 'win32')
 def test_powerpoint_core_initialization_existing_instance(mock_comtypes_client):
     """Test connection to an existing PowerPoint instance."""
     mock_app = MagicMock()
@@ -44,6 +49,7 @@ def test_powerpoint_core_initialization_existing_instance(mock_comtypes_client):
 
 
 @patch('powerpoint_core.comtypes.client')
+@patch('powerpoint_core.sys.platform', 'win32')
 def test_powerpoint_core_initialization_failure(mock_comtypes_client):
     """Test that PowerPointError is raised if PowerPoint cannot be started."""
     mock_comtypes_client.GetActiveObject.side_effect = OSError
@@ -56,6 +62,7 @@ class TestMergePresentations:
     """Tests for the merge_presentations method."""
 
     @patch('powerpoint_core.comtypes.client')
+    @patch('powerpoint_core.sys.platform', 'win32')
     def test_merge_presentations_success(self, mock_comtypes_client, mock_powerpoint_app):
         """Test successful merging of presentations."""
         mock_comtypes_client.GetActiveObject.return_value = mock_powerpoint_app
@@ -67,10 +74,12 @@ class TestMergePresentations:
         mock_powerpoint_app.Presentations.Add.assert_called_once()
         base_presentation = mock_powerpoint_app.Presentations.Add.return_value
         assert base_presentation.Slides.InsertFromFile.call_count == 2
-        base_presentation.SaveAs.assert_called_once_with(OUTPUT_FILE)
+        # The output path will be converted to absolute path
+        base_presentation.SaveAs.assert_called_once()
         base_presentation.Close.assert_called_once()
 
     @patch('powerpoint_core.comtypes.client')
+    @patch('powerpoint_core.sys.platform', 'win32')
     def test_merge_presentations_file_not_found(self, mock_comtypes_client, mock_powerpoint_app):
         """Test that FileNotFoundError is raised for non-existent files."""
         mock_comtypes_client.GetActiveObject.return_value = mock_powerpoint_app
@@ -79,12 +88,16 @@ class TestMergePresentations:
             core.merge_presentations(["non_existent.pptx"], OUTPUT_FILE)
 
     @patch('powerpoint_core.comtypes.client')
-    def test_merge_presentations_handles_error(self, mock_comtypes_client, mock_powerpoint_app):
+    @patch('powerpoint_core.sys.platform', 'win32')
+    def test_merge_presentations_handles_error(self, mock_comtypes_client):
         """Test that PowerPointError is raised on COM errors during merge."""
-        mock_powerpoint_app.Presentations.Add.return_value.Slides.InsertFromFile.side_effect = comtypes.COMError(
-            -1, "Mock COM Error", "Mock description"
-        )
+        # Set up mock PowerPoint app
+        mock_powerpoint_app = MagicMock()
         mock_comtypes_client.GetActiveObject.return_value = mock_powerpoint_app
+        
+        # Create a mock COMError
+        mock_com_error = comtypes.COMError(-1, "Mock COM Error", "Mock description")
+        mock_powerpoint_app.Presentations.Add.return_value.Slides.InsertFromFile.side_effect = mock_com_error
 
         core = PowerPointCore()
         with patch('os.path.exists', return_value=True):

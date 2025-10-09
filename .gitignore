@@ -213,3 +213,7 @@ __marimo__/
 *.txt
 # But keep requirements files
 !requirements*.txt
+
+# Application logs directory
+logs/
+app.log
