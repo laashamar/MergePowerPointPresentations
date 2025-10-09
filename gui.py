@@ -1,400 +1,248 @@
 """
-GUI module for PowerPoint Merger application.
+Defines the main user interface for the PowerPoint Merging Tool.
 
-This module contains all the GUI components and windows for the
-step-by-step PowerPoint merging workflow.
+This version restores all button functionality, including file selection, list management,
+output path browsing, and triggering the merge process, while retaining the fix for
+the drag-and-drop initialization.
 """
 import logging
 import os
-import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
+import customtkinter
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
+# Assuming powerpoint_core.py is in the same directory or accessible in the path
+from powerpoint_core import merge_presentations
 
-def show_number_of_files_window(callback):
+class MainApplication(customtkinter.CTk, TkinterDnD.Tk):
     """
-    Display Step 1: Window for entering number of files to merge.
-
-    Args:
-        callback: Function to call with the number of files when Next is clicked
+    The main application window, integrating CustomTkinter for appearance
+    and TkinterDnD2 for drag-and-drop file handling.
     """
-    logging.info("Showing 'Number of files' window (Step 1).")
-    window = tk.Tk()
-    window.title("Step 1: Number of Files")
-    window.geometry("400x150")
 
-    # Label
-    label = tk.Label(
-        window,
-        text="How many files should be merged?",
-        font=("Arial", 12)
-    )
-    label.pack(pady=20)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    # Entry box
-    entry = tk.Entry(window, font=("Arial", 12), width=10)
-    entry.pack(pady=10)
-    entry.focus_set()
+        self.title("PowerPoint Presentation Merger")
+        self.geometry("800x600")
+        self.minsize(700, 500)
 
-    def on_next():
-        """Handle Next button click."""
-        num_str = entry.get()
-        logging.info(f"User clicked 'Next' with input: '{num_str}'.")
+        self.file_list = []
+        self.selected_index = None # To track which file is selected
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        self.create_widgets()
+        self.configure_drag_and_drop()
+
+    def configure_drag_and_drop(self):
+        """Configures the drag-and-drop functionality for the main window."""
         try:
-            # Validate input is a positive integer
-            num = int(num_str)
-            if num <= 0:
-                raise ValueError("Number must be positive")
-            logging.info(f"Input validated. Number of files: {num}.")
-            window.destroy()
-            callback(num)
-        except ValueError:
-            error_msg = "Please enter a valid positive integer."
-            logging.error(
-                f"Invalid input for number of files: '{num_str}'. Showing error message.")
-            messagebox.showerror(
-                "Invalid Input",
-                error_msg
-            )
+            self.drop_target_register(DND_FILES)
+            self.dnd_bind('<<Drop>>', self.on_drop)
+            logging.info("Drag-and-drop configured successfully.")
+        except Exception as e:
+            logging.warning("Could not configure drag-and-drop: %s", e, exc_info=True)
 
-    # Next button
-    next_btn = tk.Button(
-        window,
-        text="Next",
-        command=on_next,
-        font=("Arial", 12),
-        width=10
-    )
-    next_btn.pack(pady=10)
-    window.bind('<Return>', lambda event=None: next_btn.invoke())
+    def create_widgets(self):
+        """Creates and places all the widgets for the application."""
+        # --- Top Frame ---
+        self.top_frame = customtkinter.CTkFrame(self, corner_radius=0)
+        self.top_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 0))
+        self.top_frame.grid_columnconfigure(0, weight=1)
 
-    window.mainloop()
+        self.label_title = customtkinter.CTkLabel(
+            self.top_frame, text="Merge PowerPoint Presentations",
+            font=customtkinter.CTkFont(size=20, weight="bold")
+        )
+        self.label_title.grid(row=0, column=0, padx=20, pady=10)
 
+        self.theme_switch = customtkinter.CTkSwitch(
+            self.top_frame, text="Dark Mode", command=self.toggle_theme
+        )
+        self.theme_switch.grid(row=0, column=1, padx=20, pady=10)
+        self.theme_switch.select()
 
-def show_file_selection_window(num_files, callback):
-    """
-    Display Step 2: Window for selecting files via file dialog.
+        # --- Main Content Frame ---
+        self.main_frame = customtkinter.CTkFrame(self)
+        self.main_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(0, weight=1)
 
-    Args:
-        num_files: Expected number of files to select
-        callback: Function to call with the selected files list when OK is clicked
-    """
-    logging.info(
-        f"Showing 'Select files' window (Step 2). Expecting {num_files} files.")
-    window = tk.Tk()
-    window.title("Step 2: Select Files")
-    window.geometry("600x400")
+        # --- File List Display ---
+        self.file_display_frame = customtkinter.CTkScrollableFrame(
+            self.main_frame, label_text="Files to Merge"
+        )
+        self.file_display_frame.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
+        self.file_display_frame.grid_columnconfigure(0, weight=1)
 
-    selected_files = []
+        self.update_file_display() # Initial call to show placeholder
 
-    # Label
-    label = tk.Label(
-        window,
-        text=f"Select {num_files} PowerPoint file(s):",
-        font=("Arial", 12)
-    )
-    label.pack(pady=10)
+        # --- File Management Buttons Frame ---
+        self.button_frame = customtkinter.CTkFrame(self.main_frame)
+        self.button_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
+        self.button_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
-    # Listbox for displaying files
-    listbox_frame = tk.Frame(window)
-    listbox_frame.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
+        self.btn_add = customtkinter.CTkButton(self.button_frame, text="Add Files", command=self.add_files)
+        self.btn_add.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
-    scrollbar = tk.Scrollbar(listbox_frame)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.btn_remove = customtkinter.CTkButton(self.button_frame, text="Remove Selected", command=self.remove_selected_file)
+        self.btn_remove.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
-    listbox = tk.Listbox(
-        listbox_frame,
-        font=("Arial", 10),
-        yscrollcommand=scrollbar.set
-    )
-    listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-    scrollbar.config(command=listbox.yview)
+        self.btn_move_up = customtkinter.CTkButton(self.button_frame, text="Move Up", command=self.move_file_up)
+        self.btn_move_up.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
 
-    def add_files_from_disk():
-        """Handle Add Files button click."""
-        logging.info("Opening file dialog to select files.")
+        self.btn_move_down = customtkinter.CTkButton(self.button_frame, text="Move Down", command=self.move_file_down)
+        self.btn_move_down.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
+
+        # --- Bottom Frame ---
+        self.bottom_frame = customtkinter.CTkFrame(self)
+        self.bottom_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=(0, 10))
+        self.bottom_frame.grid_columnconfigure(1, weight=1)
+
+        self.label_output = customtkinter.CTkLabel(self.bottom_frame, text="Output File:")
+        self.label_output.grid(row=0, column=0, padx=(10, 5), pady=10)
+
+        self.entry_output_path = customtkinter.CTkEntry(
+            self.bottom_frame, placeholder_text="Select path for merged file..."
+        )
+        self.entry_output_path.grid(row=0, column=1, sticky="ew", padx=5, pady=10)
+
+        self.btn_browse = customtkinter.CTkButton(self.bottom_frame, text="Browse...", command=self.browse_output_file)
+        self.btn_browse.grid(row=0, column=2, padx=(5, 10), pady=10)
+
+        self.btn_merge = customtkinter.CTkButton(
+            self.bottom_frame, text="Merge Presentations", height=40, command=self.trigger_merge
+        )
+        self.btn_merge.grid(row=1, column=0, columnspan=3, sticky="ew", padx=10, pady=(5, 10))
+
+        # --- Status Bar ---
+        self.status_bar = customtkinter.CTkLabel(self, text="Ready", anchor="w")
+        self.status_bar.grid(row=3, column=0, sticky="ew", padx=10, pady=(0, 5))
+
+    def on_drop(self, event):
+        """Handles the file drop event."""
+        files = self.tk.splitlist(event.data)
+        added_files = False
+        for file_path in files:
+            if file_path.lower().endswith('.pptx') and file_path not in self.file_list:
+                self.file_list.append(file_path)
+                added_files = True
+            else:
+                logging.warning(f"Ignored duplicate or non-PowerPoint file: {file_path}")
+        if added_files:
+            self.update_file_display()
+
+    def add_files(self):
+        """Opens a dialog to add multiple .pptx files."""
         files = filedialog.askopenfilenames(
             title="Select PowerPoint Files",
-            filetypes=[("PowerPoint Files", "*.pptx")]
+            filetypes=[("PowerPoint files", "*.pptx")]
         )
-        if not files:
-            logging.info("No files were selected in the file dialog.")
+        if files:
+            for file_path in files:
+                if file_path not in self.file_list:
+                    self.file_list.append(file_path)
+            self.update_file_display()
+
+    def remove_selected_file(self):
+        """Removes the selected file from the list."""
+        if self.selected_index is not None:
+            self.file_list.pop(self.selected_index)
+            self.selected_index = None
+            self.update_file_display()
+
+    def move_file_up(self):
+        """Moves the selected file up in the list."""
+        if self.selected_index is not None and self.selected_index > 0:
+            item = self.file_list.pop(self.selected_index)
+            self.file_list.insert(self.selected_index - 1, item)
+            self.selected_index -= 1
+            self.update_file_display()
+
+    def move_file_down(self):
+        """Moves the selected file down in the list."""
+        if self.selected_index is not None and self.selected_index < len(self.file_list) - 1:
+            item = self.file_list.pop(self.selected_index)
+            self.file_list.insert(self.selected_index + 1, item)
+            self.selected_index += 1
+            self.update_file_display()
+
+    def browse_output_file(self):
+        """Opens a dialog to select the output file path."""
+        file_path = filedialog.asksaveasfilename(
+            title="Save Merged File As",
+            defaultextension=".pptx",
+            filetypes=[("PowerPoint files", "*.pptx")]
+        )
+        if file_path:
+            self.entry_output_path.delete(0, "end")
+            self.entry_output_path.insert(0, file_path)
+
+    def trigger_merge(self):
+        """Initiates the merge process."""
+        output_path = self.entry_output_path.get()
+        if len(self.file_list) < 2:
+            self.status_bar.configure(text="Error: Please add at least two files to merge.")
+            logging.error("Merge failed: Less than two files provided.")
+            return
+        if not output_path:
+            self.status_bar.configure(text="Error: Please specify an output file path.")
+            logging.error("Merge failed: No output path specified.")
             return
 
-        logging.info(f"{len(files)} file(s) selected: {files}")
-        for file in files:
-            if file not in selected_files:
-                selected_files.append(file)
-                listbox.insert(tk.END, file)
-                logging.info(f"Added file to list: {file}")
-            else:
-                logging.warning(
-                    f"File is already in the list and was ignored: {file}")
+        self.status_bar.configure(text="Merging in progress... please wait.")
+        self.update() # Force UI update
 
-    # Add Files button
-    add_btn = tk.Button(
-        window,
-        text="Add Files from Disk",
-        command=add_files_from_disk,
-        font=("Arial", 12)
-    )
-    add_btn.pack(pady=5)
+        try:
+            logging.info(f"Starting merge. Files: {self.file_list}, Output: {output_path}")
+            merge_presentations(self.file_list, output_path)
+            self.status_bar.configure(text=f"Success! Merged file saved to {output_path}")
+            logging.info("Merge completed successfully.")
+        except Exception as e:
+            self.status_bar.configure(text=f"Error during merge: {e}")
+            logging.error(f"Merge failed with exception: {e}", exc_info=True)
 
-    def on_ok():
-        """Handle OK button click."""
-        logging.info("User clicked 'OK' in file selection window.")
-        if len(selected_files) != num_files:
-            error_msg = (f"Please select exactly {num_files} file(s). "
-                         f"You have selected {len(selected_files)} file(s).")
-            logging.error(f"Wrong number of files selected. {error_msg}")
-            messagebox.showerror("Invalid Selection", error_msg)
-        else:
-            logging.info(
-                "Correct number of files selected. Validating file paths.")
-            for file in selected_files:
-                if not os.path.exists(file):
-                    error_msg = f"File does not exist: {file}"
-                    logging.error(error_msg)
-                    messagebox.showerror("File Not Found", error_msg)
-                    return
-                if not file.lower().endswith('.pptx'):
-                    error_msg = f"File is not a .pptx file: {file}"
-                    logging.error(error_msg)
-                    messagebox.showerror("Invalid File", error_msg)
-                    return
-            logging.info(
-                "All file paths are validated. Continuing to next step.")
-            window.destroy()
-            callback(selected_files)
+    def select_file(self, index):
+        """Sets the currently selected file and updates the UI."""
+        self.selected_index = index
+        self.update_file_display()
 
-    # OK button
-    ok_btn = tk.Button(
-        window,
-        text="OK",
-        command=on_ok,
-        font=("Arial", 12),
-        width=10
-    )
-    ok_btn.pack(pady=10)
+    def update_file_display(self):
+        """Refreshes the file list in the scrollable frame."""
+        for widget in self.file_display_frame.winfo_children():
+            widget.destroy()
 
-    window.mainloop()
-
-
-def show_filename_window(callback):
-    """
-    Display Step 3: Window for entering the output filename.
-
-    Args:
-        callback: Function to call with the filename when Next is clicked
-    """
-    logging.info("Showing 'New filename' window (Step 3).")
-    window = tk.Tk()
-    window.title("New Filename")
-    window.geometry("400x150")
-
-    # Label
-    label = tk.Label(
-        window,
-        text="New file name:",
-        font=("Arial", 12)
-    )
-    label.pack(pady=20)
-
-    # Entry box
-    entry = tk.Entry(window, font=("Arial", 12), width=30)
-    entry.pack(pady=10)
-    entry.focus_set()
-
-    def on_next():
-        """Handle Next button click."""
-        filename = entry.get().strip()
-        logging.info(f"User clicked 'Next' with filename: '{filename}'.")
-        if not filename:
-            error_msg = "Please enter a filename."
-            logging.error("Filename input was empty.")
-            messagebox.showerror("Invalid Input", error_msg)
+        if not self.file_list:
+            # Placeholder label for the drop zone
+            drop_label = customtkinter.CTkLabel(
+                self.file_display_frame,
+                text="Drag and drop .pptx files here\nor use 'Add Files' button",
+                font=customtkinter.CTkFont(size=14), text_color="gray50"
+            )
+            drop_label.grid(row=0, column=0, pady=50)
             return
 
-        # Ensure .pptx extension
-        if not filename.lower().endswith('.pptx'):
-            original_filename = filename
-            filename += '.pptx'
-            logging.info(
-                f"Added '.pptx' to filename. From '{original_filename}' to '{filename}'.")
+        for i, file_path in enumerate(self.file_list):
+            file_name = os.path.basename(file_path)
+            
+            # Determine button appearance based on selection
+            fg_color = "gray30" if i == self.selected_index else "transparent"
+            
+            file_btn = customtkinter.CTkButton(
+                self.file_display_frame,
+                text=f"{i+1}. {file_name}",
+                fg_color=fg_color,
+                anchor="w",
+                command=lambda index=i: self.select_file(index)
+            )
+            file_btn.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
 
-        logging.info(
-            f"Filename validated: '{filename}'. Continuing to next step.")
-        window.destroy()
-        callback(filename)
+    def toggle_theme(self):
+        """Switches between light and dark themes."""
+        mode = "light"
+        if self.theme_switch.get() == 1:
+            mode = "dark"
+        customtkinter.set_appearance_mode(mode)
 
-    # Next button
-    next_btn = tk.Button(
-        window,
-        text="Next",
-        command=on_next,
-        font=("Arial", 12),
-        width=10
-    )
-    next_btn.pack(pady=10)
-    window.bind('<Return>', lambda event=None: next_btn.invoke())
-
-    window.mainloop()
-
-
-def show_reorder_window(selected_files, callback):
-    """
-    Display Step 4: Window for reordering files using Move Up/Down buttons.
-
-    Args:
-        selected_files: List of file paths to reorder
-        callback: Function to call with the reordered files list when Create is clicked
-    """
-    logging.info("Showing 'Change order' window (Step 4).")
-    window = tk.Tk()
-    window.title("Step 4: Set Merge Order")
-    window.geometry("600x450")
-
-    # Label
-    label = tk.Label(
-        window,
-        text="In what order should the presentations be merged?",
-        font=("Arial", 12),
-        wraplength=550
-    )
-    label.pack(pady=10)
-
-    # Initialize file order
-    file_order = selected_files.copy()
-    logging.info(
-        f"Initial file order: {[os.path.basename(f) for f in file_order]}")
-
-    # Listbox for displaying files
-    listbox_frame = tk.Frame(window)
-    listbox_frame.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
-
-    scrollbar = tk.Scrollbar(listbox_frame)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-    listbox = tk.Listbox(
-        listbox_frame,
-        font=("Arial", 10),
-        yscrollcommand=scrollbar.set
-    )
-    listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
-    # Populate listbox with filenames (not full paths for readability)
-    for file in file_order:
-        listbox.insert(tk.END, os.path.basename(file))
-
-    if listbox.size() > 0:
-        listbox.selection_set(0)  # Select first item by default
-
-    def move_up():
-        """Move selected item up in the list."""
-        selection = listbox.curselection()
-        if not selection:
-            logging.warning(
-                "Move Up button clicked without an element being selected.")
-            messagebox.showinfo(
-                "No Selection",
-                "Please select an item to move.")
-            return
-
-        index = selection[0]
-        if index == 0:
-            logging.info(
-                "Ignoring 'Move Up' as element is already at the top.")
-            return
-
-        logging.info(
-            f"Moving '{
-                os.path.basename(
-                    file_order[index])}' up from position {index}.")
-        # Swap items in file_order list
-        file_order[index], file_order[index -
-                                      1] = file_order[index - 1], file_order[index]
-
-        # Update listbox
-        listbox.delete(0, tk.END)
-        for file in file_order:
-            listbox.insert(tk.END, os.path.basename(file))
-
-        # Reselect the moved item
-        listbox.selection_set(index - 1)
-        logging.info(f"New order: {[os.path.basename(f) for f in file_order]}")
-
-    def move_down():
-        """Move selected item down in the list."""
-        selection = listbox.curselection()
-        if not selection:
-            logging.warning(
-                "Move Down button clicked without an element being selected.")
-            messagebox.showinfo(
-                "No Selection",
-                "Please select an item to move.")
-            return
-
-        index = selection[0]
-        if index == len(file_order) - 1:
-            logging.info(
-                "Ignoring 'Move Down' as element is already at the bottom.")
-            return
-
-        logging.info(
-            f"Moving '{
-                os.path.basename(
-                    file_order[index])}' down from position {index}.")
-        # Swap items in file_order list
-        file_order[index], file_order[index +
-                                      1] = file_order[index + 1], file_order[index]
-
-        # Update listbox
-        listbox.delete(0, tk.END)
-        for file in file_order:
-            listbox.insert(tk.END, os.path.basename(file))
-
-        # Reselect the moved item
-        listbox.selection_set(index + 1)
-        logging.info(f"New order: {[os.path.basename(f) for f in file_order]}")
-
-    # Button frame for Move Up and Move Down buttons
-    button_frame = tk.Frame(window)
-    button_frame.pack(pady=5)
-
-    move_up_btn = tk.Button(
-        button_frame,
-        text="Move Up",
-        command=move_up,
-        font=("Arial", 12),
-        width=12
-    )
-    move_up_btn.pack(side=tk.LEFT, padx=5)
-
-    move_down_btn = tk.Button(
-        button_frame,
-        text="Move Down",
-        command=move_down,
-        font=("Arial", 12),
-        width=12
-    )
-    move_down_btn.pack(side=tk.LEFT, padx=5)
-
-    def on_create():
-        """Handle Create New File button click."""
-        logging.info("User clicked 'Create New File'.")
-        logging.info(f"Final file order for merging: {file_order}")
-        window.destroy()
-        callback(file_order)
-
-    # Create New File button
-    create_btn = tk.Button(
-        window,
-        text="Create New File",
-        command=on_create,
-        font=("Arial", 12),
-        width=15,
-        bg="#4CAF50",
-        fg="white"
-    )
-    create_btn.pack(pady=10)
-
-    window.mainloop()
