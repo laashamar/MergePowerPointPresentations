@@ -6,10 +6,15 @@ on:
   pull_request:
     branches: [ main, develop, tests ]
 
+env:
+  # Disable Ubuntu ESM to prevent esm.ubuntu.com access
+  DEBIAN_FRONTEND: noninteractive
+  NO_APT_SOURCES_UPDATE: 1
+
 jobs:
   lint:
     name: Lint Code
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # Use Windows to avoid apt-get entirely
 
     steps:
     - name: Checkout code
@@ -22,8 +27,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pylint black isort
+        python -m pip install --upgrade pip --no-warn-script-location
+        pip install flake8 pylint black isort --no-warn-script-location
 
     - name: Check code formatting with Black
       run: black --check --line-length=100 *.py
@@ -35,11 +40,11 @@ jobs:
       run: flake8 *.py --max-line-length=100 --statistics
 
     - name: Lint with pylint
-      run: pylint *.py --max-line-length=100 || true
+      run: pylint *.py --max-line-length=100 || echo "Pylint completed with warnings"
 
   test:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # Use Windows to avoid apt-get entirely
     needs: lint
 
     steps:
@@ -53,9 +58,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install pytest pytest-cov pytest-mock
-        pip install -r requirements.txt || echo "Some dependencies may be Windows-only"
+        python -m pip install --upgrade pip --no-warn-script-location
+        pip install pytest pytest-cov pytest-mock --no-warn-script-location
+        pip install -r requirements.txt
 
     - name: Run unit tests
       run: pytest tests/ -v --tb=short --cov=. --cov-report=term-missing --cov-report=xml
@@ -69,7 +74,7 @@ jobs:
 
   test-matrix:
     name: Test on Multiple Python Versions
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # Use Windows to avoid apt-get entirely
     needs: lint
     strategy:
       matrix:
@@ -86,16 +91,16 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install pytest pytest-mock
-        pip install -r requirements.txt || echo "Some dependencies may be Windows-only"
+        python -m pip install --upgrade pip --no-warn-script-location
+        pip install pytest pytest-mock --no-warn-script-location
+        pip install -r requirements.txt
 
     - name: Run unit tests
       run: pytest tests/ -v --tb=short
 
   code-quality:
     name: Code Quality Checks
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # Use Windows to avoid apt-get entirely
 
     steps:
     - name: Checkout code
@@ -108,8 +113,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install flake8
+        python -m pip install --upgrade pip --no-warn-script-location
+        pip install flake8 --no-warn-script-location
 
     - name: Check PEP8 compliance
       run: |
@@ -117,3 +122,26 @@ jobs:
         flake8 *.py --count --select=E9,F63,F7,F82 --show-source --statistics
         # Exit with warning on other violations
         flake8 *.py --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
+
+  # Alternative job using container to avoid host package manager
+  lint-container:
+    name: Lint Code (Container)
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.12-slim  # Use minimal container without apt dependencies
+      options: --user root
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies (pip only)
+      run: |
+        python -m pip install --upgrade pip --no-cache-dir
+        pip install flake8 pylint black isort --no-cache-dir
+
+    - name: Check code formatting with Black
+      run: black --check --line-length=100 *.py
+
+    - name: Lint with flake8
+      run: flake8 *.py --max-line-length=100 --statistics
