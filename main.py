@@ -10,6 +10,7 @@ from gui import MainWindow
 from app import AppController
 from app_logger import setup_logging
 
+
 def main():
     """
     Initializes the application, sets up logging, and shows the main window.
@@ -21,6 +22,6 @@ def main():
     window.show()
     sys.exit(app.exec())
 
+
 if __name__ == "__main__":
     main()
-
