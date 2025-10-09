@@ -5,15 +5,18 @@ Tests for the logging setup.
 """
 
 import logging
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import app_logger
 
 
-@patch('os.makedirs')
-@patch('os.path.exists')
-@patch('logging.basicConfig')
+@patch('app_logger.logging.FileHandler')
+@patch('app_logger.logging.StreamHandler')
+@patch('app_logger.os.makedirs')
+@patch('app_logger.os.path.exists')
+@patch('app_logger.logging.basicConfig')
 def test_setup_logging_creates_directory(mock_basic_config, mock_exists,
-                                         mock_makedirs):
+                                         mock_makedirs, mock_stream_handler,
+                                         mock_file_handler):
     """
     Test that setup_logging creates the log directory if it doesn't exist.
     """
@@ -22,9 +25,12 @@ def test_setup_logging_creates_directory(mock_basic_config, mock_exists,
     mock_makedirs.assert_called_once_with("logs")
 
 
-@patch('os.path.exists', return_value=True)
-@patch('logging.basicConfig')
-def test_setup_logging_configures_correctly(mock_basic_config, mock_exists):
+@patch('app_logger.logging.FileHandler')
+@patch('app_logger.logging.StreamHandler')
+@patch('app_logger.os.path.exists', return_value=True)
+@patch('app_logger.logging.basicConfig')
+def test_setup_logging_configures_correctly(mock_basic_config, mock_exists,
+                                            mock_stream_handler, mock_file_handler):
     """
     Test that logging.basicConfig is called with the correct parameters.
     """

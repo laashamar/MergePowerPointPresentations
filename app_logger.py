@@ -2,47 +2,28 @@
 This module configures the logging for the application.
 """
 import logging
-import sys
+import os
 
 def setup_logging():
     """
-    Set up the root logger to output to both a file and the console.
-    - The file will capture INFO level and higher messages.
-    - The console will capture DEBUG level and higher messages for development.
+    Set up logging configuration for the application.
+    - Logs INFO level and higher messages.
+    - Outputs to both file and console.
     """
-    # Get the root logger
-    logger = logging.getLogger()
-    # Set the lowest capture level to DEBUG to allow all messages to be processed
-    logger.setLevel(logging.DEBUG)
-
-    # --- File Handler ---
-    # This handler writes logs to 'app.log'
-    file_handler = logging.FileHandler('app.log', 'w', 'utf-8')
-    file_handler.setLevel(logging.INFO)  # Log INFO and above to the file
-
-    # --- Console (Stream) Handler ---
-    # This new handler writes logs to the console (stderr)
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.DEBUG)  # Log DEBUG and above to the console
-
-    # --- Formatter ---
-    # Create a consistent format for all log messages
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    # Create logs directory if it doesn't exist
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+    
+    # Configure logging with basicConfig
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler('logs/app.log', mode='w', encoding='utf-8'),
+            logging.StreamHandler()
+        ],
+        force=True  # Force reconfiguration even if logging has already been configured
     )
-
-    # Apply the formatter to both handlers
-    file_handler.setFormatter(formatter)
-    console_handler.setFormatter(formatter)
-
-    # --- Add Handlers to Logger ---
-    # Clear any existing handlers to avoid duplication
-    if logger.hasHandlers():
-        logger.handlers.clear()
-
-    # Add the configured handlers
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
 
 if __name__ == '__main__':
     # Example usage to demonstrate the dual logging
