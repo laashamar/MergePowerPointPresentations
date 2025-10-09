@@ -4,13 +4,24 @@ A powerful Python GUI application for merging multiple PowerPoint (.pptx) files 
 
 ## **Features**
 
-* **Step-by-Step GUI Workflow**: Intuitive 4-step process for merging presentations  
-* **Perfect Slide Copying**: COM automation preserves all formatting, animations, and embedded content  
-* **File Management**: Easy file selection with validation and reordering capabilities  
-* **Automatic Slideshow**: Launches merged presentation immediately after creation  
-* **Comprehensive Logging**: Optional live logging for debugging and troubleshooting  
-* **Error Handling**: Robust error management with clear user feedback  
+### **Core Features**
+* **Step-by-Step GUI Workflow**: Intuitive 4-step process for merging presentations
+* **Perfect Slide Copying**: COM automation preserves all formatting, animations, and embedded content
+* **File Management**: Easy file selection with validation and reordering capabilities
+* **Automatic Slideshow**: Launches merged presentation immediately after creation
+* **Comprehensive Logging**: Optional live logging for debugging and troubleshooting
+* **Error Handling**: Robust error management with clear user feedback
 * **Dual Entry Points**: Choose between standard mode or debug mode with live logging
+
+### **Phase 3 Advanced Features** ✨ *New!*
+* **Drag-and-Drop File Addition**: Drag .pptx files directly onto the application window
+* **Drag-and-Drop Reordering**: Click and drag files in the list to change merge order
+* **Real-Time Progress Feedback**: Live status updates showing current file and slide being processed
+* **Non-Blocking Merge**: Application remains responsive during merge operations (threaded execution)
+* **Post-Merge Actions**: Quick access buttons to open merged file or show in file explorer
+* **Cross-Platform Post-Merge**: Works on Windows, macOS, and Linux for file operations
+
+See [docs/PHASE3_FEATURES.md](docs/PHASE3_FEATURES.md) for detailed documentation of Phase 3 features.
 
 ## **System Requirements**
 
@@ -43,23 +54,66 @@ A powerful Python GUI application for merging multiple PowerPoint (.pptx) files 
    git clone \[https://github.com/laashamar/MergePowerPointPresentations.git\](https://github.com/laashamar/MergePowerPointPresentations.git)  
    cd MergePowerPointPresentations
 
-2. **Install dependencies**:  
-   pip install \-r requirements.txt
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-3. **Run the application**:  
-   \# Standard mode  
+   **Dependencies include:**
+   - `pywin32>=305` - COM automation for PowerPoint
+   - `customtkinter>=5.0.0` - Modern GUI framework
+   - `tkinterdnd2>=0.3.0` - Drag-and-drop functionality *(New in Phase 3)*
+
+3. **Run the application**:
+   ```bash
+   # Standard mode
    python main.py
 
-   \# Debug mode with live logging  
-   python run\_with\_logging.py
+   # Debug mode with live logging
+   python run_with_logging.py
+
+   # New GUI with Phase 3 features
+   python new_gui/main_gui.py
+   ```
+
+4. **Try the Phase 3 demo**:
+   ```bash
+   python demo_phase3.py
+   ```
 
 ## **Usage Guide**
 
 ### **Quick Start**
 
-1. **Launch the application** using one of the methods above.  
-2. **Follow the 4-step workflow** described below.  
+1. **Launch the application** using one of the methods above.
+2. **Follow the 4-step workflow** described below (classic GUI) or use the new modern GUI.
 3. **Enjoy your merged presentation** with automatic slideshow launch.
+
+### **New Modern GUI (Phase 3)** ✨
+
+The new GUI (`new_gui/main_gui.py`) features a single-window interface with advanced capabilities:
+
+#### **Adding Files**
+- **Method 1**: Click "Add Presentation(s)" button to browse for files
+- **Method 2**: Drag and drop .pptx files directly onto the window *(New!)*
+
+#### **Reordering Files**
+- **Method 1**: Click and drag file labels to reorder *(New!)*
+- Files are numbered (1, 2, 3...) to show merge order
+
+#### **Configuring Output**
+- Click "Save As..." to choose where to save the merged presentation
+- Merge button enables automatically when you have 2+ files and an output path
+
+#### **Merging**
+- Click "Merge Presentations" to start
+- Watch real-time progress: "Merging [file] (slide X of Y)..." *(New!)*
+- GUI remains responsive during merge *(New!)*
+
+#### **After Merge** *(New!)*
+Two buttons appear after successful merge:
+- **Open Presentation**: Opens merged file in PowerPoint
+- **Show in Explorer**: Opens file manager and highlights the merged file
 
 ### **Detailed Workflow**
 
@@ -114,10 +168,11 @@ A powerful Python GUI application for merging multiple PowerPoint (.pptx) files 
 
 ## **Documentation**
 
-* 🏗️ [**ARCHITECTURE.md**](https://www.google.com/search?q=docs/ARCHITECTURE.md) \- Technical architecture and design patterns  
-* 📝 [**CHANGELOG.md**](https://www.google.com/search?q=docs/CHANGELOG.md) \- Version history and release notes  
-* 🚀 [**PLANNED\_FEATURE\_ENHANCEMENTS.md**](https://www.google.com/search?q=docs/PLANNED_FEATURE_ENHANCEMENTS.md) \- Planned features and roadmap  
-* 🤝 [**CONTRIBUTING.md**](https://www.google.com/search?q=docs/CONTRIBUTING.md) \- How to contribute to the project.  
+* 🏗️ [**ARCHITECTURE.md**](https://www.google.com/search?q=docs/ARCHITECTURE.md) \- Technical architecture and design patterns
+* 📝 [**CHANGELOG.md**](https://www.google.com/search?q=docs/CHANGELOG.md) \- Version history and release notes
+* ✨ [**PHASE3_FEATURES.md**](docs/PHASE3_FEATURES.md) \- Phase 3 features detailed documentation *(New!)*
+* 🚀 [**PLANNED\_FEATURE\_ENHANCEMENTS.md**](https://www.google.com/search?q=docs/PLANNED_FEATURE_ENHANCEMENTS.md) \- Planned features and roadmap
+* 🤝 [**CONTRIBUTING.md**](https://www.google.com/search?q=docs/CONTRIBUTING.md) \- How to contribute to the project.
 * 📜 [**CODE\_OF\_CONDUCT.md**](https://www.google.com/search?q=docs/CODE_OF_CONDUCT.md) \- Community guidelines.
 
 ## **License**

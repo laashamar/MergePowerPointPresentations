@@ -10,13 +10,15 @@ import os
 import win32com.client
 
 
-def merge_presentations(file_order, output_filename):
+def merge_presentations(file_order, output_filename, progress_callback=None):
     """
     Merge multiple PowerPoint presentations into a single file using COM.
 
     Args:
         file_order: List of file paths in the order they should be merged
         output_filename: Name of the output file (should include .pptx extension)
+        progress_callback: Optional callback function with signature
+                          (filename: str, current_slide: int, total_slides: int) -> None
 
     Returns:
         tuple: (success: bool, output_path: str, error_message: str or None)
@@ -48,7 +50,8 @@ def merge_presentations(file_order, output_filename):
         # Process each source file in order
         for i, file_path in enumerate(file_order, 1):
             abs_path = os.path.abspath(file_path)
-            logging.info(f"--- Processing file {i}/{len(file_order)}: {os.path.basename(abs_path)} ---")
+            filename = os.path.basename(abs_path)
+            logging.info(f"--- Processing file {i}/{len(file_order)}: {filename} ---")
             try:
                 # Open source presentation
                 logging.info(f"Opening source presentation: {abs_path}")
@@ -57,21 +60,27 @@ def merge_presentations(file_order, output_filename):
                     ReadOnly=True,
                     WithWindow=False
                 )
-                
+
                 num_slides = source_prs.Slides.Count
                 logging.info(f"Found {num_slides} slides in source presentation.")
 
-                # Copy all slides from source to destination in one operation
+                # Copy all slides from source to destination
                 if num_slides > 0:
                     logging.info(f"Starting copy of {num_slides} slides...")
+
+                    # Call progress callback for each slide if provided
+                    if progress_callback:
+                        for slide_num in range(1, num_slides + 1):
+                            progress_callback(filename, slide_num, num_slides)
+
                     source_prs.Slides.Range().Copy()
                     destination_prs.Slides.Paste()
                     logging.info("All slides from source were pasted into destination.")
                 else:
-                    logging.warning(f"No slides found in {os.path.basename(abs_path)}. Skipping.")
+                    logging.warning(f"No slides found in {filename}. Skipping.")
 
                 # Close source presentation
-                logging.info(f"Closing source presentation: {os.path.basename(abs_path)}")
+                logging.info(f"Closing source presentation: {filename}")
                 source_prs.Close()
                 source_prs = None
 
