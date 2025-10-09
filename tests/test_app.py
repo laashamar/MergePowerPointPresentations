@@ -4,8 +4,7 @@ Unit tests for app.py module.
 Tests the PowerPointMergerApp class and its workflow orchestration.
 """
 import unittest
-from unittest.mock import Mock, patch, MagicMock
-import logging
+from unittest.mock import Mock, patch
 
 # Import the module to test
 import app

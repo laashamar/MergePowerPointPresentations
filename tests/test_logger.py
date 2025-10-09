@@ -4,9 +4,8 @@ Unit tests for logger.py module.
 Tests the logging infrastructure and configuration.
 """
 import unittest
-from unittest.mock import Mock, patch, MagicMock, mock_open
+from unittest.mock import Mock, patch
 import logging
-import tkinter as tk
 import os
 import tempfile
 
@@ -116,6 +115,13 @@ class TestErrorListHandler(unittest.TestCase):
 class TestSetupLogging(unittest.TestCase):
     """Test cases for setup_logging function."""
 
+    def tearDown(self):
+        """Clean up logging handlers."""
+        root_logger = logging.getLogger()
+        for handler in root_logger.handlers[:]:
+            root_logger.removeHandler(handler)
+            handler.close()
+
     @patch('logger.FileHandler')
     @patch('os.path.exists')
     @patch('os.remove')
@@ -124,6 +130,7 @@ class TestSetupLogging(unittest.TestCase):
         """Test that setup_logging configures all handlers correctly."""
         mock_exists.return_value = False
         mock_text_widget = Mock()
+        mock_file_handler.return_value.level = logging.INFO
 
         # Clear existing handlers
         root_logger = logging.getLogger()
@@ -143,6 +150,7 @@ class TestSetupLogging(unittest.TestCase):
         """Test that setup_logging removes old log file if it exists."""
         mock_exists.return_value = True
         mock_text_widget = Mock()
+        mock_file_handler.return_value.level = logging.INFO
 
         logger.setup_logging(mock_text_widget)
 
@@ -161,12 +169,24 @@ class TestWriteLogSummary(unittest.TestCase):
         self.original_log_path = logger.LOG_FILE_PATH
         logger.LOG_FILE_PATH = self.temp_file.name
 
+        # Clear existing handlers to avoid test interference
+        root_logger = logging.getLogger()
+        for handler in root_logger.handlers[:]:
+            root_logger.removeHandler(handler)
+            handler.close()
+
     def tearDown(self):
         """Clean up after tests."""
         logger.error_list.clear()
         logger.LOG_FILE_PATH = self.original_log_path
         if os.path.exists(self.temp_file.name):
             os.remove(self.temp_file.name)
+
+        # Clean up logging handlers
+        root_logger = logging.getLogger()
+        for handler in root_logger.handlers[:]:
+            root_logger.removeHandler(handler)
+            handler.close()
 
     def test_write_log_summary_no_errors(self):
         """Test write_log_summary when there are no errors."""

@@ -5,7 +5,13 @@ Tests the PowerPoint COM automation functions with mocking.
 """
 import unittest
 from unittest.mock import Mock, patch, MagicMock
-import os
+import sys
+
+# Ensure win32com is mocked
+if 'win32com' not in sys.modules:
+    win32com_mock = MagicMock()
+    sys.modules['win32com'] = win32com_mock
+    sys.modules['win32com.client'] = win32com_mock.client
 
 # Import the module to test
 import powerpoint_core

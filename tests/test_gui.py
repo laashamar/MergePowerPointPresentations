@@ -4,8 +4,7 @@ Unit tests for gui.py module.
 Tests GUI window functions with mocking.
 """
 import unittest
-from unittest.mock import Mock, patch, MagicMock, call
-import tkinter as tk
+from unittest.mock import Mock, patch, MagicMock
 
 # Import the module to test
 import gui
@@ -75,10 +74,16 @@ class TestShowReorderWindow(unittest.TestCase):
     """Test cases for show_reorder_window function."""
 
     @patch('gui.tk.Tk')
-    def test_window_created(self, mock_tk):
+    @patch('gui.tk.Listbox')
+    def test_window_created(self, mock_listbox_class, mock_tk):
         """Test that window is created with correct properties."""
         mock_window = MagicMock()
         mock_tk.return_value = mock_window
+
+        # Mock listbox instance
+        mock_listbox = MagicMock()
+        mock_listbox.size.return_value = 3
+        mock_listbox_class.return_value = mock_listbox
 
         callback = Mock()
         test_files = ['file1.pptx', 'file2.pptx', 'file3.pptx']
