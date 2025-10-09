@@ -1,148 +1,97 @@
 """
-Unit tests for gui.py module.
-
-Tests GUI window functions with mocking.
+Tests for the PySide6 GUI.
 """
-import unittest
-from unittest.mock import Mock, patch, MagicMock
 
-# Import the module to test
-import gui
+from unittest.mock import patch
+from PySide6.QtCore import Qt
+import pytest
 
-
-class TestShowNumberOfFilesWindow(unittest.TestCase):
-    """Test cases for show_number_of_files_window function."""
-
-    @patch('gui.tk.Tk')
-    def test_window_created(self, mock_tk):
-        """Test that window is created with correct properties."""
-        mock_window = MagicMock()
-        mock_tk.return_value = mock_window
-
-        callback = Mock()
-
-        # Execute (don't actually run mainloop)
-        with patch.object(mock_window, 'mainloop'):
-            gui.show_number_of_files_window(callback)
-
-        # Verify window was configured
-        mock_window.title.assert_called_with("Step 1: Number of Files")
-        mock_window.geometry.assert_called_with("400x150")
+# It's important to import the classes we need to test and mock
+from gui import MainWindow
+from app import PowerPointMerger
 
 
-class TestShowFileSelectionWindow(unittest.TestCase):
-    """Test cases for show_file_selection_window function."""
-
-    @patch('gui.tk.Tk')
-    def test_window_created(self, mock_tk):
-        """Test that window is created with correct properties."""
-        mock_window = MagicMock()
-        mock_tk.return_value = mock_window
-
-        callback = Mock()
-
-        # Execute (don't actually run mainloop)
-        with patch.object(mock_window, 'mainloop'):
-            gui.show_file_selection_window(3, callback)
-
-        # Verify window was configured
-        mock_window.title.assert_called_with("Step 2: Select Files")
-        mock_window.geometry.assert_called_with("600x400")
+@pytest.fixture
+def merger_app():
+    """A fixture to create a PowerPointMerger instance for tests."""
+    # We can mock the core dependency to avoid actual COM calls
+    with patch('app.PowerPointCore'):
+        merger = PowerPointMerger()
+        yield merger
 
 
-class TestShowFilenameWindow(unittest.TestCase):
-    """Test cases for show_filename_window function."""
-
-    @patch('gui.tk.Tk')
-    def test_window_created(self, mock_tk):
-        """Test that window is created with correct properties."""
-        mock_window = MagicMock()
-        mock_tk.return_value = mock_window
-
-        callback = Mock()
-
-        # Execute (don't actually run mainloop)
-        with patch.object(mock_window, 'mainloop'):
-            gui.show_filename_window(callback)
-
-        # Verify window was configured
-        mock_window.title.assert_called_with("New Filename")
-        mock_window.geometry.assert_called_with("400x150")
+@pytest.fixture
+def main_app(qtbot, merger_app):
+    """
+    Create and return the main application window, now correctly initialized
+    with a PowerPointMerger instance.
+    """
+    app_window = MainWindow(merger_app)
+    qtbot.addWidget(app_window)
+    return app_window
 
 
-class TestShowReorderWindow(unittest.TestCase):
-    """Test cases for show_reorder_window function."""
-
-    @patch('gui.tk.Tk')
-    @patch('gui.tk.Listbox')
-    def test_window_created(self, mock_listbox_class, mock_tk):
-        """Test that window is created with correct properties."""
-        mock_window = MagicMock()
-        mock_tk.return_value = mock_window
-
-        # Mock listbox instance
-        mock_listbox = MagicMock()
-        mock_listbox.size.return_value = 3
-        mock_listbox_class.return_value = mock_listbox
-
-        callback = Mock()
-        test_files = ['file1.pptx', 'file2.pptx', 'file3.pptx']
-
-        # Execute (don't actually run mainloop)
-        with patch.object(mock_window, 'mainloop'):
-            gui.show_reorder_window(test_files, callback)
-
-        # Verify window was configured
-        mock_window.title.assert_called_with("Step 4: Set Merge Order")
-        mock_window.geometry.assert_called_with("600x450")
+def test_main_window_initialization(main_app):
+    """Test that the main window initializes with the correct title and widgets."""
+    assert main_app.windowTitle() == "PowerPoint Presentation Merger"
+    assert main_app.add_button.text() == "&Add Files"
+    assert main_app.merge_button.text() == "&Merge Presentations"
+    assert main_app.file_list_widget.count() == 0
 
 
-class TestGUIInputValidation(unittest.TestCase):
-    """Test cases for input validation in GUI functions."""
-
-    @patch('gui.messagebox.showerror')
-    @patch('gui.tk.Tk')
-    def test_number_of_files_invalid_input(self, mock_tk, mock_showerror):
-        """Test validation of number of files input."""
-        mock_window = MagicMock()
-        mock_entry = MagicMock()
-        mock_entry.get.return_value = 'invalid'
-
-        mock_tk.return_value = mock_window
-
-        callback = Mock()
-
-        # We can't easily test the inner on_next function without
-        # actually creating the GUI, so we'll just verify the
-        # window creation
-        with patch.object(mock_window, 'mainloop'):
-            gui.show_number_of_files_window(callback)
-
-        # Verify window was created
-        mock_window.title.assert_called_with("Step 1: Number of Files")
+def test_add_files_button(main_app, qtbot, monkeypatch):
+    """Test that the 'Add Files' button updates the list."""
+    # Mock the file dialog to return a predefined list of files
+    monkeypatch.setattr(
+        "PySide6.QtWidgets.QFileDialog.getOpenFileNames",
+        lambda *args, **kwargs: (["test1.pptx", "test2.pptx"], "")
+    )
+    qtbot.mouseClick(main_app.add_button, Qt.MouseButton.LeftButton)
+    assert main_app.file_list_widget.count() == 2
+    assert main_app.file_list_widget.item(0).text() == "test1.pptx"
 
 
-class TestFileDialogIntegration(unittest.TestCase):
-    """Test cases for file dialog integration."""
+def test_remove_file_button(main_app, qtbot):
+    """Test that the 'Remove Selected' button works correctly."""
+    main_app.merger.add_files(["a.pptx", "b.pptx", "c.pptx"])
+    main_app.update_file_list()
 
-    @patch('gui.filedialog.askopenfilenames')
-    @patch('gui.tk.Tk')
-    def test_file_selection_uses_file_dialog(
-            self, mock_tk, mock_file_dialog):
-        """Test that file selection opens file dialog."""
-        mock_window = MagicMock()
-        mock_tk.return_value = mock_window
-        mock_file_dialog.return_value = []
+    main_app.file_list_widget.setCurrentRow(1)  # Select 'b.pptx'
+    qtbot.mouseClick(main_app.remove_button, Qt.MouseButton.LeftButton)
 
-        callback = Mock()
-
-        # Execute (don't actually run mainloop)
-        with patch.object(mock_window, 'mainloop'):
-            gui.show_file_selection_window(2, callback)
-
-        # Verify window was created
-        mock_window.title.assert_called_with("Step 2: Select Files")
+    assert main_app.file_list_widget.count() == 2
+    assert main_app.file_list_widget.item(0).text() == "a.pptx"
+    assert main_app.file_list_widget.item(1).text() == "c.pptx"
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_move_buttons(main_app, qtbot):
+    """Test the 'Move Up' and 'Move Down' buttons."""
+    main_app.merger.add_files(["a.pptx", "b.pptx", "c.pptx"])
+    main_app.update_file_list()
+
+    # Test move down
+    main_app.file_list_widget.setCurrentRow(0)  # Select 'a.pptx'
+    qtbot.mouseClick(main_app.down_button, Qt.MouseButton.LeftButton)
+    assert main_app.merger.get_files() == ["b.pptx", "a.pptx", "c.pptx"]
+
+    # Test move up
+    main_app.file_list_widget.setCurrentRow(1)  # Select 'a.pptx' again
+    qtbot.mouseClick(main_app.up_button, Qt.MouseButton.LeftButton)
+    assert main_app.merger.get_files() == ["a.pptx", "b.pptx", "c.pptx"]
+
+
+@patch('gui.QMessageBox')
+def test_merge_button_no_files(mock_msg_box, main_app, qtbot):
+    """Test that the merge button shows a warning if no files are added."""
+    qtbot.mouseClick(main_app.merge_button, Qt.MouseButton.LeftButton)
+    mock_msg_box.warning.assert_called_once()
+
+
+@patch('gui.QMessageBox')
+def test_merge_button_no_output_path(mock_msg_box, main_app, qtbot):
+    """Test that the merge button shows a warning if no output path is set."""
+    main_app.merger.add_files(["a.pptx", "b.pptx"])
+    main_app.update_file_list()
+    qtbot.mouseClick(main_app.merge_button, Qt.MouseButton.LeftButton)
+    mock_msg_box.warning.assert_called_once()
+
