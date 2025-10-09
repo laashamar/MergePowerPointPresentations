@@ -1,68 +1,58 @@
+# tests/test_gui.py
+
 """
-Tests for the PySide6 GUI.
+Tests for the GUI of the PowerPoint Merger application.
 """
 
-from unittest.mock import patch
+import os
+from unittest.mock import patch, MagicMock
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QFileDialog
 import pytest
-
-# It's important to import the classes we need to test and mock
 from gui import MainWindow
-from app import PowerPointMerger
 
-
+# Fixture to create the application and main window instances
 @pytest.fixture
-def merger_app():
-    """A fixture to create a PowerPointMerger instance for tests."""
-    # We can mock the core dependency to avoid actual COM calls
-    with patch('app.PowerPointCore'):
-        merger = PowerPointMerger()
-        yield merger
-
-
-@pytest.fixture
-def main_app(qtbot, merger_app):
+def main_app(qtbot):
     """
-    Create and return the main application window, now correctly initialized
-    with a PowerPointMerger instance.
+    Creates the main application window for testing.
     """
-    app_window = MainWindow(merger_app)
-    qtbot.addWidget(app_window)
-    return app_window
-
+    app = QApplication.instance() or QApplication([])
+    window = MainWindow()
+    qtbot.addWidget(window)
+    yield window
+    window.close()
 
 def test_main_window_initialization(main_app):
     """Test that the main window initializes with the correct title and widgets."""
     assert main_app.windowTitle() == "PowerPoint Presentation Merger"
     assert main_app.add_button.text() == "&Add Files"
-    assert main_app.merge_button.text() == "&Merge Presentations"
-    assert main_app.file_list_widget.count() == 0
-
+    assert main_app.remove_button.text() == "&Remove"
+    assert main_app.up_button.text() == "Move &Up"
+    assert main_app.down_button.text() == "Move &Down"
+    assert main_app.merge_button.text() == "&Merge"
+    assert main_app.output_label.text().startswith("Output File:")
 
 def test_add_files_button(main_app, qtbot, monkeypatch):
-    """Test that the 'Add Files' button updates the list."""
-    # Mock the file dialog to return a predefined list of files
-    monkeypatch.setattr(
-        "PySide6.QtWidgets.QFileDialog.getOpenFileNames",
-        lambda *args, **kwargs: (["test1.pptx", "test2.pptx"], "")
-    )
+    """Test the 'Add Files' button functionality."""
+    test_files = ["test1.pptx", "test2.pptx"]
+
+    # Mock QFileDialog.getOpenFileNames to return our test files
+    monkeypatch.setattr(QFileDialog, 'getOpenFileNames', lambda *args, **kwargs: (test_files, None))
+
     qtbot.mouseClick(main_app.add_button, Qt.MouseButton.LeftButton)
+    assert main_app.merger.file_paths == test_files
     assert main_app.file_list_widget.count() == 2
-    assert main_app.file_list_widget.item(0).text() == "test1.pptx"
+    assert main_app.file_list_widget.item(0).text() == os.path.basename(test_files[0])
+    assert main_app.file_list_widget.item(1).text() == os.path.basename(test_files[1])
 
-
-def test_remove_file_button(main_app, qtbot):
-    """Test that the 'Remove Selected' button works correctly."""
-    main_app.merger.add_files(["a.pptx", "b.pptx", "c.pptx"])
+def test_remove_button(main_app, qtbot):
+    """Test the 'Remove' button functionality."""
+    main_app.merger.add_files(["a.pptx", "b.pptx"])
     main_app.update_file_list()
-
-    main_app.file_list_widget.setCurrentRow(1)  # Select 'b.pptx'
+    main_app.file_list_widget.setCurrentRow(0)
     qtbot.mouseClick(main_app.remove_button, Qt.MouseButton.LeftButton)
-
-    assert main_app.file_list_widget.count() == 2
-    assert main_app.file_list_widget.item(0).text() == "a.pptx"
-    assert main_app.file_list_widget.item(1).text() == "c.pptx"
-
+    assert main_app.merger.file_paths == ["b.pptx"]
 
 def test_move_buttons(main_app, qtbot):
     """Test the 'Move Up' and 'Move Down' buttons."""
@@ -75,23 +65,25 @@ def test_move_buttons(main_app, qtbot):
     assert main_app.merger.get_files() == ["b.pptx", "a.pptx", "c.pptx"]
 
     # Test move up
-    main_app.file_list_widget.setCurrentRow(1)  # Select 'a.pptx' again
+    main_app.file_list_widget.setCurrentRow(1)  # Select 'a.pptx'
     qtbot.mouseClick(main_app.up_button, Qt.MouseButton.LeftButton)
     assert main_app.merger.get_files() == ["a.pptx", "b.pptx", "c.pptx"]
 
-
 @patch('gui.QMessageBox')
-def test_merge_button_no_files(mock_msg_box, main_app, qtbot):
-    """Test that the merge button shows a warning if no files are added."""
-    qtbot.mouseClick(main_app.merge_button, Qt.MouseButton.LeftButton)
-    mock_msg_box.warning.assert_called_once()
-
-
-@patch('gui.QMessageBox')
-def test_merge_button_no_output_path(mock_msg_box, main_app, qtbot):
-    """Test that the merge button shows a warning if no output path is set."""
+@patch('gui.QFileDialog.getSaveFileName', return_value=('merged.pptx', None))
+def test_merge_button_success(mock_save_dialog, mock_message_box, main_app, qtbot):
+    """Test a successful merge operation."""
     main_app.merger.add_files(["a.pptx", "b.pptx"])
     main_app.update_file_list()
-    qtbot.mouseClick(main_app.merge_button, Qt.MouseButton.LeftButton)
-    mock_msg_box.warning.assert_called_once()
+    main_app.merger.merge = MagicMock()
 
+    qtbot.mouseClick(main_app.merge_button, Qt.MouseButton.LeftButton)
+
+    main_app.merger.merge.assert_called_once_with('merged.pptx', main_app.update_progress)
+    mock_message_box.information.assert_called_once()
+
+@patch('gui.QMessageBox')
+def test_merge_button_no_files(mock_message_box, main_app, qtbot):
+    """Test merge button with no files selected."""
+    qtbot.mouseClick(main_app.merge_button, Qt.MouseButton.LeftButton)
+    mock_message_box.warning.assert_called_with(main_app, "No files", "Please add files to merge.")
