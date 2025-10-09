@@ -2,16 +2,20 @@ import logging
 import tkinter as tk
 from logging import FileHandler, Handler
 import os
-from datetime import datetime
 
 # Define the central log file path
-LOG_FILE_PATH = os.path.join(os.path.expanduser("~"), "Downloads", "merge_powerpoint.log")
+LOG_FILE_PATH = os.path.join(
+    os.path.expanduser("~"),
+    "Downloads",
+    "merge_powerpoint.log")
 
 # Global list for collecting error messages
 error_list = []
 
+
 class TkinterLogHandler(Handler):
     """A custom log handler that sends records to a tkinter Text widget."""
+
     def __init__(self, text_widget):
         super().__init__()
         self.text_widget = text_widget
@@ -22,14 +26,17 @@ class TkinterLogHandler(Handler):
         self.text_widget.configure(state='normal')
         self.text_widget.insert(tk.END, msg + '\n')
         self.text_widget.configure(state='disabled')
-        self.text_widget.see(tk.END) # Auto-scroll
+        self.text_widget.see(tk.END)  # Auto-scroll
+
 
 class ErrorListHandler(Handler):
     """A handler that collects all ERROR and CRITICAL messages in a list."""
+
     def emit(self, record):
         """Adds formatted error messages to the global list."""
         if record.levelno >= logging.ERROR:
             error_list.append(self.format(record))
+
 
 def setup_logging(log_widget):
     """
@@ -71,19 +78,22 @@ def write_log_summary():
     """Writes a summary of errors to the end of the log file."""
     try:
         with open(LOG_FILE_PATH, "a", encoding="utf-8") as f:
-            summary_header = "\n\n" + "="*80 + "\n"
+            summary_header = "\n\n" + "=" * 80 + "\n"
             summary_header += " ERROR SUMMARY ".center(80, "=") + "\n"
-            summary_header += "="*80 + "\n\n"
+            summary_header += "=" * 80 + "\n\n"
             f.write(summary_header)
 
             if error_list:
-                f.write(f"Found {len(error_list)} errors during execution:\n\n")
+                f.write(
+                    f"Found {len(error_list)} errors during execution:\n\n")
                 for error in error_list:
                     f.write(error + "\n\n")
             else:
                 f.write("No errors were logged during execution.\n")
-            
-            f.write("\n" + "="*80 + "\n")
+
+            f.write("\n" + "=" * 80 + "\n")
         logging.info("Error summary has been written to the log file.")
     except Exception as e:
-        logging.error(f"Could not write error summary to log file: {e}", exc_info=True)
+        logging.error(
+            f"Could not write error summary to log file: {e}",
+            exc_info=True)

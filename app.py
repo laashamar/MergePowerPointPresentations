@@ -37,14 +37,17 @@ class PowerPointMergerApp:
 
     def _on_files_selected(self, selected_files):
         """Handle file selection from Step 2."""
-        logging.info(f"Step 2 completed. {len(selected_files)} files selected.")
+        logging.info(
+            f"Step 2 completed. {
+                len(selected_files)} files selected.")
         logging.debug(f"Selected files: {selected_files}")
         self.selected_files = selected_files
         gui.show_filename_window(self._on_filename_entered)
 
     def _on_filename_entered(self, filename):
         """Handle filename input from Step 3."""
-        logging.info(f"Step 3 completed. Output filename set to: '{filename}'.")
+        logging.info(
+            f"Step 3 completed. Output filename set to: '{filename}'.")
         self.output_filename = filename
         gui.show_reorder_window(
             self.selected_files,
@@ -61,7 +64,7 @@ class PowerPointMergerApp:
     def _merge_and_launch(self):
         """Merge presentations and launch the slideshow."""
         logging.info("Starting merge and slideshow of presentations.")
-        
+
         # Merge presentations using COM automation
         success, output_path, error_msg = powerpoint_core.merge_presentations(
             self.file_order,
@@ -100,4 +103,3 @@ def start_app():
     logging.info("Creating and running a new instance of PowerPointMergerApp.")
     app = PowerPointMergerApp()
     app.run()
-

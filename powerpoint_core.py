@@ -51,7 +51,8 @@ def merge_presentations(file_order, output_filename, progress_callback=None):
         for i, file_path in enumerate(file_order, 1):
             abs_path = os.path.abspath(file_path)
             filename = os.path.basename(abs_path)
-            logging.info(f"--- Processing file {i}/{len(file_order)}: {filename} ---")
+            logging.info(
+                f"--- Processing file {i}/{len(file_order)}: {filename} ---")
             try:
                 # Open source presentation
                 logging.info(f"Opening source presentation: {abs_path}")
@@ -62,7 +63,8 @@ def merge_presentations(file_order, output_filename, progress_callback=None):
                 )
 
                 num_slides = source_prs.Slides.Count
-                logging.info(f"Found {num_slides} slides in source presentation.")
+                logging.info(
+                    f"Found {num_slides} slides in source presentation.")
 
                 # Copy all slides from source to destination
                 if num_slides > 0:
@@ -75,9 +77,11 @@ def merge_presentations(file_order, output_filename, progress_callback=None):
 
                     source_prs.Slides.Range().Copy()
                     destination_prs.Slides.Paste()
-                    logging.info("All slides from source were pasted into destination.")
+                    logging.info(
+                        "All slides from source were pasted into destination.")
                 else:
-                    logging.warning(f"No slides found in {filename}. Skipping.")
+                    logging.warning(
+                        f"No slides found in {filename}. Skipping.")
 
                 # Close source presentation
                 logging.info(f"Closing source presentation: {filename}")
@@ -86,15 +90,16 @@ def merge_presentations(file_order, output_filename, progress_callback=None):
 
             except Exception as e:
                 logging.error(
-                    f"An error occurred while processing file {os.path.basename(file_path)}",
-                    exc_info=True
-                )
+                    f"An error occurred while processing file {
+                        os.path.basename(file_path)}",
+                    exc_info=True)
                 if source_prs:
                     source_prs.Close()
                 # Re-raise to be caught by the outer try-except block
                 raise Exception(
-                    f"Failed to process file {os.path.basename(file_path)}: {str(e)}"
-                )
+                    f"Failed to process file {
+                        os.path.basename(file_path)}: {
+                        str(e)}")
 
         # Save the merged presentation
         output_path = os.path.abspath(output_filename)
@@ -120,7 +125,9 @@ def merge_presentations(file_order, output_filename, progress_callback=None):
                 powerpoint.Quit()
                 logging.info("Quit PowerPoint application.")
         except Exception as cleanup_error:
-            logging.error(f"An error occurred during cleanup: {cleanup_error}", exc_info=True)
+            logging.error(
+                f"An error occurred during cleanup: {cleanup_error}",
+                exc_info=True)
             pass
         return False, "", str(e)
 
@@ -161,6 +168,7 @@ def launch_slideshow(output_path):
         return True, None
 
     except Exception as e:
-        error_message = f"Could not start slideshow for {output_path}: {str(e)}"
+        error_message = f"Could not start slideshow for {output_path}: {
+            str(e)}"
         logging.error(error_message, exc_info=True)
         return False, str(e)
