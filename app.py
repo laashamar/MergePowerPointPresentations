@@ -1,49 +1,27 @@
-# app.py
-
 """
-This module contains the core application logic for the PowerPoint Merger.
+This module contains the AppController, which serves as the main controller
+for the application, connecting the GUI to the business logic.
 """
+from powerpoint_core import PowerPointMerger
 
-from powerpoint_core import PowerPointCore
-
-class PowerPointMerger:
+class AppController(PowerPointMerger):
     """
-    Manages the list of PowerPoint files and orchestrates the merging process.
+    Controller for the application. It inherits the core merging logic
+    from PowerPointMerger and can be extended with additional application-
+    specific functionality without altering the core logic.
     """
     def __init__(self):
-        self.file_paths = []
-        self.core = PowerPointCore()
-
-    def add_files(self, new_files):
-        """Adds a list of files to the current list."""
-        self.file_paths.extend(new_files)
-
-    def remove_file(self, index):
-        """Removes a file from the list by its index."""
-        if 0 <= index < len(self.file_paths):
-            del self.file_paths[index]
-
-    def move_file_up(self, index):
-        """Moves a file up one position in the list."""
-        if index > 0:
-            self.file_paths[index], self.file_paths[index - 1] = self.file_paths[index - 1], self.file_paths[index]
-
-    def move_file_down(self, index):
-        """Moves a file down one position in the list."""
-        if 0 <= index < len(self.file_paths) - 1:
-            self.file_paths[index], self.file_paths[index + 1] = self.file_paths[index + 1], self.file_paths[index]
-
-    def get_files(self):
-        """Returns the current list of file paths."""
-        return self.file_paths
-
-    def merge(self, output_path, progress_callback=None):
         """
-        Merges the presentations in the list into a single file.
+        Initializes the AppController by calling the parent constructor.
         """
-        self.core.merge_presentations(self.file_paths, output_path)
+        super().__init__()
+        # Future controller-specific initializations can go here.
+        # For example, loading user settings, checking for updates, etc.
 
-    def close(self):
-        """Closes the PowerPoint application."""
-        self.core.close()
-
+# This check allows the file to be imported without running test code.
+if __name__ == '__main__':
+    # You can add test or demonstration code here that will only run
+    # when the script is executed directly.
+    # For example:
+    controller = AppController()
+    print("AppController created successfully.")
