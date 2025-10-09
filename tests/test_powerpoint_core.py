@@ -15,6 +15,7 @@ TEST_FILE_1 = "test1.pptx"
 TEST_FILE_2 = "test2.pptx"
 OUTPUT_FILE = "merged.pptx"
 
+
 @pytest.fixture
 def mock_powerpoint_app():
     """Fixture for a mocked PowerPoint application object."""
@@ -22,6 +23,7 @@ def mock_powerpoint_app():
     app.Presentations.Add.return_value = MagicMock()
     app.Presentations.Open.return_value = MagicMock()
     return app
+
 
 @patch('powerpoint_core.comtypes.client')
 def test_powerpoint_core_initialization_new_instance(mock_comtypes_client):
@@ -31,6 +33,7 @@ def test_powerpoint_core_initialization_new_instance(mock_comtypes_client):
     mock_comtypes_client.CreateObject.assert_called_once_with("PowerPoint.Application")
     assert core.powerpoint is not None
 
+
 @patch('powerpoint_core.comtypes.client')
 def test_powerpoint_core_initialization_existing_instance(mock_comtypes_client):
     """Test connection to an existing PowerPoint instance."""
@@ -39,11 +42,15 @@ def test_powerpoint_core_initialization_existing_instance(mock_comtypes_client):
     core = PowerPointCore()
     assert core.powerpoint == mock_app
 
-@patch('powerpoint_core.comtypes.client', side_effect=OSError("Test Error"))
+
+@patch('powerpoint_core.comtypes.client')
 def test_powerpoint_core_initialization_failure(mock_comtypes_client):
     """Test that PowerPointError is raised if PowerPoint cannot be started."""
+    mock_comtypes_client.GetActiveObject.side_effect = OSError
+    mock_comtypes_client.CreateObject.side_effect = OSError
     with pytest.raises(PowerPointError):
         PowerPointCore()
+
 
 class TestMergePresentations:
     """Tests for the merge_presentations method."""
@@ -74,7 +81,9 @@ class TestMergePresentations:
     @patch('powerpoint_core.comtypes.client')
     def test_merge_presentations_handles_error(self, mock_comtypes_client, mock_powerpoint_app):
         """Test that PowerPointError is raised on COM errors during merge."""
-        mock_powerpoint_app.Presentations.Add.return_value.Slides.InsertFromFile.side_effect = comtypes.COMError
+        mock_powerpoint_app.Presentations.Add.return_value.Slides.InsertFromFile.side_effect = comtypes.COMError(
+            -1, "Mock COM Error", "Mock description"
+        )
         mock_comtypes_client.GetActiveObject.return_value = mock_powerpoint_app
 
         core = PowerPointCore()
