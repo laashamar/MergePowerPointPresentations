@@ -4,6 +4,7 @@ for the application, connecting the GUI to the business logic.
 """
 from powerpoint_core import PowerPointMerger
 
+
 class AppController(PowerPointMerger):
     """
     Controller for the application. It inherits the core merging logic
@@ -17,6 +18,7 @@ class AppController(PowerPointMerger):
         super().__init__()
         # Future controller-specific initializations can go here.
         # For example, loading user settings, checking for updates, etc.
+
 
 # This check allows the file to be imported without running test code.
 if __name__ == '__main__':

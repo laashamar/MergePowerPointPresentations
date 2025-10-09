@@ -7,7 +7,9 @@ This is the main entry point for the PowerPoint Merger application.
 import sys
 from PySide6.QtWidgets import QApplication
 from gui import MainWindow
+from app import AppController
 from app_logger import setup_logging
+
 
 def main():
     """
@@ -15,10 +17,11 @@ def main():
     """
     setup_logging()
     app = QApplication(sys.argv)
-    window = MainWindow()
+    controller = AppController()
+    window = MainWindow(controller)
     window.show()
     sys.exit(app.exec())
 
+
 if __name__ == "__main__":
     main()
-
