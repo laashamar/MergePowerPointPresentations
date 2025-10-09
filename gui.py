@@ -103,9 +103,9 @@ class Worker(QObject):
         try:
             # Create a new merger instance within this thread
             thread_merger = PowerPointMerger()
-            thread_merger.files = self.files_to_merge
-            thread_merger.merge_presentations(self.output_path)
-            thread_merger.shutdown()
+            thread_merger.file_paths = self.files_to_merge
+            thread_merger.merge(self.output_path)
+            thread_merger.close()
             self.finished.emit()
         except Exception as e:
             logging.error("Worker thread error: %s", e, exc_info=True)
@@ -239,7 +239,7 @@ class MainWindow(QWidget):
     def update_file_list(self):
         """Refreshes the file list widget from the merger's file list."""
         self.file_list_widget.clear()
-        for file_path in self.merger.files:
+        for file_path in self.merger.file_paths:
             self.file_list_widget.addItem(os.path.basename(file_path))
 
     def browse_output_file(self):
@@ -259,7 +259,7 @@ class MainWindow(QWidget):
             )
             return
 
-        if not self.merger.files:
+        if not self.merger.file_paths:
             QMessageBox.warning(
                 self, "Not Enough Files", "Please add at least one presentation to merge."
             )
@@ -270,7 +270,7 @@ class MainWindow(QWidget):
 
         # Pass the data (not the object) to the worker
         self.thread = QThread()
-        self.worker = Worker(self.merger.files, output_path)
+        self.worker = Worker(self.merger.file_paths, output_path)
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.run)

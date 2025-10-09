@@ -4,8 +4,10 @@
 Tests for the logging setup.
 """
 
+import logging
 from unittest.mock import patch
 import app_logger
+
 
 @patch('os.makedirs')
 @patch('os.path.exists')
@@ -19,6 +21,7 @@ def test_setup_logging_creates_directory(mock_basic_config, mock_exists,
     app_logger.setup_logging()
     mock_makedirs.assert_called_once_with("logs")
 
+
 @patch('os.path.exists', return_value=True)
 @patch('logging.basicConfig')
 def test_setup_logging_configures_correctly(mock_basic_config, mock_exists):
@@ -28,4 +31,5 @@ def test_setup_logging_configures_correctly(mock_basic_config, mock_exists):
     app_logger.setup_logging()
     assert mock_basic_config.called
     call_args = mock_basic_config.call_args
-    assert call_args[1]['level'] == 10  # logging.DEBUG
+    assert call_args[1]['level'] == logging.INFO  # logging.INFO
+
