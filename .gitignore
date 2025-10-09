@@ -211,4 +211,5 @@ __marimo__/
 
 # Log files and logging scripts
 *.txt
-
+# But keep requirements files
+!requirements*.txt
