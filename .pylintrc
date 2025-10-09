@@ -1,0 +1,32 @@
+[MASTER]
+ignore=.git,__pycache__,.venv,venv,build,dist
+jobs=1
+
+[MESSAGES CONTROL]
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-locals,
+    too-many-instance-attributes,
+    too-many-branches,
+    too-many-statements
+
+[FORMAT]
+max-line-length=100
+indent-string='    '
+
+[DESIGN]
+max-args=7
+max-attributes=10
+max-locals=20
+max-branches=15
+max-statements=60
+
+[BASIC]
+good-names=i,j,k,e,ex,f,_,pk,id,app
+
+[TYPECHECK]
+generated-members=tk.*,win32com.*

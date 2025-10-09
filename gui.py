@@ -49,7 +49,8 @@ def show_number_of_files_window(callback):
             callback(num)
         except ValueError:
             error_msg = "Please enter a valid positive integer."
-            logging.error(f"Invalid input for number of files: '{num_str}'. Showing error message.")
+            logging.error(
+                f"Invalid input for number of files: '{num_str}'. Showing error message.")
             messagebox.showerror(
                 "Invalid Input",
                 error_msg
@@ -77,7 +78,8 @@ def show_file_selection_window(num_files, callback):
         num_files: Expected number of files to select
         callback: Function to call with the selected files list when OK is clicked
     """
-    logging.info(f"Showing 'Select files' window (Step 2). Expecting {num_files} files.")
+    logging.info(
+        f"Showing 'Select files' window (Step 2). Expecting {num_files} files.")
     window = tk.Tk()
     window.title("Step 2: Select Files")
     window.geometry("600x400")
@@ -125,7 +127,8 @@ def show_file_selection_window(num_files, callback):
                 listbox.insert(tk.END, file)
                 logging.info(f"Added file to list: {file}")
             else:
-                logging.warning(f"File is already in the list and was ignored: {file}")
+                logging.warning(
+                    f"File is already in the list and was ignored: {file}")
 
     # Add Files button
     add_btn = tk.Button(
@@ -145,7 +148,8 @@ def show_file_selection_window(num_files, callback):
             logging.error(f"Wrong number of files selected. {error_msg}")
             messagebox.showerror("Invalid Selection", error_msg)
         else:
-            logging.info("Correct number of files selected. Validating file paths.")
+            logging.info(
+                "Correct number of files selected. Validating file paths.")
             for file in selected_files:
                 if not os.path.exists(file):
                     error_msg = f"File does not exist: {file}"
@@ -157,7 +161,8 @@ def show_file_selection_window(num_files, callback):
                     logging.error(error_msg)
                     messagebox.showerror("Invalid File", error_msg)
                     return
-            logging.info("All file paths are validated. Continuing to next step.")
+            logging.info(
+                "All file paths are validated. Continuing to next step.")
             window.destroy()
             callback(selected_files)
 
@@ -213,9 +218,11 @@ def show_filename_window(callback):
         if not filename.lower().endswith('.pptx'):
             original_filename = filename
             filename += '.pptx'
-            logging.info(f"Added '.pptx' to filename. From '{original_filename}' to '{filename}'.")
+            logging.info(
+                f"Added '.pptx' to filename. From '{original_filename}' to '{filename}'.")
 
-        logging.info(f"Filename validated: '{filename}'. Continuing to next step.")
+        logging.info(
+            f"Filename validated: '{filename}'. Continuing to next step.")
         window.destroy()
         callback(filename)
 
@@ -257,7 +264,8 @@ def show_reorder_window(selected_files, callback):
 
     # Initialize file order
     file_order = selected_files.copy()
-    logging.info(f"Initial file order: {[os.path.basename(f) for f in file_order]}")
+    logging.info(
+        f"Initial file order: {[os.path.basename(f) for f in file_order]}")
 
     # Listbox for displaying files
     listbox_frame = tk.Frame(window)
@@ -276,26 +284,34 @@ def show_reorder_window(selected_files, callback):
     # Populate listbox with filenames (not full paths for readability)
     for file in file_order:
         listbox.insert(tk.END, os.path.basename(file))
-    
+
     if listbox.size() > 0:
-        listbox.selection_set(0) # Select first item by default
+        listbox.selection_set(0)  # Select first item by default
 
     def move_up():
         """Move selected item up in the list."""
         selection = listbox.curselection()
         if not selection:
-            logging.warning("Move Up button clicked without an element being selected.")
-            messagebox.showinfo("No Selection", "Please select an item to move.")
+            logging.warning(
+                "Move Up button clicked without an element being selected.")
+            messagebox.showinfo(
+                "No Selection",
+                "Please select an item to move.")
             return
 
         index = selection[0]
         if index == 0:
-            logging.info("Ignoring 'Move Up' as element is already at the top.")
+            logging.info(
+                "Ignoring 'Move Up' as element is already at the top.")
             return
 
-        logging.info(f"Moving '{os.path.basename(file_order[index])}' up from position {index}.")
+        logging.info(
+            f"Moving '{
+                os.path.basename(
+                    file_order[index])}' up from position {index}.")
         # Swap items in file_order list
-        file_order[index], file_order[index - 1] = file_order[index - 1], file_order[index]
+        file_order[index], file_order[index -
+                                      1] = file_order[index - 1], file_order[index]
 
         # Update listbox
         listbox.delete(0, tk.END)
@@ -310,18 +326,26 @@ def show_reorder_window(selected_files, callback):
         """Move selected item down in the list."""
         selection = listbox.curselection()
         if not selection:
-            logging.warning("Move Down button clicked without an element being selected.")
-            messagebox.showinfo("No Selection", "Please select an item to move.")
+            logging.warning(
+                "Move Down button clicked without an element being selected.")
+            messagebox.showinfo(
+                "No Selection",
+                "Please select an item to move.")
             return
 
         index = selection[0]
         if index == len(file_order) - 1:
-            logging.info("Ignoring 'Move Down' as element is already at the bottom.")
+            logging.info(
+                "Ignoring 'Move Down' as element is already at the bottom.")
             return
 
-        logging.info(f"Moving '{os.path.basename(file_order[index])}' down from position {index}.")
+        logging.info(
+            f"Moving '{
+                os.path.basename(
+                    file_order[index])}' down from position {index}.")
         # Swap items in file_order list
-        file_order[index], file_order[index + 1] = file_order[index + 1], file_order[index]
+        file_order[index], file_order[index +
+                                      1] = file_order[index + 1], file_order[index]
 
         # Update listbox
         listbox.delete(0, tk.END)
