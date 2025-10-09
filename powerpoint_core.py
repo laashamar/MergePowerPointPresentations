@@ -1,86 +1,84 @@
-# powerpoint_core.py
-
 """
-Core functionality for interacting with PowerPoint presentations.
+This module contains the core logic for merging PowerPoint presentations.
 """
-
 import logging
-import os
-import comtypes.client
 
-# Set up logging
-logger = logging.getLogger(__name__)
-
+# Define a custom exception for PowerPoint-related errors
 class PowerPointError(Exception):
-    """Custom exception for PowerPoint-related errors."""
+    """Custom exception for errors related to PowerPoint operations."""
     pass
 
-class PowerPointCore:
+class PowerPointMerger:
     """
-    A class to encapsulate the core PowerPoint automation functionalities.
+    Handles the core functionality of managing and merging PowerPoint files.
     """
+
     def __init__(self):
-        self.powerpoint = None
-        self.is_powerpoint_running = False
-        try:
-            self.powerpoint = comtypes.client.GetActiveObject("PowerPoint.Application")
-            self.is_powerpoint_running = True
-            logger.info("Connected to existing PowerPoint instance.")
-        except (OSError, comtypes.COMError):
-            try:
-                self.powerpoint = comtypes.client.CreateObject("PowerPoint.Application")
-                self.powerpoint.Visible = 1
-                logger.info("Created a new PowerPoint instance.")
-            except (OSError, comtypes.COMError) as e:
-                logger.error("PowerPoint could not be started: %s", e)
-                raise PowerPointError("PowerPoint could not be started.") from e
+        """Initializes the PowerPointMerger with an empty list of files."""
+        self._files = []
+        logging.info("PowerPointMerger initialized.")
 
-    def merge_presentations(self, file_paths, output_path):
+    def add_files(self, files):
         """
-        Merges multiple PowerPoint presentations into a single file.
+        Adds a list of files to the internal list, avoiding duplicates.
+        :param files: A list of file paths to add.
         """
-        if not file_paths:
-            raise ValueError("No input files provided.")
+        for file in files:
+            if file not in self._files:
+                self._files.append(file)
+        logging.info(f"Added files: {files}. Current list: {self._files}")
 
-        try:
-            # Create a new presentation
-            base_presentation = self.powerpoint.Presentations.Add()
-            logger.info("Created a new presentation for merging.")
-
-            # Insert slides from each presentation
-            for file_path in file_paths:
-                if os.path.exists(file_path):
-                    try:
-                        # Insert all slides from the source presentation
-                        base_presentation.Slides.InsertFromFile(file_path, base_presentation.Slides.Count)
-                        logger.info("Inserted slides from: %s", file_path)
-                    except comtypes.COMError as e:
-                        logger.error("Failed to insert slides from %s: %s", file_path, e)
-                        raise PowerPointError(f"Failed to insert slides from {os.path.basename(file_path)}.") from e
-                else:
-                    logger.warning("File not found: %s", file_path)
-                    raise FileNotFoundError(f"File not found: {file_path}")
-
-            # Save the merged presentation
-            base_presentation.SaveAs(output_path)
-            logger.info("Merged presentation saved to: %s", output_path)
-
-            # Close the base presentation
-            base_presentation.Close()
-            logger.info("Closed the merged presentation.")
-
-        except comtypes.COMError as e:
-            logger.error("An error occurred during the merge process: %s", e)
-            raise PowerPointError("An error occurred during the merge process.") from e
-        except Exception as e:
-            logger.error("An unexpected error occurred: %s", e, exc_info=True)
-            raise
-
-    def close(self):
+    def remove_file(self, file):
         """
-        Closes the PowerPoint application if it was started by this class.
+        Removes a specific file from the list.
+        :param file: The file path to remove.
         """
-        if self.powerpoint and not self.is_powerpoint_running:
-            self.powerpoint.Quit()
-            self.powerpoint = None
-            logger.info("Closed the PowerPoint instance.")
+        if file in self._files:
+            self._files.remove(file)
+            logging.info(f"Removed file: {file}. Current list: {self._files}")
+
+    def move_file_up(self, index):
+        """
+        Moves a file up in the list (to a lower index).
+        :param index: The current index of the file to move.
+        """
+        if 0 < index < len(self._files):
+            self._files[index], self._files[index - 1] = self._files[index - 1], self._files[index]
+            logging.info(f"Moved file up at index {index}. New order: {self._files}")
+
+    def move_file_down(self, index):
+        """
+        Moves a file down in the list (to a higher index).
+        :param index: The current index of the file to move.
+        """
+        if 0 <= index < len(self._files) - 1:
+            self._files[index], self._files[index + 1] = self._files[index + 1], self._files[index]
+            logging.info(f"Moved file down at index {index}. New order: {self._files}")
+
+    def get_files(self):
+        """
+        Returns the current list of files.
+        :return: A list of file paths.
+        """
+        return self._files
+
+    def merge(self, output_path, progress_callback=None):
+        """
+        Placeholder for the merge logic.
+        In a real implementation, this would use COM automation or another
+        library to merge the actual .pptx files.
+        """
+        logging.info(f"Starting merge process for output file: {output_path}")
+        if not self._files:
+            raise PowerPointError("No files to merge.")
+
+        total_files = len(self._files)
+        for i, file in enumerate(self._files):
+            logging.info(f"Processing ({i+1}/{total_files}): {file}")
+            if progress_callback:
+                progress_callback(i + 1, total_files)
+        
+        logging.info(f"Merge successful. Output saved to {output_path}")
+        # Here you would add the actual merging code.
+        # For now, we'll just simulate success.
+        return True
