@@ -1,29 +1,17 @@
+"""Compatibility shim for app module.
+
+This module provides backward compatibility for imports.
+All functionality has been moved to src/merge_powerpoint/app.py
 """
-This module contains the AppController, which serves as the main controller
-for the application, connecting the GUI to the business logic.
-"""
-from powerpoint_core import PowerPointMerger
 
+import sys
+from pathlib import Path
 
-class AppController(PowerPointMerger):
-    """
-    Controller for the application. It inherits the core merging logic
-    from PowerPointMerger and can be extended with additional application-
-    specific functionality without altering the core logic.
-    """
-    def __init__(self):
-        """
-        Initializes the AppController by calling the parent constructor.
-        """
-        super().__init__()
-        # Future controller-specific initializations can go here.
-        # For example, loading user settings, checking for updates, etc.
+# Add src to path for imports
+src_path = Path(__file__).parent / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
 
+from merge_powerpoint.app import AppController  # noqa: E402, F401
 
-# This check allows the file to be imported without running test code.
-if __name__ == '__main__':
-    # You can add test or demonstration code here that will only run
-    # when the script is executed directly.
-    # For example:
-    controller = AppController()
-    print("AppController created successfully.")
+__all__ = ["AppController"]

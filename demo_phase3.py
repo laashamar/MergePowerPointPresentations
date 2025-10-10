@@ -6,17 +6,14 @@ with the powerpoint_core module.
 """
 
 import logging
-import sys
 import os
+import sys
 
 # Add parent directory to path to import powerpoint_core
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 def demo_progress_callback(filename, current_slide, total_slides):
