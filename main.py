@@ -1,27 +1,37 @@
-# main.py
+"""Main entry point for the PowerPoint Merger application.
 
-"""
-This is the main entry point for the PowerPoint Merger application.
+This is the main entry point that initializes and runs the application.
+It now uses the refactored package structure from src/merge_powerpoint.
 """
 
 import sys
-from PySide6.QtWidgets import QApplication
-from gui import MainWindow
-from app import AppController
-from app_logger import setup_logging
+from pathlib import Path
+
+# Add src to path for imports
+src_path = Path(__file__).parent / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+from PySide6.QtWidgets import QApplication  # noqa: E402
+
+from merge_powerpoint.app import AppController  # noqa: E402
+from merge_powerpoint.app_logger import setup_logging  # noqa: E402
+from merge_powerpoint.gui import MainWindow  # noqa: E402
 
 
 def main():
-    """
-    Initializes the application, sets up logging, and shows the main window.
+    """Initialize the application, set up logging, and show the main window.
+
+    Returns:
+        int: Application exit code.
     """
     setup_logging()
     app = QApplication(sys.argv)
     controller = AppController()
-    window = MainWindow(controller)
+    window = MainWindow()
     window.show()
-    sys.exit(app.exec())
+    return app.exec()
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

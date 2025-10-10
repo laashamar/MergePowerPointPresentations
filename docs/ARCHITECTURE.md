@@ -4,129 +4,163 @@
 
 ### Overview
 
-The PowerPoint Presentation Merger is a Python desktop application built with a **modular architecture** that provides a step-by-step GUI workflow for merging multiple PowerPoint presentations. The application uses COM automation for reliable slide copying and includes comprehensive logging capabilities.
+The PowerPoint Presentation Merger is a Python desktop application built with a **modern package structure** following the **src layout** pattern. It provides an intuitive GUI workflow for merging multiple PowerPoint presentations using COM automation for reliable slide copying, with comprehensive logging capabilities.
 
 ### Design Principles
 
+- **Modern Package Structure**: Follows PEP 518/621 with src layout
 - **Separation of Concerns**: Each module has a single, well-defined responsibility
 - **Modular Structure**: Clear boundaries between GUI, business logic, and infrastructure
 - **COM Integration**: Native PowerPoint automation for perfect fidelity
 - **Comprehensive Logging**: Full observability for debugging and monitoring
-- **User-Centric Design**: Step-by-step workflow with clear validation
+- **User-Centric Design**: Intuitive GUI with clear validation
+- **Backward Compatibility**: Compatibility shims for existing code
 
 ## Module Architecture
 
-### Core Modules
+### Package Structure (src layout)
 
 ```text
-Application Entry Points:
-├── main.py                     # Standard entry point
-└── run_with_logging.py        # Entry point with live logging GUI
+src/merge_powerpoint/           # Main package
+├── __init__.py                 # Package initialization and exports
+├── __main__.py                 # CLI entry point (python -m merge_powerpoint)
+├── app.py                      # Application controller
+├── app_logger.py               # Logging configuration
+├── gui.py                      # GUI components (PySide6)
+└── powerpoint_core.py          # PowerPoint COM automation
 
-Application Layer:
-├── app.py                     # Application orchestration and state management
-└── logger.py                  # Logging infrastructure and configuration
+Root Level (Compatibility):
+├── main.py                     # Standard entry point (uses src package)
+├── run_with_logging.py         # Entry point with logging (uses src package)
+├── app.py                      # Compatibility shim → src/merge_powerpoint/app.py
+├── app_logger.py               # Compatibility shim → src/merge_powerpoint/app_logger.py
+├── gui.py                      # Compatibility shim → src/merge_powerpoint/gui.py
+└── powerpoint_core.py          # Compatibility shim → src/merge_powerpoint/powerpoint_core.py
 
-Presentation Layer:
-└── gui.py                     # All GUI windows and user interactions
-
-Business Logic Layer:
-└── powerpoint_core.py         # PowerPoint COM automation and merging logic
+Configuration:
+├── pyproject.toml              # Modern Python project configuration (PEP 518/621)
+├── pytest.ini                  # pytest configuration
+├── .flake8                     # Flake8 linting configuration
+└── .pylintrc                   # Pylint configuration
 ```
 
 ### Module Dependencies
 
 ```text
 main.py
-└── app.py
-    ├── gui.py
-    │   ├── tkinter (standard library)
-    │   └── os (standard library)
-    └── powerpoint_core.py
-        └── win32com.client (pywin32)
+└── merge_powerpoint package
+    ├── app.py (AppController)
+    │   └── powerpoint_core.py (PowerPointMerger)
+    ├── gui.py (MainWindow)
+    │   ├── PySide6.QtWidgets
+    │   └── powerpoint_core.py (PowerPointMerger)
+    └── app_logger.py (setup_logging)
+
+CLI: merge-powerpoint command
+└── merge_powerpoint.__main__.main()
+    └── Same structure as main.py
 
 run_with_logging.py
-├── logger.py
-│   ├── logging (standard library)
-│   ├── tkinter (standard library)
-│   └── os (standard library)
-├── app.py (same as above)
-└── threading (standard library)
+├── merge_powerpoint.app_logger (setup_logging)
+└── main.main()
 ```
 
 ## Detailed Module Specifications
 
 ### 1. Entry Points
 
+#### `merge-powerpoint` CLI Command
+
+- **Purpose**: Primary CLI entry point (installed via pip)
+- **Implementation**: Defined in `pyproject.toml` as console script
+- **Module**: `merge_powerpoint.__main__:main`
+- **Usage**: `merge-powerpoint` (after installation)
+- **Features**:
+  - Simple command-line invocation
+  - No need to specify Python explicitly
+  - Works from any directory after installation
+
+#### `python -m merge_powerpoint`
+
+- **Purpose**: Module execution entry point
+- **Module**: `src/merge_powerpoint/__main__.py`
+- **Usage**: `python -m merge_powerpoint`
+- **Features**:
+  - Works without installation (with PYTHONPATH set)
+  - Direct module execution
+
 #### `main.py`
 
-- **Purpose**: Standard application entry point
+- **Purpose**: Traditional script entry point
 - **Responsibilities**:
-  - Import and launch the main application
-  - Minimal startup logic
+  - Import from refactored package
+  - Launch the main application
+  - Provides backward compatibility
 - **Usage**: `python main.py`
+- **Implementation**: Wrapper that imports from `merge_powerpoint` package
 
 #### `run_with_logging.py`
 
-- **Purpose**: Advanced entry point with live logging GUI
+- **Purpose**: Entry point with exception logging
 - **Responsibilities**:
-  - Create live logging window
-  - Configure comprehensive logging system
-  - Run main application in separate thread
-  - Handle unhandled exceptions
-  - Generate error summaries
+  - Configure logging
+  - Wrap main() with exception handling
+  - Log critical errors
 - **Usage**: `python run_with_logging.py`
 - **Features**:
-  - Real-time log display
-  - File logging to Downloads folder
-  - Error collection and summarization
-  - Thread-safe execution
+  - Enhanced error reporting
+  - Catches unhandled exceptions
 
-### 2. Application Layer
+### 2. Core Package (`merge_powerpoint`)
 
-#### `app.py` - Application Orchestration
+#### `__init__.py` - Package Initialization
 
-- **Purpose**: Central workflow coordination and state management
-- **Key Class**: `PowerPointMergerApp`
-- **State Variables**:
-  - `num_files`: Expected number of files to merge
-  - `selected_files`: List of selected file paths
-  - `output_filename`: Name for merged presentation
-  - `file_order`: Final order after user reordering
-- **Workflow Methods**:
-  - `_on_number_of_files_entered()`: Handle Step 1 completion
-  - `_on_files_selected()`: Handle Step 2 completion
-  - `_on_filename_entered()`: Handle Step 3 completion
-  - `_on_files_reordered()`: Handle Step 4 completion
-  - `_merge_and_launch()`: Execute merge and slideshow
+- **Purpose**: Define package exports and version
+- **Exports**:
+  - `AppController`
+  - `PowerPointMerger`
+  - `PowerPointError`
+  - `__version__`
 
-#### `logger.py` - Logging Infrastructure
+#### `app.py` - Application Controller
 
-- **Purpose**: Centralized logging configuration and management
-- **Key Components**:
-  - `TkinterLogHandler`: Custom handler for GUI log display
-  - `ErrorListHandler`: Collects errors for summary generation
-  - `setup_logging()`: Configures multi-target logging
-  - `write_log_summary()`: Generates error summary reports
+- **Purpose**: High-level application controller
+- **Key Class**: `AppController`
+- **Base Class**: Inherits from `PowerPointMerger`
+- **Responsibilities**:
+  - Provide application-specific functionality
+  - Can be extended without modifying core logic
+- **Usage**: Used by GUI to manage merge operations
+
+#### `app_logger.py` - Logging Configuration
+
+- **Purpose**: Centralized logging setup
+- **Key Function**: `setup_logging()`
 - **Features**:
-  - GUI text widget logging
-  - File logging with timestamps
-  - Error collection and categorization
-  - Automatic log file management
+  - Creates logs directory automatically
+  - Configures file and console handlers
+  - INFO level and above
+  - Structured log format
+- **Returns**: Configured root logger
 
 ### 3. Presentation Layer
 
-#### `gui.py` - User Interface Components
+#### `gui.py` - User Interface
 
-- **Purpose**: All GUI windows and user interactions
-- **Window Functions**:
-  - `show_number_of_files_window()`: Step 1 - Number input
-  - `show_file_selection_window()`: Step 2 - File selection
-  - `show_filename_window()`: Step 3 - Output filename
-  - `show_reorder_window()`: Step 4 - File ordering
+- **Purpose**: PySide6-based graphical user interface
+- **Framework**: PySide6 (Qt for Python)
+- **Key Class**: `MainWindow`
 - **Features**:
-  - Modal window progression
-  - Input validation and error handling
+  - File list management
+  - Add/Remove/Clear operations
+  - File reordering (Move Up/Down)
+  - Merge with progress tracking
+  - Input validation
+- **Components**:
+  - QListWidget for file display
+  - QPushButtons for actions
+  - QProgressBar for merge progress
+  - QFileDialog for file selection
   - File dialog integration
   - Move Up/Down file reordering
   - Keyboard shortcuts (Enter key support)
@@ -136,111 +170,165 @@ run_with_logging.py
 
 #### `powerpoint_core.py` - PowerPoint Operations
 
-- **Purpose**: COM automation for PowerPoint manipulation
-- **Key Functions**:
-  - `merge_presentations()`: Core merging logic using COM
-  - `launch_slideshow()`: Slideshow launching via COM
-- **COM Operations**:
-  - PowerPoint application instantiation
-  - Presentation creation and manipulation
-  - Slide copying and pasting
-  - File saving and cleanup
-- **Error Handling**:
-  - Comprehensive exception management
-  - Resource cleanup and COM object disposal
-  - Detailed error logging and reporting
+- **Purpose**: Core PowerPoint merging functionality
+- **Key Classes**:
+
+  **PowerPointError**
+  - Custom exception for PowerPoint-related errors
+  - Used throughout the module for error handling
+
+  **PowerPointCore**
+  - Low-level COM automation for PowerPoint
+  - Handles PowerPoint instance management
+  - Methods:
+    - `__init__()`: Initialize COM automation
+    - `merge_presentations()`: Merge files using COM
+  - Platform: Windows only (COM requirement)
+  - COM Operations:
+    - PowerPoint application connection/creation
+    - Presentation manipulation
+    - Slide insertion from files
+    - File saving and cleanup
+
+  **PowerPointMerger**
+  - High-level file management and merging
+  - Methods:
+    - `add_files()`: Add files to merge list
+    - `remove_file()`, `remove_files()`: Remove files
+    - `clear_files()`: Clear all files
+    - `move_file_up()`, `move_file_down()`: Reorder files
+    - `get_files()`: Get current file list
+    - `merge()`: High-level merge with progress callback
+  - Used by GUI and application controller
 
 ## Application Workflow
 
-### Sequential Process Flow
+### GUI Workflow
 
 ```text
 1. Application Startup
-   ├── Entry point selection (main.py or run_with_logging.py)
-   ├── Logging configuration (if using run_with_logging.py)
-   └── PowerPointMergerApp instantiation
+   ├── Launch via CLI (merge-powerpoint) or script (python main.py)
+   ├── Initialize logging
+   ├── Create QApplication
+   └── Show MainWindow
 
-2. Step 1: Number of Files
-   ├── User inputs expected file count
-   ├── Input validation (positive integer)
-   └── State update: num_files
+2. File Management
+   ├── User clicks "Add Files"
+   ├── QFileDialog shows file selection
+   ├── Files added to PowerPointMerger
+   └── GUI updates file list
 
-3. Step 2: File Selection
-   ├── File dialog for .pptx selection
-   ├── File existence and type validation
-   └── State update: selected_files
+3. File Reordering (Optional)
+   ├── User selects file in list
+   ├── Clicks "Move Up" or "Move Down"
+   ├── PowerPointMerger reorders files
+   └── GUI refreshes display
 
-4. Step 3: Output Filename
-   ├── User inputs filename
-   ├── Automatic .pptx extension addition
-   └── State update: output_filename
+4. Merge Operation
+   ├── User clicks "Merge Files"
+   ├── Validation: At least 2 files required
+   ├── QFileDialog for output path
+   ├── PowerPointMerger.merge() called
+   ├── Progress bar updates via callback
+   └── Success/Error message shown
 
-5. Step 4: File Ordering
-   ├── Display selected files
-   ├── Move Up/Down reordering
-   └── State update: file_order
+5. Application Exit
+   └── User closes main window
 
-6. Merge and Launch
-   ├── COM PowerPoint automation
-   ├── Sequential slide copying
-   ├── File saving
-   └── Slideshow launch
 ```
 
-### State Management Pattern
+### Package Installation Workflow
 
-The application uses a **centralized state pattern** where the `PowerPointMergerApp` class maintains all workflow state. Each GUI window communicates back to the application through callback functions, ensuring unidirectional data flow and preventing state inconsistencies.
+```text
+1. Installation
+   ├── pip install . (or pip install -e . for development)
+   ├── setuptools builds package from pyproject.toml
+   ├── Dependencies installed (PySide6, pywin32, comtypes)
+   └── CLI entry point registered: merge-powerpoint
+
+2. CLI Execution
+   ├── User runs: merge-powerpoint
+   ├── Python executes: merge_powerpoint.__main__:main()
+   ├── Application launches
+   └── GUI appears
+
+3. Module Execution
+   ├── User runs: python -m merge_powerpoint
+   ├── Python executes: src/merge_powerpoint/__main__.py
+   └── Same as CLI execution
+```
 
 ## Technical Implementation Details
 
 ### COM Automation Architecture
 
 ```python
-# PowerPoint COM Integration Pattern
-PowerPoint = win32com.client.Dispatch("PowerPoint.Application")
-PowerPoint.Visible = True
+# PowerPoint COM Integration Pattern (using comtypes)
+import comtypes.client
 
-# Destination presentation creation
-destination = PowerPoint.Presentations.Add()
+# Initialize COM
+comtypes.CoInitialize()
+powerpoint = comtypes.client.CreateObject("PowerPoint.Application")
+powerpoint.Visible = True
 
-# Source processing loop
-for source_file in file_order:
-    source = PowerPoint.Presentations.Open(source_file, ReadOnly=True)
-    source.Slides.Range().Copy()    # Copy all slides at once
-    destination.Slides.Paste()      # Paste with full fidelity
-    source.Close()
+# Create destination presentation
+base_presentation = powerpoint.Presentations.Add()
 
-# Save and launch
-destination.SaveAs(output_path)
-destination.SlideShowSettings.Run()
+# Insert slides from each file
+for file_path in file_paths:
+    abs_path = os.path.abspath(file_path)
+    slide_count = base_presentation.Slides.Count
+    # InsertFromFile inserts slides after the specified index
+    base_presentation.Slides.InsertFromFile(abs_path, slide_count)
+
+# Save the merged presentation
+base_presentation.SaveAs(output_path)
+base_presentation.Close()
+
+# Cleanup
+comtypes.CoUninitialize()
 ```
 
 ### Logging Architecture
 
 ```text
-Root Logger
-├── TkinterLogHandler → GUI Text Widget (real-time display)
-├── FileHandler → merge_powerpoint.log (persistent storage)
-└── ErrorListHandler → error_list (summary generation)
+Root Logger (configured by app_logger.setup_logging())
+├── FileHandler → logs/app.log (persistent storage)
+└── StreamHandler → Console (real-time display)
 ```
 
 ### Error Handling Strategy
 
-- **Input Validation**: Immediate feedback at each step
-- **File Validation**: Existence and type checking
-- **COM Exception Handling**: Graceful degradation with cleanup
-- **Resource Management**: Proper COM object disposal
-- **User Feedback**: Clear error messages via messageboxes
-- **Logging Integration**: All errors logged with context
+- **Input Validation**: File existence and type checking
+- **COM Exception Handling**: Platform-specific error handling
+- **Resource Management**: Proper COM cleanup with __del__
+- **User Feedback**: Clear error messages via QMessageBox
+- **Logging Integration**: All errors logged with stack traces
+- **Custom Exceptions**: PowerPointError for domain-specific errors
 
 ## External Dependencies
 
 ### Required Dependencies
 
-| Package | Purpose | Usage |
-|---------|---------|-------|
-| `pywin32` | COM automation | PowerPoint integration |
-| `tkinter` | GUI framework | All user interface components |
+| Package | Version | Purpose | Usage |
+|---------|---------|---------|-------|
+| `PySide6` | >=6.7 | GUI framework | All user interface components |
+| `pywin32` | >=311 | COM automation (optional) | Alternative to comtypes |
+| `comtypes` | >=1.2.0 | COM automation | PowerPoint integration |
+
+### Optional Dependencies (Development)
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `pytest` | >=8.0.0 | Testing framework |
+| `pytest-qt` | >=4.2.0 | Qt/PySide6 testing support |
+| `pytest-cov` | >=4.1.0 | Code coverage |
+| `pytest-mock` | >=3.12.0 | Mocking support |
+| `black` | >=24.0.0 | Code formatting |
+| `ruff` | >=0.1.0 | Fast linting |
+| `flake8` | >=7.0.0 | Legacy linting |
+| `pylint` | >=3.0.0 | Static analysis |
+| `mypy` | >=1.8.0 | Type checking |
 
 ### Standard Library Dependencies
 
@@ -248,15 +336,15 @@ Root Logger
 |--------|---------|
 | `logging` | Application logging |
 | `os` | File system operations |
-| `threading` | Background execution |
-| `sys` | System integration |
+| `sys` | System integration and path manipulation |
+| `pathlib` | Modern path handling |
 
 ## Platform Requirements
 
 ### System Requirements
 
 - **Operating System**: Windows (COM automation requirement)
-- **Python Version**: 3.6 or higher
+- **Python Version**: 3.8 or higher (3.12 recommended)
 - **Microsoft PowerPoint**: Must be installed and licensed
 - **Memory**: Minimal (GUI-based application)
 - **Storage**: Minimal footprint
@@ -377,3 +465,63 @@ Root Logger
 - Error summary generation
 - Detailed exception logging
 - File validation reporting
+
+## Modern Package Structure Benefits
+
+### Why src Layout?
+
+The refactored codebase uses the **src layout** pattern, which provides several advantages:
+
+1. **Import Isolation**: Prevents accidentally importing from the source directory during development
+2. **Clear Separation**: Distinguishes source code from tests, docs, and configuration
+3. **Installation Testing**: Forces testing against installed package, not source directory
+4. **Best Practice**: Follows modern Python packaging standards (PEP 518, PEP 621)
+
+### Backward Compatibility
+
+The refactoring maintains backward compatibility through:
+
+- **Compatibility Shims**: Root-level modules import from `src/merge_powerpoint/`
+- **Test Compatibility**: Existing tests work without modification
+- **Legacy Entry Points**: `main.py` and `run_with_logging.py` continue to work
+- **Gradual Migration**: Old import patterns continue to function
+
+### Code Quality Improvements
+
+- **Black Formatting**: All code formatted to PEP 8 standards (100 char line length)
+- **Ruff Linting**: Fast, comprehensive linting with zero violations
+- **Comprehensive Docstrings**: PEP 257 compliant documentation for all modules/classes/functions
+- **Type Hints Ready**: Structure supports future type annotation addition
+
+### Installation Methods
+
+**Development Installation:**
+```bash
+pip install -e .
+```
+
+**Production Installation:**
+```bash
+pip install .
+```
+
+**Development with Tools:**
+```bash
+pip install -e ".[dev]"
+```
+
+### CLI Access
+
+After installation, the package provides multiple entry points:
+
+```bash
+# Primary CLI command (recommended)
+merge-powerpoint
+
+# Module execution
+python -m merge_powerpoint
+
+# Legacy script execution
+python main.py
+python run_with_logging.py
+```

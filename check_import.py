@@ -6,13 +6,13 @@ the interpreter's module search path (sys.path).
 This version has been corrected to use the proper module name, 'pytestqt'.
 """
 
-import sys
 import pprint
+import sys
 
 # Correct module name based on successful user testing
 MODULE_NAME_TO_CHECK = "pytestqt"
 
-print(f"--- Checking Python Environment ---")
+print("--- Checking Python Environment ---")
 print(f"Python Executable: {sys.executable}")
 print("-" * 30)
 
@@ -37,4 +37,3 @@ except Exception as e:
     print(f"An unexpected error occurred: {e}")
 
 print("-" * 30)
-
