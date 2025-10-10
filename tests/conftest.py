@@ -1,8 +1,15 @@
 """
 This file contains shared fixtures and configuration for the test suite.
 """
-import pytest
+import sys
 from unittest.mock import MagicMock
+
+# Mock comtypes for non-Windows platforms before any imports
+if sys.platform != 'win32':
+    sys.modules['comtypes'] = MagicMock()
+    sys.modules['comtypes.client'] = MagicMock()
+
+import pytest
 
 from merge_powerpoint.app import AppController
 from merge_powerpoint.gui import MainWindow
@@ -23,14 +30,11 @@ def app_controller(qapp):
 @pytest.fixture
 def main_window(qtbot):
     """
-    Creates and returns an instance of the MainWindow with a mocked controller.
+    Creates and returns an instance of the MainWindow.
     This fixture is used for testing the GUI in isolation.
     """
-    # Create a mock controller to isolate the GUI from the app logic
-    mock_controller = MagicMock(spec=AppController)
-
-    # Pass the mock_controller directly into the constructor
-    window = MainWindow(controller=mock_controller)
+    # MainWindow no longer takes a controller argument - it creates its own PowerPointMerger
+    window = MainWindow()
 
     # Register the widget with qtbot for interaction and garbage collection
     qtbot.addWidget(window)
