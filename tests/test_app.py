@@ -1,5 +1,5 @@
+
 import pytest
-from unittest.mock import MagicMock
 
 # Import from the package
 from merge_powerpoint.app import AppController
@@ -31,7 +31,7 @@ def test_add_files(app_controller):
     """
     files = ['file1.pptx', 'file2.pptx']
     app_controller.add_files(files)
-    
+
     assert app_controller.get_files() == ['file1.pptx', 'file2.pptx']
 
 
@@ -41,7 +41,7 @@ def test_add_files_with_duplicates(app_controller):
     """
     app_controller.add_files(['file1.pptx', 'file2.pptx'])
     app_controller.add_files(['file1.pptx', 'file3.pptx'])
-    
+
     # file1.pptx should not be duplicated
     assert app_controller.get_files() == ['file1.pptx', 'file2.pptx', 'file3.pptx']
 
@@ -52,7 +52,7 @@ def test_remove_file(app_controller):
     """
     app_controller.add_files(['file1.pptx', 'file2.pptx'])
     app_controller.remove_file('file1.pptx')
-    
+
     assert app_controller.get_files() == ['file2.pptx']
 
 
@@ -62,7 +62,7 @@ def test_remove_files(app_controller):
     """
     app_controller.add_files(['file1.pptx', 'file2.pptx', 'file3.pptx'])
     app_controller.remove_files(['file1.pptx', 'file3.pptx'])
-    
+
     assert app_controller.get_files() == ['file2.pptx']
 
 
@@ -72,7 +72,7 @@ def test_clear_files(app_controller):
     """
     app_controller.add_files(['file1.pptx', 'file2.pptx'])
     app_controller.clear_files()
-    
+
     assert app_controller.get_files() == []
 
 
@@ -82,7 +82,7 @@ def test_move_file_up(app_controller):
     """
     app_controller.add_files(['file1.pptx', 'file2.pptx', 'file3.pptx'])
     result = app_controller.move_file_up(2)
-    
+
     assert result is True
     assert app_controller.get_files() == ['file1.pptx', 'file3.pptx', 'file2.pptx']
 
@@ -93,6 +93,6 @@ def test_move_file_down(app_controller):
     """
     app_controller.add_files(['file1.pptx', 'file2.pptx', 'file3.pptx'])
     result = app_controller.move_file_down(0)
-    
+
     assert result is True
     assert app_controller.get_files() == ['file2.pptx', 'file1.pptx', 'file3.pptx']

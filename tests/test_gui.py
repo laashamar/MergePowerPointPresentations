@@ -1,4 +1,3 @@
-import pytest
 from PySide6.QtCore import Qt
 
 
@@ -26,7 +25,7 @@ def test_update_file_list(main_window):
     main_window.merger.add_files(files)
     # Update the GUI to reflect the changes
     main_window.update_file_list()
-    
+
     assert main_window.file_list_widget.count() == 2
     assert main_window.file_list_widget.item(0).text() == "C:/path/one.pptx"
     assert main_window.file_list_widget.item(1).text() == "C:/path/two.pptx"
@@ -39,7 +38,7 @@ def test_update_progress(main_window):
     """
     main_window.update_progress(1, 2)
     assert main_window.progress_bar.value() == 50
-    
+
     main_window.update_progress(2, 4)
     assert main_window.progress_bar.value() == 50
 
@@ -67,7 +66,7 @@ def test_remove_button_click(main_window, qtbot, mocker):
     main_window.file_list_widget.setCurrentItem(item)
     # Force update button states
     main_window.update_button_states()
-    
+
     # Mock the remove_selected_files method
     mocker.patch.object(main_window, 'remove_selected_files')
     qtbot.mouseClick(main_window.remove_button, Qt.LeftButton)
@@ -81,7 +80,7 @@ def test_merge_button_click(main_window, qtbot, mocker):
     # Add at least 2 files to enable the merge button
     main_window.merger.add_files(['file1.pptx', 'file2.pptx'])
     main_window.update_file_list()
-    
+
     # Mock the merge_files method
     mocker.patch.object(main_window, 'merge_files')
     qtbot.mouseClick(main_window.merge_button, Qt.LeftButton)
