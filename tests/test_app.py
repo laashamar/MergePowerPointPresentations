@@ -5,6 +5,13 @@ from unittest.mock import MagicMock, patch
 from merge_powerpoint.app import AppController
 from merge_powerpoint.gui import MainWindow
 
+
+@pytest.fixture
+def app_controller():
+    """Returns a clean AppController instance for each test."""
+    return AppController()
+
+
 def test_app_controller_initialization(qapp):
     """
     Test that the AppController initializes correctly.
@@ -70,10 +77,9 @@ def test_remove_selected_file_without_selection(app_controller):
     assert app_controller.files_to_merge == ['file1.pptx']
     app_controller.main_window.update_file_list.assert_not_called()
 
-# MODIFIED: Patch the correct import path for merge_presentations.
-# It is imported in 'app.py', so we patch it there.
+# MODIFIED: Patch the PowerPointMerger.merge method instead of merge_presentations function
 @patch('PySide6.QtWidgets.QFileDialog.getSaveFileName')
-@patch('merge_powerpoint.app.merge_presentations')
+@patch('merge_powerpoint.app.PowerPointMerger.merge')
 def test_merge_files_success(mock_merge, mock_save_file, app_controller):
     """
     Test the successful merge process.
@@ -104,9 +110,9 @@ def test_merge_files_insufficient_files(mock_save_file, app_controller):
     app_controller.main_window.show_message.assert_called_with("Error", "Please select at least two files to merge.")
     mock_save_file.assert_not_called()
 
-# MODIFIED: Patch the correct import path for merge_presentations.
+# MODIFIED: Patch the PowerPointMerger.merge method instead of merge_presentations function
 @patch('PySide6.QtWidgets.QFileDialog.getSaveFileName')
-@patch('merge_powerpoint.app.merge_presentations', side_effect=Exception("Test error"))
+@patch('merge_powerpoint.app.PowerPointMerger.merge', side_effect=Exception("Test error"))
 def test_merge_files_exception(mock_merge, mock_save_file, app_controller):
     """
     Test the merge process when an exception occurs.

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QFileDialog
 
 # MODIFIED: Use relative imports to refer to other modules in the package.
 from .gui import MainWindow
-from .powerpoint_core import merge_presentations
+from .powerpoint_core import PowerPointMerger
 
 class AppController(QObject):
     """
@@ -14,6 +14,7 @@ class AppController(QObject):
     def __init__(self):
         super().__init__()
         self.files_to_merge = []
+        self.merger = PowerPointMerger()  # Use PowerPointMerger instance
         self.main_window = MainWindow(self)  # Pass self (the controller) to the window
 
     def show_main_window(self):
@@ -72,7 +73,9 @@ _x000D_
             self.main_window.progress_bar.setVisible(True)
             self.main_window.progress_bar.setValue(0)
             try:
-                merge_presentations(self.files_to_merge, output_path, self.main_window.update_progress)
+                # Use the PowerPointMerger instance
+                self.merger.add_files(self.files_to_merge)
+                self.merger.merge(output_path, self.main_window.update_progress)
                 self.main_window.show_message("Success", f"Files merged successfully to:\n{output_path}")
                 logging.info(f"Merge successful. Output: {output_path}")
             except Exception as e:
