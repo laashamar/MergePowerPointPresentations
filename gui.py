@@ -1,167 +1,210 @@
 """
-GUI for the PowerPoint Merger application using PySide6.
+This module defines the main graphical user interface (GUI) for the PowerPoint Presentation Merger application.
+It uses the PySide6 framework to create a window where users can add, manage, and merge PowerPoint files.
+
+The MainWindow class is the central component of the GUI, providing the following features:
+- A list view to display the PowerPoint files selected for merging.
+- Buttons to add, remove, clear, and reorder the files.
+- A "Merge Files" button to initiate the merging process.
+- A progress bar to provide feedback during the merge operation.
+- Integration with the PowerPointMerger class from powerpoint_core.py to handle the backend logic.
+
+The GUI is designed to be intuitive and user-friendly, guiding the user through the process of merging presentations.
 """
+
 import sys
-from PySide6.QtCore import QSize, Qt, QUrl
-from PySide6.QtGui import QIcon, QDesktopServices
+from pathlib import Path
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget,
-    QListWidget, QHBoxLayout, QFileDialog, QMessageBox, QLabel,
-    QLineEdit, QAbstractItemView
+    QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
+    QPushButton, QListWidget, QFileDialog, QMessageBox, QProgressBar,
+    QListWidgetItem
 )
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
+from powerpoint_core import PowerPointMerger
+from app_logger import setup_logging  # Corrected import
 
-from app import AppController
-
+# Set up logging
+logger = setup_logging()  # Corrected function call
 
 class MainWindow(QMainWindow):
-    """Main application window for the PowerPoint Merger."""
-
-    def __init__(self, controller: AppController):
-        """
-        Initialize the main window.
-
-        :param controller: The application controller instance.
-        """
-        super().__init__()
-        self.merger = controller
+    """Main window for the PowerPoint Merger application."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setWindowTitle("PowerPoint Presentation Merger")
-        self.setMinimumSize(QSize(400, 300))
-        self.setWindowIcon(QIcon("resources/MergePowerPoint.ico"))
+        self.setGeometry(100, 100, 800, 600)
+        
+        # Set the application icon
+        # This path is relative to the execution directory
+        icon_path = Path("resources/MergePowerPoint.ico")
+        if icon_path.exists():
+            self.setWindowIcon(QIcon(str(icon_path)))
 
-        # --- Widgets ---
-        self.list_widget = QListWidget()
-        self.list_widget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.merger = PowerPointMerger()
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        self.layout = QVBoxLayout(self.central_widget)
+
+        self._setup_ui()
+
+    def _setup_ui(self):
+        """Set up the UI components."""
+        # File list display
+        self.file_list_widget = QListWidget()
+        self.file_list_widget.setSelectionMode(QListWidget.ExtendedSelection)
+        self.layout.addWidget(self.file_list_widget)
+
+        # Button layout
+        button_layout = QHBoxLayout()
 
         self.add_button = QPushButton("&Add Files")
-        self.remove_button = QPushButton("Remove")
-        self.move_up_button = QPushButton("Move Up")
-        self.move_down_button = QPushButton("Move Down")
-        self.merge_button = QPushButton("Merge")
-        self.help_button = QPushButton("Help")
-
-        self.output_path_line_edit = QLineEdit()
-        self.output_path_line_edit.setPlaceholderText("Select output file path...")
-        self.output_button = QPushButton("Browse")
-
-        # --- Layouts ---
-        central_widget = QWidget()
-        main_layout = QVBoxLayout(central_widget)
-
-        file_buttons_layout = QHBoxLayout()
-        file_buttons_layout.addWidget(self.add_button)
-        file_buttons_layout.addWidget(self.remove_button)
-        file_buttons_layout.addStretch()
-        file_buttons_layout.addWidget(self.move_up_button)
-        file_buttons_layout.addWidget(self.move_down_button)
-
-        output_layout = QHBoxLayout()
-        output_layout.addWidget(QLabel("Output File:"))
-        output_layout.addWidget(self.output_path_line_edit)
-        output_layout.addWidget(self.output_button)
-
-        action_buttons_layout = QHBoxLayout()
-        action_buttons_layout.addWidget(self.help_button)
-        action_buttons_layout.addStretch()
-        action_buttons_layout.addWidget(self.merge_button)
-
-        main_layout.addLayout(file_buttons_layout)
-        main_layout.addWidget(self.list_widget)
-        main_layout.addLayout(output_layout)
-        main_layout.addLayout(action_buttons_layout)
-
-        self.setCentralWidget(central_widget)
-
-        # --- Connections ---
         self.add_button.clicked.connect(self.add_files)
-        self.remove_button.clicked.connect(self.remove_files)
-        self.move_up_button.clicked.connect(self.move_up)
-        self.move_down_button.clicked.connect(self.move_down)
+        button_layout.addWidget(self.add_button)
+
+        self.remove_button = QPushButton("&Remove Selected")
+        self.remove_button.clicked.connect(self.remove_selected_files)
+        button_layout.addWidget(self.remove_button)
+        
+        self.clear_button = QPushButton("&Clear All")
+        self.clear_button.clicked.connect(self.clear_all_files)
+        button_layout.addWidget(self.clear_button)
+
+        # Spacer to push reordering buttons to the right
+        button_layout.addStretch()
+        
+        self.move_up_button = QPushButton("Move &Up")
+        self.move_up_button.clicked.connect(self.move_file_up)
+        button_layout.addWidget(self.move_up_button)
+
+        self.move_down_button = QPushButton("Move &Down")
+        self.move_down_button.clicked.connect(self.move_file_down)
+        button_layout.addWidget(self.move_down_button)
+
+        self.layout.addLayout(button_layout)
+
+        # Merge button and progress bar
+        self.merge_button = QPushButton("&Merge Files")
         self.merge_button.clicked.connect(self.merge_files)
-        self.output_button.clicked.connect(self.select_output_file)
-        self.help_button.clicked.connect(self.show_help)
+        self.layout.addWidget(self.merge_button)
 
-    def update_file_list(self):
-        """Updates the list widget with the current list of files."""
-        self.list_widget.clear()
-        self.list_widget.addItems(self.merger.get_files())
-
-    def update_progress(self, current_step, total_steps):
-        """
-        Placeholder for updating a progress bar.
-        This will be implemented with the status bar feature.
-        """
-        # TODO: Implement progress bar logic here
-        pass
-
-    def select_output_file(self):
-        """Opens a dialog to select the output file path."""
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Merged File", "", "PowerPoint Presentations (*.pptx)"
-        )
-        if file_path:
-            self.output_path_line_edit.setText(file_path)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setVisible(False)
+        self.layout.addWidget(self.progress_bar)
+        
+        self.update_button_states()
 
     def add_files(self):
-        """Opens a dialog to add files and updates the list."""
+        """Open a dialog to add PowerPoint files."""
         files, _ = QFileDialog.getOpenFileNames(
-            self, "Add PowerPoint Files", "", "PowerPoint Presentations (*.pptx *.ppt)"
+            self, "Select PowerPoint Files", "", "PowerPoint Presentations (*.pptx)"
         )
         if files:
             self.merger.add_files(files)
             self.update_file_list()
+            logger.info("Added files: %s", files)
 
-    def remove_files(self):
-        """Removes the selected file from the list."""
-        selected_items = self.list_widget.selectedItems()
+    def remove_selected_files(self):
+        """Remove the selected files from the list."""
+        selected_items = self.file_list_widget.selectedItems()
         if not selected_items:
             return
-        for item in selected_items:
-            self.merger.remove_file(item.text())
+        
+        files_to_remove = [item.text() for item in selected_items]
+        self.merger.remove_files(files_to_remove)
         self.update_file_list()
+        logger.info("Removed files: %s", files_to_remove)
 
-    def move_up(self):
-        """Moves the selected file up in the list."""
-        current_row = self.list_widget.currentRow()
-        if current_row > 0:
-            self.merger.move_file_up(current_row)
-            self.update_file_list()
-            self.list_widget.setCurrentRow(current_row - 1)
+    def clear_all_files(self):
+        """Clear all files from the list."""
+        self.merger.clear_files()
+        self.update_file_list()
+        logger.info("Cleared all files.")
 
-    def move_down(self):
-        """Moves the selected file down in the list."""
-        current_row = self.list_widget.currentRow()
-        if 0 <= current_row < self.list_widget.count() - 1:
-            self.merger.move_file_down(current_row)
-            self.update_file_list()
-            self.list_widget.setCurrentRow(current_row + 1)
+    def update_file_list(self):
+        """Update the file list widget with the current list of files."""
+        self.file_list_widget.clear()
+        for file in self.merger.get_files():
+            self.file_list_widget.addItem(QListWidgetItem(file))
+        self.update_button_states()
 
     def merge_files(self):
-        """Initiates the file merging process."""
-        output_path = self.output_path_line_edit.text()
-        if not output_path:
-            QMessageBox.warning(self, "Output Path Missing", "Please specify an output file path.")
+        """Initiate the file merging process."""
+        if len(self.merger.get_files()) < 2:
+            QMessageBox.warning(self, "Not enough files", "Please add at least two files to merge.")
             return
 
-        if not self.merger.get_files():
-            QMessageBox.warning(self, "No files", "Please add files to merge.")
+        output_path, _ = QFileDialog.getSaveFileName(
+            self, "Save Merged File", "", "PowerPoint Presentation (*.pptx)"
+        )
+        if output_path:
+            self.progress_bar.setVisible(True)
+            self.progress_bar.setValue(0)
+            try:
+                self.merger.merge(output_path, self.update_progress)
+                QMessageBox.information(self, "Success", f"Successfully merged files to {output_path}")
+                logger.info("Successfully merged files to %s", output_path)
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"An error occurred during merging: {e}")
+                logger.error("Merging failed: %s", e, exc_info=True)
+            finally:
+                self.progress_bar.setVisible(False)
+                
+    def move_file_up(self):
+        """Move the selected file up in the list."""
+        selected_items = self.file_list_widget.selectedItems()
+        if not selected_items or len(selected_items) > 1:
+            return # Only move one item at a time
+        
+        current_index = self.file_list_widget.row(selected_items[0])
+        if self.merger.move_file_up(current_index):
+            self.update_file_list()
+            self.file_list_widget.setCurrentRow(current_index - 1)
+            logger.info("Moved file up: %s", selected_items[0].text())
+            
+    def move_file_down(self):
+        """Move the selected file down in the list."""
+        selected_items = self.file_list_widget.selectedItems()
+        if not selected_items or len(selected_items) > 1:
             return
+            
+        current_index = self.file_list_widget.row(selected_items[0])
+        if self.merger.move_file_down(current_index):
+            self.update_file_list()
+            self.file_list_widget.setCurrentRow(current_index + 1)
+            logger.info("Moved file down: %s", selected_items[0].text())
 
-        try:
-            self.merger.merge(output_path, self.update_progress)
-            QMessageBox.information(self, "Success", "Presentations merged successfully!")
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"An error occurred during merge: {e}")
-
-    def show_help(self):
-        """Opens the project's README file in a web browser."""
-        url = QUrl("https://github.com/laashamar/MergePowerPointPresentations/blob/main/README.md")
-        QDesktopServices.openUrl(url)
+    def update_progress(self, value):
+        """Update the progress bar."""
+        self.progress_bar.setValue(value)
+        QApplication.processEvents()
+        
+    def update_button_states(self):
+        """Enable or disable buttons based on the application state."""
+        has_files = len(self.merger.get_files()) > 0
+        has_selection = len(self.file_list_widget.selectedItems()) > 0
+        can_merge = len(self.merger.get_files()) >= 2
+        
+        self.remove_button.setEnabled(has_files and has_selection)
+        self.clear_button.setEnabled(has_files)
+        self.merge_button.setEnabled(can_merge)
+        
+        # Logic for move up/down buttons
+        can_move_up = False
+        can_move_down = False
+        if has_selection and len(self.file_list_widget.selectedItems()) == 1:
+            selected_index = self.file_list_widget.currentRow()
+            if selected_index > 0:
+                can_move_up = True
+            if selected_index < self.file_list_widget.count() - 1:
+                can_move_down = True
+        
+        self.move_up_button.setEnabled(can_move_up)
+        self.move_down_button.setEnabled(can_move_down)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    controller = AppController()
-    window = MainWindow(controller)
+    window = MainWindow()
     window.show()
     sys.exit(app.exec())
 
