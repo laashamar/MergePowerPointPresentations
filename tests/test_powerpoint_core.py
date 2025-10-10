@@ -1,7 +1,8 @@
 from unittest.mock import MagicMock
+
 import pytest
 
-from merge_powerpoint.powerpoint_core import PowerPointMerger, PowerPointError
+from merge_powerpoint.powerpoint_core import PowerPointError, PowerPointMerger
 
 
 @pytest.fixture

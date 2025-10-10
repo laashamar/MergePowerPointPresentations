@@ -1,9 +1,9 @@
-import pytest
-from unittest.mock import MagicMock, patch
 
-# MODIFIED: Import from the package
+import pytest
+
+# Import from the package
 from merge_powerpoint.app import AppController
-from merge_powerpoint.gui import MainWindow
+from merge_powerpoint.powerpoint_core import PowerPointMerger
 
 
 @pytest.fixture
@@ -12,133 +12,87 @@ def app_controller():
     return AppController()
 
 
-def test_app_controller_initialization(qapp):
+def test_app_controller_initialization():
     """
     Test that the AppController initializes correctly.
+    AppController inherits from PowerPointMerger and should have an empty file list.
     """
     controller = AppController()
-    assert controller.files_to_merge == []
-    assert isinstance(controller.main_window, MainWindow)
-    # Test that the main_window's controller is the one we just created
-    assert controller.main_window.controller == controller
+    # AppController inherits from PowerPointMerger, so it has get_files() method
+    assert controller.get_files() == []
+    # Verify it's an instance of both AppController and PowerPointMerger
+    assert isinstance(controller, AppController)
+    assert isinstance(controller, PowerPointMerger)
 
 
-@patch('PySide6.QtWidgets.QFileDialog.getOpenFileNames')
-def test_add_files_selected(mock_get_open_files, app_controller):
+def test_add_files(app_controller):
     """
-    Test adding files when the user selects files in the dialog.
+    Test adding files using the add_files method from PowerPointMerger.
     """
-    mock_get_open_files.return_value = (['file1.pptx', 'file2.pptx'], None)
-    app_controller.main_window.update_file_list = MagicMock()
+    files = ['file1.pptx', 'file2.pptx']
+    app_controller.add_files(files)
 
-    app_controller.add_files()
-
-    assert app_controller.files_to_merge == ['file1.pptx', 'file2.pptx']
-    app_controller.main_window.update_file_list.assert_called_once_with(
-        ['file1.pptx', 'file2.pptx'])
+    assert app_controller.get_files() == ['file1.pptx', 'file2.pptx']
 
 
-@patch('PySide6.QtWidgets.QFileDialog.getOpenFileNames')
-def test_add_files_cancelled(mock_get_open_files, app_controller):
+def test_add_files_with_duplicates(app_controller):
     """
-    Test adding files when the user cancels the dialog.
+    Test that duplicate files are not added.
     """
-    mock_get_open_files.return_value = ([], None)
-    app_controller.main_window.update_file_list = MagicMock()
+    app_controller.add_files(['file1.pptx', 'file2.pptx'])
+    app_controller.add_files(['file1.pptx', 'file3.pptx'])
 
-    app_controller.add_files()
-
-    assert app_controller.files_to_merge == []
-    app_controller.main_window.update_file_list.assert_not_called()
+    # file1.pptx should not be duplicated
+    assert app_controller.get_files() == ['file1.pptx', 'file2.pptx', 'file3.pptx']
 
 
-def test_remove_selected_file_with_selection(app_controller):
+def test_remove_file(app_controller):
     """
-    Test removing a file when one is selected in the list.
+    Test removing a file using the remove_file method from PowerPointMerger.
     """
-    app_controller.files_to_merge = ['file1.pptx', 'file2.pptx']
-    # Mock the list widget and its selectedItems method
-    mock_item = MagicMock()
-    mock_item.text.return_value = 'file1.pptx'
-    app_controller.main_window.file_list.selectedItems = MagicMock(return_value=[mock_item])
-    app_controller.main_window.update_file_list = MagicMock()
+    app_controller.add_files(['file1.pptx', 'file2.pptx'])
+    app_controller.remove_file('file1.pptx')
 
-    app_controller.remove_selected_file()
-
-    assert app_controller.files_to_merge == ['file2.pptx']
-    app_controller.main_window.update_file_list.assert_called_once_with(
-        ['file2.pptx'])
+    assert app_controller.get_files() == ['file2.pptx']
 
 
-def test_remove_selected_file_without_selection(app_controller):
+def test_remove_files(app_controller):
     """
-    Test removing a file when nothing is selected.
+    Test removing multiple files using the remove_files method.
     """
-    app_controller.files_to_merge = ['file1.pptx']
-    app_controller.main_window.file_list.selectedItems = MagicMock(return_value=[])
-    app_controller.main_window.update_file_list = MagicMock()
+    app_controller.add_files(['file1.pptx', 'file2.pptx', 'file3.pptx'])
+    app_controller.remove_files(['file1.pptx', 'file3.pptx'])
 
-    app_controller.remove_selected_file()
-
-    assert app_controller.files_to_merge == ['file1.pptx']
-    app_controller.main_window.update_file_list.assert_not_called()
+    assert app_controller.get_files() == ['file2.pptx']
 
 
-# MODIFIED: Patch the PowerPointMerger.merge method instead of
-# merge_presentations function
-@patch('PySide6.QtWidgets.QFileDialog.getSaveFileName')
-@patch('merge_powerpoint.app.PowerPointMerger.merge')
-def test_merge_files_success(mock_merge, mock_save_file, app_controller):
+def test_clear_files(app_controller):
     """
-    Test the successful merge process.
+    Test clearing all files using the clear_files method.
     """
-    app_controller.files_to_merge = ['file1.pptx', 'file2.pptx']
-    mock_save_file.return_value = ('output.pptx', None)
-    app_controller.main_window.show_message = MagicMock()
-    app_controller.main_window.progress_bar.setVisible = MagicMock()
-    app_controller.main_window.progress_bar.setValue = MagicMock()
+    app_controller.add_files(['file1.pptx', 'file2.pptx'])
+    app_controller.clear_files()
 
-    app_controller.merge_files()
-
-    mock_merge.assert_called_once()
-    app_controller.main_window.show_message.assert_called_with(
-        "Success", "Files merged successfully to:\noutput.pptx")
-    # Called once to show, once to hide
-    assert app_controller.main_window.progress_bar.setVisible.call_count == 2
+    assert app_controller.get_files() == []
 
 
-@patch('PySide6.QtWidgets.QFileDialog.getSaveFileName')
-def test_merge_files_insufficient_files(mock_save_file, app_controller):
+def test_move_file_up(app_controller):
     """
-    Test merging when fewer than two files are selected.
+    Test moving a file up in the list.
     """
-    app_controller.files_to_merge = ['file1.pptx']
-    app_controller.main_window.show_message = MagicMock()
+    app_controller.add_files(['file1.pptx', 'file2.pptx', 'file3.pptx'])
+    result = app_controller.move_file_up(2)
 
-    app_controller.merge_files()
-
-    app_controller.main_window.show_message.assert_called_with(
-        "Error", "Please select at least two files to merge.")
-    mock_save_file.assert_not_called()
+    assert result is True
+    assert app_controller.get_files() == ['file1.pptx', 'file3.pptx', 'file2.pptx']
 
 
-# MODIFIED: Patch the PowerPointMerger.merge method instead of
-# merge_presentations function
-@patch('PySide6.QtWidgets.QFileDialog.getSaveFileName')
-@patch('merge_powerpoint.app.PowerPointMerger.merge',
-       side_effect=Exception("Test error"))
-def test_merge_files_exception(mock_merge, mock_save_file, app_controller):
+def test_move_file_down(app_controller):
     """
-    Test the merge process when an exception occurs.
+    Test moving a file down in the list.
     """
-    app_controller.files_to_merge = ['file1.pptx', 'file2.pptx']
-    mock_save_file.return_value = ('output.pptx', None)
-    app_controller.main_window.show_message = MagicMock()
-    app_controller.main_window.progress_bar.setVisible = MagicMock()
+    app_controller.add_files(['file1.pptx', 'file2.pptx', 'file3.pptx'])
+    result = app_controller.move_file_down(0)
 
-    app_controller.merge_files()
-
-    mock_merge.assert_called_once()
-    app_controller.main_window.show_message.assert_called_with(
-        "Error", "An error occurred during merge: Test error")
-    assert app_controller.main_window.progress_bar.setVisible.call_count == 2
+    assert result is True
+    assert app_controller.get_files() == ['file2.pptx', 'file1.pptx', 'file3.pptx']
