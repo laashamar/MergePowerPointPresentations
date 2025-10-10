@@ -1,105 +1,108 @@
-# tests/test_powerpoint_core.py
-
-"""
-Tests for the PowerPoint core functionalities.
-"""
-
-import os
-import sys
+from unittest.mock import MagicMock
 import pytest
-from unittest.mock import MagicMock, patch, ANY
 
-# Import after conftest has set up mocks
-from powerpoint_core import PowerPointCore, PowerPointError
-import comtypes
-
-# Test data
-TEST_FILE_1 = "test1.pptx"
-TEST_FILE_2 = "test2.pptx"
-OUTPUT_FILE = "merged.pptx"
+from merge_powerpoint.powerpoint_core import PowerPointMerger, PowerPointError
 
 
 @pytest.fixture
-def mock_powerpoint_app():
-    """Fixture for a mocked PowerPoint application object."""
-    app = MagicMock()
-    app.Presentations.Add.return_value = MagicMock()
-    app.Presentations.Open.return_value = MagicMock()
-    return app
+def merger():
+    """Returns a clean PowerPointMerger instance for each test."""
+    return PowerPointMerger()
 
 
-@patch('powerpoint_core.comtypes.client')
-@patch('powerpoint_core.sys.platform', 'win32')
-def test_powerpoint_core_initialization_new_instance(mock_comtypes_client):
-    """Test that a new PowerPoint instance is created if none is running."""
-    mock_comtypes_client.GetActiveObject.side_effect = OSError
-    core = PowerPointCore()
-    mock_comtypes_client.CreateObject.assert_called_once_with("PowerPoint.Application")
-    assert core.powerpoint is not None
+def test_add_files(merger):
+    """
+    Test that files are added correctly and duplicates are ignored.
+    """
+    files = ['file1.pptx', 'file2.pptx']
+    merger.add_files(files)
+    assert merger.get_files() == ['file1.pptx', 'file2.pptx']
+
+    # Test duplicate handling - adding same files again
+    merger.add_files(['file1.pptx', 'file3.pptx'])
+    assert merger.get_files() == ['file1.pptx', 'file2.pptx', 'file3.pptx']
 
 
-@patch('powerpoint_core.comtypes.client')
-@patch('powerpoint_core.sys.platform', 'win32')
-def test_powerpoint_core_initialization_existing_instance(mock_comtypes_client):
-    """Test connection to an existing PowerPoint instance."""
-    mock_app = MagicMock()
-    mock_comtypes_client.GetActiveObject.return_value = mock_app
-    core = PowerPointCore()
-    assert core.powerpoint == mock_app
+def test_remove_file(merger):
+    """
+    Test that a file can be successfully removed from the list.
+    """
+    merger.add_files(['file1.pptx', 'file2.pptx', 'file3.pptx'])
+    merger.remove_file('file2.pptx')
+    assert merger.get_files() == ['file1.pptx', 'file3.pptx']
+
+    # Test removing non-existent file (should not raise error)
+    merger.remove_file('nonexistent.pptx')
+    assert merger.get_files() == ['file1.pptx', 'file3.pptx']
 
 
-@patch('powerpoint_core.comtypes.client')
-@patch('powerpoint_core.sys.platform', 'win32')
-def test_powerpoint_core_initialization_failure(mock_comtypes_client):
-    """Test that PowerPointError is raised if PowerPoint cannot be started."""
-    mock_comtypes_client.GetActiveObject.side_effect = OSError
-    mock_comtypes_client.CreateObject.side_effect = OSError
-    with pytest.raises(PowerPointError):
-        PowerPointCore()
+def test_move_file_up(merger):
+    """
+    Test moving a file up in the list.
+    """
+    merger.add_files(['file1.pptx', 'file2.pptx', 'file3.pptx'])
+    merger.move_file_up(2)  # Move file3 up
+    assert merger.get_files() == ['file1.pptx', 'file3.pptx', 'file2.pptx']
+
+    merger.move_file_up(1)  # Move file3 up again
+    assert merger.get_files() == ['file3.pptx', 'file1.pptx', 'file2.pptx']
+
+    # Test boundary - can't move first item up
+    merger.move_file_up(0)
+    assert merger.get_files() == ['file3.pptx', 'file1.pptx', 'file2.pptx']
 
 
-class TestMergePresentations:
-    """Tests for the merge_presentations method."""
+def test_move_file_down(merger):
+    """
+    Test moving a file down in the list.
+    """
+    merger.add_files(['file1.pptx', 'file2.pptx', 'file3.pptx'])
+    merger.move_file_down(0)  # Move file1 down
+    assert merger.get_files() == ['file2.pptx', 'file1.pptx', 'file3.pptx']
 
-    @patch('powerpoint_core.comtypes.client')
-    @patch('powerpoint_core.sys.platform', 'win32')
-    def test_merge_presentations_success(self, mock_comtypes_client, mock_powerpoint_app):
-        """Test successful merging of presentations."""
-        mock_comtypes_client.GetActiveObject.return_value = mock_powerpoint_app
-        core = PowerPointCore()
+    merger.move_file_down(1)  # Move file1 down again
+    assert merger.get_files() == ['file2.pptx', 'file3.pptx', 'file1.pptx']
 
-        with patch('os.path.exists', return_value=True):
-            core.merge_presentations([TEST_FILE_1, TEST_FILE_2], OUTPUT_FILE)
+    # Test boundary - can't move last item down
+    merger.move_file_down(2)
+    assert merger.get_files() == ['file2.pptx', 'file3.pptx', 'file1.pptx']
 
-        mock_powerpoint_app.Presentations.Add.assert_called_once()
-        base_presentation = mock_powerpoint_app.Presentations.Add.return_value
-        assert base_presentation.Slides.InsertFromFile.call_count == 2
-        # The output path will be converted to absolute path
-        base_presentation.SaveAs.assert_called_once()
-        base_presentation.Close.assert_called_once()
 
-    @patch('powerpoint_core.comtypes.client')
-    @patch('powerpoint_core.sys.platform', 'win32')
-    def test_merge_presentations_file_not_found(self, mock_comtypes_client, mock_powerpoint_app):
-        """Test that FileNotFoundError is raised for non-existent files."""
-        mock_comtypes_client.GetActiveObject.return_value = mock_powerpoint_app
-        core = PowerPointCore()
-        with pytest.raises(FileNotFoundError):
-            core.merge_presentations(["non_existent.pptx"], OUTPUT_FILE)
+def test_get_files(merger):
+    """
+    Test that the getter method returns the correct list of files.
+    """
+    assert merger.get_files() == []
 
-    @patch('powerpoint_core.comtypes.client')
-    @patch('powerpoint_core.sys.platform', 'win32')
-    def test_merge_presentations_handles_error(self, mock_comtypes_client):
-        """Test that PowerPointError is raised on COM errors during merge."""
-        # Set up mock PowerPoint app
-        mock_powerpoint_app = MagicMock()
-        mock_comtypes_client.GetActiveObject.return_value = mock_powerpoint_app
-        
-        # Create a mock COMError
-        mock_com_error = comtypes.COMError(-1, "Mock COM Error", "Mock description")
-        mock_powerpoint_app.Presentations.Add.return_value.Slides.InsertFromFile.side_effect = mock_com_error
+    files = ['file1.pptx', 'file2.pptx']
+    merger.add_files(files)
+    assert merger.get_files() == files
 
-        core = PowerPointCore()
-        with patch('os.path.exists', return_value=True):
-            with pytest.raises(PowerPointError):
-                core.merge_presentations([TEST_FILE_1], OUTPUT_FILE)
+
+def test_merge_with_no_files(merger):
+    """
+    Test that calling merge() with no files raises PowerPointError.
+    """
+    with pytest.raises(PowerPointError, match="No files to merge"):
+        merger.merge('output.pptx')
+
+
+def test_merge_success(merger):
+    """
+    Test successful merge with progress callback.
+    """
+    mock_callback = MagicMock()
+
+    files = ['file1.pptx', 'file2.pptx', 'file3.pptx']
+    merger.add_files(files)
+
+    result = merger.merge('output.pptx', progress_callback=mock_callback)
+
+    # Assert merge was successful
+    assert result is True
+
+    # Assert callback was called correct number of times (once per file)
+    assert mock_callback.call_count == 3
+    mock_callback.assert_any_call(1, 3)
+    mock_callback.assert_any_call(2, 3)
+    mock_callback.assert_any_call(3, 3)
