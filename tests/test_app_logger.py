@@ -5,31 +5,53 @@ Tests for the logging setup.
 """
 
 import logging
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import app_logger
 
 
-@patch('os.makedirs')
-@patch('os.path.exists')
-@patch('logging.basicConfig')
-def test_setup_logging_creates_directory(mock_basic_config, mock_exists,
-                                         mock_makedirs):
+@patch('app_logger.logging.FileHandler')
+@patch('app_logger.logging.StreamHandler')
+def test_setup_logging_creates_handlers(mock_stream_handler, mock_file_handler):
     """
-    Test that setup_logging creates the log directory if it doesn't exist.
+    Test that setup_logging creates FileHandler and StreamHandler.
     """
-    mock_exists.return_value = False
-    app_logger.setup_logging()
-    mock_makedirs.assert_called_once_with("logs")
+    # Store original handlers
+    root_logger = logging.getLogger()
+    original_handlers = root_logger.handlers.copy()
+    
+    try:
+        app_logger.setup_logging()
+        mock_file_handler.assert_called_once_with('app.log', 'w', 'utf-8')
+        mock_stream_handler.assert_called_once()
+    finally:
+        # Restore original handlers
+        root_logger.handlers = original_handlers
 
 
-@patch('os.path.exists', return_value=True)
-@patch('logging.basicConfig')
-def test_setup_logging_configures_correctly(mock_basic_config, mock_exists):
+@patch('app_logger.logging.FileHandler')
+@patch('app_logger.logging.StreamHandler')
+def test_setup_logging_configures_correctly(mock_stream_handler, mock_file_handler):
     """
-    Test that logging.basicConfig is called with the correct parameters.
+    Test that logging is configured with the correct levels.
     """
-    app_logger.setup_logging()
-    assert mock_basic_config.called
-    call_args = mock_basic_config.call_args
-    assert call_args[1]['level'] == logging.INFO  # logging.INFO
+    # Store original handlers
+    root_logger = logging.getLogger()
+    original_handlers = root_logger.handlers.copy()
+    
+    try:
+        # Create mock handlers
+        mock_file_handler_instance = MagicMock()
+        mock_stream_handler_instance = MagicMock()
+        mock_file_handler.return_value = mock_file_handler_instance
+        mock_stream_handler.return_value = mock_stream_handler_instance
+        
+        app_logger.setup_logging()
+        
+        # Verify file handler level is set to INFO
+        mock_file_handler_instance.setLevel.assert_called_once_with(logging.INFO)
+        # Verify stream handler level is set to DEBUG
+        mock_stream_handler_instance.setLevel.assert_called_once_with(logging.DEBUG)
+    finally:
+        # Restore original handlers
+        root_logger.handlers = original_handlers
 
