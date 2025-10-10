@@ -28,19 +28,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip --no-warn-script-location
-        pip install flake8 pylint black isort --no-warn-script-location
+        pip install ruff --no-warn-script-location
 
-    - name: Check code formatting with Black
-      run: black --check --line-length=100 *.py
+    - name: Check code with ruff
+      run: ruff check .
 
-    - name: Check import ordering with isort
-      run: isort --check-only --profile black *.py
-
-    - name: Lint with flake8
-      run: flake8 *.py --max-line-length=100 --statistics
-
-    - name: Lint with pylint
-      run: pylint *.py --max-line-length=100 || echo "Pylint completed with warnings"
+    - name: Check code formatting with ruff
+      run: ruff format --check
 
   test:
     name: Run Tests
@@ -114,14 +108,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip --no-warn-script-location
-        pip install flake8 --no-warn-script-location
+        pip install ruff --no-warn-script-location
 
-    - name: Check PEP8 compliance
-      run: |
-        # Check for PEP8 violations
-        flake8 *.py --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit with warning on other violations
-        flake8 *.py --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
+    - name: Check code quality with ruff
+      run: ruff check .
 
   # Alternative job using container to avoid host package manager
   lint-container:
@@ -138,10 +128,10 @@ jobs:
     - name: Install dependencies (pip only)
       run: |
         python -m pip install --upgrade pip --no-cache-dir
-        pip install flake8 pylint black isort --no-cache-dir
+        pip install ruff --no-cache-dir
 
-    - name: Check code formatting with Black
-      run: black --check --line-length=100 *.py
+    - name: Check code with ruff
+      run: ruff check .
 
-    - name: Lint with flake8
-      run: flake8 *.py --max-line-length=100 --statistics
+    - name: Check code formatting with ruff
+      run: ruff format --check
