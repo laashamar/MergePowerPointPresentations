@@ -1,8 +1,13 @@
 """
 This file contains shared fixtures and configuration for the test suite.
 """
+import os
 import sys
 from unittest.mock import MagicMock
+
+# Set Qt platform for headless testing on Linux/CI
+if sys.platform != 'win32' and 'DISPLAY' not in os.environ:
+    os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 
 # Mock comtypes for non-Windows platforms before any imports
 if sys.platform != 'win32':
