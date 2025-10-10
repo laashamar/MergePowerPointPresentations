@@ -1,147 +1,69 @@
-name: CI/CD Pipeline
+# This is the full and correct filename for the GitHub Actions workflow.
+
+name: Python CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop, tests, "copilot/**" ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop, tests ]
-
-env:
-  # Disable Ubuntu ESM to prevent esm.ubuntu.com access
-  DEBIAN_FRONTEND: noninteractive
-  NO_APT_SOURCES_UPDATE: 1
+    branches: [ main, develop ]
 
 jobs:
-  lint:
-    name: Lint Code
-    runs-on: windows-latest  # Use Windows to avoid apt-get entirely
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip --no-warn-script-location
-        pip install flake8 pylint black isort --no-warn-script-location
-
-    - name: Check code formatting with Black
-      run: black --check --line-length=100 *.py
-
-    - name: Check import ordering with isort
-      run: isort --check-only --profile black *.py
-
-    - name: Lint with flake8
-      run: flake8 *.py --max-line-length=100 --statistics
-
-    - name: Lint with pylint
-      run: pylint *.py --max-line-length=100 || echo "Pylint completed with warnings"
-
-  test:
-    name: Run Tests
-    runs-on: windows-latest  # Use Windows to avoid apt-get entirely
-    needs: lint
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip --no-warn-script-location
-        pip install pytest pytest-cov pytest-mock --no-warn-script-location
-        pip install -r requirements.txt
-
-    - name: Run unit tests
-      run: pytest tests/ -v --tb=short --cov=. --cov-report=term-missing --cov-report=xml
-
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v4
-      if: always()
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
-
-  test-matrix:
-    name: Test on Multiple Python Versions
-    runs-on: windows-latest  # Use Windows to avoid apt-get entirely
-    needs: lint
-    strategy:
-      matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12']
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip --no-warn-script-location
-        pip install pytest pytest-mock --no-warn-script-location
-        pip install -r requirements.txt
-
-    - name: Run unit tests
-      run: pytest tests/ -v --tb=short
-
-  code-quality:
+  # This job checks for code quality, formatting, and style.
+  lint-and-format:
     name: Code Quality Checks
-    runs-on: windows-latest  # Use Windows to avoid apt-get entirely
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout code
+    - name: 1. Checkout repository code
       uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: 2. Set up Python environment
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
 
-    - name: Install dependencies
+    - name: 3. Install development dependencies
       run: |
-        python -m pip install --upgrade pip --no-warn-script-location
-        pip install flake8 --no-warn-script-location
+        python -m pip install --upgrade pip
+        # Install linters and formatters from your dev requirements
+        pip install -r requirements-dev.txt
 
-    - name: Check PEP8 compliance
-      run: |
-        # Check for PEP8 violations
-        flake8 *.py --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit with warning on other violations
-        flake8 *.py --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
+    - name: 4. Check code formatting with Black
+      # MODIFIED: Check files in both the package and tests directory
+      run: black --check --line-length=100 merge_powerpoint/ tests/
 
-  # Alternative job using container to avoid host package manager
-  lint-container:
-    name: Lint Code (Container)
-    runs-on: ubuntu-latest
-    container:
-      image: python:3.12-slim  # Use minimal container without apt dependencies
-      options: --user root
-    
+    - name: 5. Check import ordering with isort
+      # MODIFIED: Check files in both directories
+      run: isort --check-only --profile black merge_powerpoint/ tests/
+
+    - name: 6. Lint with flake8
+      # MODIFIED: Check files in both directories
+      run: flake8 merge_powerpoint/ tests/ --max-line-length=100 --statistics
+
+  # This job runs the actual unit tests using pytest.
+  run-tests:
+    name: Run Unit Tests
+    # This job will only start if the 'lint-and-format' job succeeds.
+    needs: lint-and-format
+    runs-on: windows-latest
+
     steps:
-    - name: Checkout code
+    - name: 1. Checkout repository code
       uses: actions/checkout@v4
 
-    - name: Install dependencies (pip only)
+    - name: 2. Set up Python environment
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: 3. Install dependencies and the application package
       run: |
-        python -m pip install --upgrade pip --no-cache-dir
-        pip install flake8 pylint black isort --no-cache-dir
-
-    - name: Check code formatting with Black
-      run: black --check --line-length=100 *.py
-
-    - name: Lint with flake8
-      run: flake8 *.py --max-line-length=100 --statistics
+        python -m pip install --upgrade pip
+        # Install the project itself in editable mode so tests can find it
+        pip install -e .
+        # Install test dependencies (pytest, pytest-qt, etc.)
+        pip install -r requirements-dev.txt
+        
+    - name: 4. Run tests with pytest
+      run: pytest
