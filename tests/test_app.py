@@ -22,6 +22,7 @@ def test_app_controller_initialization(qapp):
     # Test that the main_window's controller is the one we just created
     assert controller.main_window.controller == controller
 
+
 @patch('PySide6.QtWidgets.QFileDialog.getOpenFileNames')
 def test_add_files_selected(mock_get_open_files, app_controller):
     """
@@ -33,7 +34,9 @@ def test_add_files_selected(mock_get_open_files, app_controller):
     app_controller.add_files()
 
     assert app_controller.files_to_merge == ['file1.pptx', 'file2.pptx']
-    app_controller.main_window.update_file_list.assert_called_once_with(['file1.pptx', 'file2.pptx'])
+    app_controller.main_window.update_file_list.assert_called_once_with(
+        ['file1.pptx', 'file2.pptx'])
+
 
 @patch('PySide6.QtWidgets.QFileDialog.getOpenFileNames')
 def test_add_files_cancelled(mock_get_open_files, app_controller):
@@ -47,6 +50,7 @@ def test_add_files_cancelled(mock_get_open_files, app_controller):
 
     assert app_controller.files_to_merge == []
     app_controller.main_window.update_file_list.assert_not_called()
+
 
 def test_remove_selected_file_with_selection(app_controller):
     """
@@ -62,7 +66,9 @@ def test_remove_selected_file_with_selection(app_controller):
     app_controller.remove_selected_file()
 
     assert app_controller.files_to_merge == ['file2.pptx']
-    app_controller.main_window.update_file_list.assert_called_once_with(['file2.pptx'])
+    app_controller.main_window.update_file_list.assert_called_once_with(
+        ['file2.pptx'])
+
 
 def test_remove_selected_file_without_selection(app_controller):
     """
@@ -77,7 +83,9 @@ def test_remove_selected_file_without_selection(app_controller):
     assert app_controller.files_to_merge == ['file1.pptx']
     app_controller.main_window.update_file_list.assert_not_called()
 
-# MODIFIED: Patch the PowerPointMerger.merge method instead of merge_presentations function
+
+# MODIFIED: Patch the PowerPointMerger.merge method instead of
+# merge_presentations function
 @patch('PySide6.QtWidgets.QFileDialog.getSaveFileName')
 @patch('merge_powerpoint.app.PowerPointMerger.merge')
 def test_merge_files_success(mock_merge, mock_save_file, app_controller):
@@ -93,9 +101,11 @@ def test_merge_files_success(mock_merge, mock_save_file, app_controller):
     app_controller.merge_files()
 
     mock_merge.assert_called_once()
-    app_controller.main_window.show_message.assert_called_with("Success", "Files merged successfully to:\noutput.pptx")
+    app_controller.main_window.show_message.assert_called_with(
+        "Success", "Files merged successfully to:\noutput.pptx")
     # Called once to show, once to hide
     assert app_controller.main_window.progress_bar.setVisible.call_count == 2
+
 
 @patch('PySide6.QtWidgets.QFileDialog.getSaveFileName')
 def test_merge_files_insufficient_files(mock_save_file, app_controller):
@@ -107,12 +117,16 @@ def test_merge_files_insufficient_files(mock_save_file, app_controller):
 
     app_controller.merge_files()
 
-    app_controller.main_window.show_message.assert_called_with("Error", "Please select at least two files to merge.")
+    app_controller.main_window.show_message.assert_called_with(
+        "Error", "Please select at least two files to merge.")
     mock_save_file.assert_not_called()
 
-# MODIFIED: Patch the PowerPointMerger.merge method instead of merge_presentations function
+
+# MODIFIED: Patch the PowerPointMerger.merge method instead of
+# merge_presentations function
 @patch('PySide6.QtWidgets.QFileDialog.getSaveFileName')
-@patch('merge_powerpoint.app.PowerPointMerger.merge', side_effect=Exception("Test error"))
+@patch('merge_powerpoint.app.PowerPointMerger.merge',
+       side_effect=Exception("Test error"))
 def test_merge_files_exception(mock_merge, mock_save_file, app_controller):
     """
     Test the merge process when an exception occurs.
@@ -125,6 +139,6 @@ def test_merge_files_exception(mock_merge, mock_save_file, app_controller):
     app_controller.merge_files()
 
     mock_merge.assert_called_once()
-    app_controller.main_window.show_message.assert_called_with("Error", "An error occurred during merge: Test error")
+    app_controller.main_window.show_message.assert_called_with(
+        "Error", "An error occurred during merge: Test error")
     assert app_controller.main_window.progress_bar.setVisible.call_count == 2
-

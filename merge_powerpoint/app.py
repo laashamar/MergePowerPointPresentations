@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QFileDialog
 from .gui import MainWindow
 from .powerpoint_core import PowerPointMerger
 
+
 class AppController(QObject):
     """
     The main controller for the application.
@@ -75,12 +76,16 @@ _x000D_
             try:
                 # Use the PowerPointMerger instance
                 self.merger.add_files(self.files_to_merge)
-                self.merger.merge(output_path, self.main_window.update_progress)
-                self.main_window.show_message("Success", f"Files merged successfully to:\n{output_path}")
+                self.merger.merge(output_path,
+                                  self.main_window.update_progress)
+                self.main_window.show_message(
+                    "Success",
+                    f"Files merged successfully to:\n{output_path}")
                 logging.info(f"Merge successful. Output: {output_path}")
             except Exception as e:
-                self.main_window.show_message("Error", f"An error occurred during merge: {e}")
-                logging.error(f"An exception occurred during merge: {e}", exc_info=True)
+                self.main_window.show_message(
+                    "Error", f"An error occurred during merge: {e}")
+                logging.error(
+                    f"An exception occurred during merge: {e}", exc_info=True)
             finally:
                 self.main_window.progress_bar.setVisible(False)
-
