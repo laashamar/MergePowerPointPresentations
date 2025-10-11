@@ -4,7 +4,11 @@
 
 ### Overview
 
-The PowerPoint Presentation Merger is a Python desktop application built with a **modern package structure** following the **src layout** pattern. It provides an intuitive GUI workflow for merging multiple PowerPoint presentations using COM automation for reliable slide copying, with comprehensive logging capabilities.
+The PowerPoint Presentation Merger is a Python desktop application built with a
+**modern package structure** following the **src layout** pattern. It provides
+an intuitive GUI workflow for merging multiple PowerPoint presentations using
+COM automation for reliable slide copying, with comprehensive logging
+capabilities.
 
 ### Design Principles
 
@@ -309,7 +313,7 @@ Root Logger (configured by app_logger.setup_logging())
 
 - **Input Validation**: File existence and type checking
 - **COM Exception Handling**: Platform-specific error handling
-- **Resource Management**: Proper COM cleanup with __del__
+- **Resource Management**: Proper COM cleanup with **\_\_del\_\_**
 - **User Feedback**: Clear error messages via QMessageBox
 - **Logging Integration**: All errors logged with stack traces
 - **Custom Exceptions**: PowerPointError for domain-specific errors
@@ -380,7 +384,8 @@ Root Logger (configured by app_logger.setup_logging())
 
 ### 2. Single-Window GUI Design
 
-**Decision**: Single main window with integrated controls instead of multiple modal windows
+**Decision**: Single main window with integrated controls instead of multiple
+modal windows
 
 **Rationale**:
 
@@ -484,9 +489,12 @@ Root Logger (configured by app_logger.setup_logging())
 
 The refactored codebase uses the **src layout** pattern, which provides several advantages:
 
-1. **Import Isolation**: Prevents accidentally importing from the source directory during development
-2. **Clear Separation**: Distinguishes source code from tests, docs, and configuration
-3. **Installation Testing**: Forces testing against installed package, not source directory
+1. **Import Isolation**: Prevents accidentally importing from the source
+   directory during development
+2. **Clear Separation**: Distinguishes source code from tests, docs, and
+   configuration
+3. **Installation Testing**: Forces testing against installed package, not
+   source directory
 4. **Best Practice**: Follows modern Python packaging standards (PEP 518, PEP 621)
 
 ### Backward Compatibility
@@ -508,16 +516,19 @@ The refactoring maintains backward compatibility through:
 ### Installation Methods
 
 **Development Installation:**
+
 ```bash
 pip install -e .
 ```
 
 **Production Installation:**
+
 ```bash
 pip install .
 ```
 
 **Development with Tools:**
+
 ```bash
 pip install -e ".[dev]"
 ```
