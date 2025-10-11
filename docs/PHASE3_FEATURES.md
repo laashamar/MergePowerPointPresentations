@@ -1,16 +1,25 @@
-# Phase 3 Features Documentation
+# Phase 3 Features Documentation (Historical)
 
-This document describes the new features implemented in Phase 3 of the PowerPoint Merger application.
+> **NOTE**: This document describes features that were implemented in an earlier tkinter-based version of the application. The application has since been refactored to use PySide6 (Qt for Python) with a modern single-window interface. Some features described here (like drag-and-drop) are not present in the current version and may be reimplemented in future releases.
+>
+> For the current feature set, see [README.md](../README.md) and [CHANGELOG.md](CHANGELOG.md).
+
+This document describes features that were implemented in Phase 3 of the tkinter-based PowerPoint Merger application.
 
 ## Overview
 
-Phase 3 introduces advanced user interface features that significantly enhance the user experience:
-- Drag-and-drop file addition
+Phase 3 introduced advanced user interface features in the tkinter version:
+- Drag-and-drop file addition (using tkinterdnd2)
 - Drag-and-drop list reordering
 - Real-time merge progress feedback
 - Post-merge action buttons
 
-All features are implemented following PEP8 coding standards and include comprehensive logging.
+**Current Status**: The application has been refactored to PySide6. The current version includes:
+- ✅ Real-time merge progress feedback (via QProgressBar)
+- ❌ Drag-and-drop file addition (planned for future release)
+- ❌ Post-merge action buttons (may be added in future)
+
+All features were implemented following PEP8 coding standards with comprehensive logging.
 
 ## 1. Drag-and-Drop File Addition
 
@@ -184,3 +193,20 @@ Potential improvements for future phases:
 - Progress bar in addition to text status
 - Batch processing of multiple merge jobs
 - Save/load merge configurations
+
+---
+
+## Migration to PySide6
+
+The application was refactored from tkinter to PySide6 after Phase 3. Key changes:
+
+- **GUI Framework**: tkinter → PySide6 (Qt for Python)
+- **Design Pattern**: Multi-step modal windows → Single window with integrated controls
+- **Dependencies**: Removed tkinterdnd2, added PySide6
+- **Progress**: Text status → QProgressBar widget
+- **File Management**: Same core functionality with improved UI
+
+For details on the refactoring, see:
+- [MIGRATION.md](MIGRATION.md) - Package structure changes
+- [CHANGELOG.md](CHANGELOG.md) - Version history
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Current technical design
