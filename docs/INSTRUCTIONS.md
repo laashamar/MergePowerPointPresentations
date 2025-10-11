@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document provides comprehensive development instructions for the PowerPoint Presentation Merger project. It serves as a guide for AI code writers and developers working on this application.
+This document provides comprehensive development instructions for the PowerPoint
+Presentation Merger project. It serves as a guide for AI code writers and
+developers working on this application.
 
 ---
 
@@ -10,10 +12,14 @@ This document provides comprehensive development instructions for the PowerPoint
 
 ### Core Guidelines
 
-1. **Accurate File Naming**: Always use descriptive and accurate file names to ensure clarity and traceability
-2. **PEP8 Compliance**: Follow PEP8 standards rigorously when writing Python code to maintain best practices and readability
-3. **Clarification First**: If prompts are unclear, illogical, or confusing, request clarification before proceeding
-4. **Best Practices**: Follow established best practices for Markdown documentation and Python development
+1. **Accurate File Naming**: Always use descriptive and accurate file names to
+   ensure clarity and traceability
+2. **PEP8 Compliance**: Follow PEP8 standards rigorously when writing Python
+   code to maintain best practices and readability
+3. **Clarification First**: If prompts are unclear, illogical, or confusing,
+   request clarification before proceeding
+4. **Best Practices**: Follow established best practices for Markdown
+   documentation and Python development
 
 ---
 

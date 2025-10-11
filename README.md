@@ -1,6 +1,9 @@
 # PowerPoint Presentation Merger
 
-A modern Python utility to merge multiple PowerPoint (.pptx) files into a single presentation. This tool uses COM automation to ensure that all formatting, animations, and embedded content are preserved with perfect fidelity during the merge process.
+A modern Python utility to merge multiple PowerPoint (.pptx) files into a
+single presentation. This tool uses COM automation to ensure that all
+formatting, animations, and embedded content are preserved with perfect fidelity
+during the merge process.
 
 ## Features
 
@@ -21,6 +24,7 @@ A modern Python utility to merge multiple PowerPoint (.pptx) files into a single
 The application features a modern GUI built with PySide6, offering an intuitive two-column layout:
 
 ### Two-Column Layout
+
 - **Left Column (3:1 ratio)**: Main interaction area with smart state management
   - **Empty State**: Shows a drop zone with icon and "Browse for Files" button
   - **Active State**: Displays file list with drag-and-drop reordering
@@ -31,6 +35,7 @@ The application features a modern GUI built with PySide6, offering an intuitive 
   - Large, prominent "Merge Presentations" button
 
 ### Key Features
+
 - **Drag-and-Drop**: Drop .pptx files directly onto the interface
 - **File Validation**: Only accepts .pptx files, prevents duplicates
 - **Signal-Based Architecture**: Follows Qt best practices with proper signal/slot connections
@@ -45,6 +50,7 @@ The application features a modern GUI built with PySide6, offering an intuitive 
 The GUI can be embedded in your own applications. Usage example:
 
 ```python
+
 from merge_powerpoint.gui import MainUI
 from merge_powerpoint.powerpoint_core import PowerPointMerger
 from PySide6.QtWidgets import QApplication, QMainWindow
@@ -62,6 +68,7 @@ main_window.resize(1000, 600)
 main_window.show()
 
 sys.exit(app.exec())
+
 ```
 
 ## Installation
@@ -69,25 +76,37 @@ sys.exit(app.exec())
 ### Option 1: Install from Source (Recommended)
 
 1. **Clone this repository:**
+
    ```bash
+
    git clone https://github.com/laashamar/MergePowerPointPresentations.git
    cd MergePowerPointPresentations
+
    ```
 
 2. **Create a virtual environment (recommended):**
+
    ```bash
+
    python -m venv venv
    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+
    ```
 
 3. **Install the package:**
+
    ```bash
+
    pip install .
+
    ```
 
    Or for development with additional tools:
+
    ```bash
+
    pip install -e ".[dev]"
+
    ```
 
 ### Option 2: Pre-built Executable (For End Users)
@@ -103,13 +122,17 @@ sys.exit(app.exec())
 After installation, you can run the application using the CLI command:
 
 ```bash
+
 merge-powerpoint
+
 ```
 
 Or run it as a Python module:
 
 ```bash
+
 python -m merge_powerpoint
+
 ```
 
 ### Step-by-Step Workflow
@@ -143,6 +166,7 @@ This project uses modern Python development tools:
 The project includes comprehensive test coverage:
 
 ```bash
+
 # Run all tests
 pytest tests/
 
@@ -154,9 +178,11 @@ pytest tests/test_gui_refactored.py -v
 
 # Run with verbose output
 pytest -v tests/
+
 ```
 
 Test coverage includes:
+
 - **Model Tests**: FileListModel with file management logic (9 tests)
 - **Widget Tests**: DropZoneWidget and UI components (3 tests)
 - **Integration Tests**: MainUI with signal emissions and state management (14 tests)
@@ -177,17 +203,21 @@ The refactored GUI follows modern PySide6 best practices:
 ### Code Formatting
 
 ```bash
+
 # Auto-format code
 ruff check --fix src/ tests/
 
 # Check formatting without changes
 ruff check src/ tests/
+
 ```
 
 ### Linting
 
 ```bash
+
 ruff check src/
+
 ```
 
 ## Python Version Compatibility

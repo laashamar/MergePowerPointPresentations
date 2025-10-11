@@ -39,18 +39,22 @@ Ready to contribute code? Here’s how to get started.
 #### **Development Setup**
 
 1. **Clone and Setup**: Get a local copy of the project
+
    ```bash
    git clone https://github.com/laashamar/MergePowerPointPresentations.git
    cd MergePowerPointPresentations
    ```
 
 2. **Create Virtual Environment**: (Recommended)
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. **Install in Development Mode**: Install the package with all development tools
+3. **Install in Development Mode**: Install the package with all development
+   tools
+
    ```bash
    pip install -e ".[dev]"
    ```
@@ -62,20 +66,27 @@ Ready to contribute code? Here’s how to get started.
    that interests you. We recommend starting with issues labeled
    `good first issue`
 2. **Create a Branch**: Create a new branch for your changes
+
    ```bash
    git checkout -b feature/issue-123
    ```
+
 3. **Implement**: Make your changes in the `src/merge_powerpoint/` directory
 4. **Format and Lint**: Ensure code quality
+
    ```bash
    black src/merge_powerpoint/
    ruff check src/merge_powerpoint/
    ```
+
 5. **Test Thoroughly**: Run tests to ensure nothing breaks
+
    ```bash
    pytest tests/
    ```
-6. **Submit a Pull Request**: Create a PR with a detailed description of your changes
+
+6. **Submit a Pull Request**: Create a PR with a detailed description of your
+   changes
 
 ### **For Users**
 
