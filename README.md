@@ -9,7 +9,7 @@ A modern Python utility to merge multiple PowerPoint (.pptx) files into a single
 - **Simple graphical user interface (GUI)** to manage files
 - **Reorder files** before merging
 - **Responsive UI** that does not freeze during the merge process
-- **Modern package structure** with `src` layout
+- **Modern package structure** for easy installation and development
 - **Command-line interface** for easy execution
 
 ## Installation

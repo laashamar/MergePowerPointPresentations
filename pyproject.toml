@@ -39,11 +39,7 @@ dev = [
     "pytest-qt>=4.2.0",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.12.0",
-    "black>=24.0.0",
     "ruff>=0.1.0",
-    "flake8>=7.0.0",
-    "pylint>=3.0.0",
-    "isort>=5.13.0",
     "mypy>=1.8.0",
 ]
 
@@ -56,28 +52,10 @@ Repository = "https://github.com/laashamar/MergePowerPointPresentations"
 Issues = "https://github.com/laashamar/MergePowerPointPresentations/issues"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+# No package-dir needed since package is in root
 
 [tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.black]
-line-length = 100
-target-version = ["py38", "py39", "py310", "py311", "py312"]
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
+# Find packages in root directory
 
 [tool.ruff]
 line-length = 100
@@ -120,13 +98,16 @@ python_files = ["test_*.py"]
 addopts = "-v --strict-markers"
 
 [tool.coverage.run]
-source = ["src"]
+source = ["."]
 omit = [
     "tests/*",
     "*/__pycache__/*",
     "*/shibokensupport/*",
     "*/pyscript/*",
     "*/signature_bootstrap.py",
+    ".venv/*",
+    "build/*",
+    "dist/*",
 ]
 
 [tool.coverage.report]
