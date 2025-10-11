@@ -5,9 +5,9 @@ This script is used for development and testing purposes. It imports the main
 application window from the `gui` module and runs it. The key functionality
 is modifying `sys.path` to allow imports from the parent directory.
 """
-import sys
-import os
 import logging
+import os
+import sys
 
 # --- FIX FOR ModuleNotFoundError ---
 # Get the absolute path of the directory containing this script (new_gui).
@@ -19,8 +19,10 @@ sys.path.insert(0, project_root)
 # ---------------------------------
 
 # Now that the project root is on the path, these imports will succeed.
-from gui import MainApplication
 from logger import setup_logging
+
+from gui import MainApplication
+
 
 def main():
     """
@@ -32,7 +34,7 @@ def main():
         app = MainApplication()
         app.mainloop()
         logging.info("GUI application closed normally.")
-    except Exception as e:
+    except Exception:
         logging.critical("The GUI application encountered a fatal error.", exc_info=True)
         # In a real-world scenario, you might show an error dialog here.
 

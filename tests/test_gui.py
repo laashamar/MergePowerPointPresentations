@@ -107,7 +107,7 @@ def test_merge_button_enabled_state(main_window):
 def test_reject_duplicate_files(main_window):
     """Test that duplicate files are rejected."""
     file = "/path/to/file1.pptx"
-    
+
     # Add file first time - should succeed
     rejected = main_window.file_model.add_files([file])
     assert rejected == []

@@ -14,7 +14,6 @@ if str(src_path) not in sys.path:
 
 from PySide6.QtWidgets import QApplication, QMainWindow  # noqa: E402
 
-from merge_powerpoint.app import AppController  # noqa: E402
 from merge_powerpoint.app_logger import setup_logging  # noqa: E402
 from merge_powerpoint.gui import MainUI  # noqa: E402
 
@@ -29,10 +28,7 @@ def main():
     app = QApplication(sys.argv)
     app.setApplicationName("PowerPoint Merger")
     app.setOrganizationName("MergePowerPoint")
-    
-    # AppController is still available but MainUI creates its own merger
-    controller = AppController()
-    
+
     # MainUI is a QWidget, so embed it in a QMainWindow
     main_window = QMainWindow()
     ui = MainUI()

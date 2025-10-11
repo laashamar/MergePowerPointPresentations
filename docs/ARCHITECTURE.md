@@ -51,7 +51,7 @@ main.py
 └── merge_powerpoint package
     ├── app.py (AppController)
     │   └── powerpoint_core.py (PowerPointMerger)
-    ├── gui.py (MainWindow)
+    ├── gui.py (MainUI)
     │   ├── PySide6.QtWidgets
     │   └── powerpoint_core.py (PowerPointMerger)
     └── app_logger.py (setup_logging)
@@ -147,24 +147,30 @@ run_with_logging.py
 
 #### `gui.py` - User Interface
 
-- **Purpose**: PySide6-based graphical user interface
+- **Purpose**: PySide6-based graphical user interface with modern two-column layout
 - **Framework**: PySide6 (Qt for Python)
-- **Key Class**: `MainWindow`
+- **Key Class**: `MainUI` (QWidget)
+- **Architecture**: Signal-based with threaded operations
 - **Features**:
-  - File list management
-  - Add/Remove/Clear operations
-  - File reordering (Move Up/Down)
-  - Merge with progress tracking
-  - Input validation
+  - Two-column layout with 3:1 ratio
+  - Drag-and-drop file support
+  - Smart state management (drop zone ↔ file list)
+  - Background merge operations (QThread)
+  - Real-time progress tracking
+  - Settings persistence (QSettings)
+  - Input validation and duplicate prevention
 - **Components**:
-  - QListWidget for file display
-  - QPushButtons for actions
-  - QProgressBar for merge progress
-  - QFileDialog for file selection
-  - File dialog integration
-  - Move Up/Down file reordering
-  - Keyboard shortcuts (Enter key support)
-  - Visual feedback and styling
+  - `FileListModel`: Manages file list data
+  - `FileItemDelegate`: Custom rendering for file items
+  - `DropZoneWidget`: Drag-and-drop zone with visual feedback
+  - `MergeWorker`: QThread for asynchronous merging
+  - `MainUI`: Main widget with signal/slot architecture
+- **Key Signals**:
+  - `files_added`: When files are added
+  - `file_removed`: When a file is removed
+  - `order_changed`: When file order changes
+  - `clear_requested`: When clear all is requested
+  - `merge_requested`: When merge is initiated
 
 ### 4. Business Logic Layer
 
@@ -210,7 +216,9 @@ run_with_logging.py
    ├── Launch via CLI (merge-powerpoint) or script (python main.py)
    ├── Initialize logging
    ├── Create QApplication
-   └── Show MainWindow
+   ├── Create MainUI widget
+   ├── Embed MainUI in QMainWindow
+   └── Show window
 
 2. File Management
    ├── User clicks "Add Files"

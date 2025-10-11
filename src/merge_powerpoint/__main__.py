@@ -25,7 +25,7 @@ def main():
     app = QApplication(sys.argv)
     app.setApplicationName("PowerPoint Merger")
     app.setOrganizationName("MergePowerPoint")
-    
+
     # MainUI is a QWidget, so embed it in a QMainWindow
     main_window = QMainWindow()
     ui = MainUI()

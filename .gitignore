@@ -218,3 +218,8 @@ __marimo__/
 # Application logs directory
 logs/
 app.log
+
+# Backup files
+*.backup
+*.bak
+*~
