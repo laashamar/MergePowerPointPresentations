@@ -7,7 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added - Phase 3 Features
+### Added - Version 2.0 Features
+
+* **Complete GUI Refactor with PySide6**
+  * Migrated from tkinter to PySide6 for modern, cross-platform GUI
+  * Enhanced user interface with better responsiveness and styling
+  * Improved drag-and-drop functionality using Qt's native DnD system
+  * Better file management with visual feedback and progress indicators
+
+* **Modern Python Packaging**
+  * Implemented pyproject.toml for standardized project configuration
+  * Added proper package structure with entry points
+  * Installable package with `pip install -e .` for development
+  * Centralized configuration for all development tools
+
+* **Streamlined Development Tools**
+  * Replaced multiple linting tools (black, flake8, pylint, isort) with ruff
+  * Unified code formatting and linting in single fast tool
+  * Updated CI/CD pipeline for modern packaging standards
+  * Improved test configuration and coverage reporting
+
+* **Enhanced Documentation**
+  * Updated README with modern installation instructions
+  * Added comprehensive development guidelines
+  * Created planned feature enhancements documentation
+  * Improved code documentation and type hints
+
+### Changed
+
+* **GUI Framework**: Complete migration from tkinter to PySide6
+* **Project Structure**: Modernized to follow current Python packaging standards
+* **Dependencies**: Streamlined to essential packages only
+* **Build System**: Uses pyproject.toml instead of setup.py and requirements.txt
+* **Code Quality**: Unified linting and formatting with ruff
+
+### Removed
+
+* **Legacy Dependencies**: Removed tkinter-specific packages (tkinterdnd2, customtkinter)
+* **Redundant Tools**: Eliminated multiple linting tools in favor of ruff
+* **Old Configuration**: Removed setup.py, requirements.txt, pytest.ini in favor of pyproject.toml
+
+### Technical
+
+* Updated to PySide6>=6.7 for modern Qt GUI framework
+* Implemented ruff>=0.1.0 for fast Python linting and formatting
+* Enhanced test suite with pytest-qt for GUI testing
+* Improved CI/CD with Windows-focused testing pipeline
+
+## [1.1.0] - 2025-10-06
+
+### Added - Phase 3 Features (Legacy tkinter version)
 
 * **Drag-and-Drop File Addition**
   * Users can now drag .pptx files directly onto the application window to
