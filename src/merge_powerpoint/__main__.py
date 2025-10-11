@@ -6,10 +6,10 @@ using `python -m merge_powerpoint` or via the CLI command.
 
 import sys
 
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMainWindow
 
 from merge_powerpoint.app_logger import setup_logging
-from merge_powerpoint.gui import MainWindow
+from merge_powerpoint.gui import MainUI
 
 
 def main():
@@ -23,8 +23,16 @@ def main():
     """
     setup_logging()
     app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
+    app.setApplicationName("PowerPoint Merger")
+    app.setOrganizationName("MergePowerPoint")
+
+    # MainUI is a QWidget, so embed it in a QMainWindow
+    main_window = QMainWindow()
+    ui = MainUI()
+    main_window.setCentralWidget(ui)
+    main_window.setWindowTitle("PowerPoint Presentation Merger")
+    main_window.resize(1000, 600)
+    main_window.show()
     return app.exec()
 
 

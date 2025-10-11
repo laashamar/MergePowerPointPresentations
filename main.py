@@ -12,11 +12,10 @@ src_path = Path(__file__).parent / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-from PySide6.QtWidgets import QApplication  # noqa: E402
+from PySide6.QtWidgets import QApplication, QMainWindow  # noqa: E402
 
-from merge_powerpoint.app import AppController  # noqa: E402
 from merge_powerpoint.app_logger import setup_logging  # noqa: E402
-from merge_powerpoint.gui import MainWindow  # noqa: E402
+from merge_powerpoint.gui import MainUI  # noqa: E402
 
 
 def main():
@@ -27,9 +26,16 @@ def main():
     """
     setup_logging()
     app = QApplication(sys.argv)
-    controller = AppController()
-    window = MainWindow()
-    window.show()
+    app.setApplicationName("PowerPoint Merger")
+    app.setOrganizationName("MergePowerPoint")
+
+    # MainUI is a QWidget, so embed it in a QMainWindow
+    main_window = QMainWindow()
+    ui = MainUI()
+    main_window.setCentralWidget(ui)
+    main_window.setWindowTitle("PowerPoint Presentation Merger")
+    main_window.resize(1000, 600)
+    main_window.show()
     return app.exec()
 
 

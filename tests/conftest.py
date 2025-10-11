@@ -17,7 +17,7 @@ if sys.platform != 'win32':
 import pytest
 
 from merge_powerpoint.app import AppController
-from merge_powerpoint.gui import MainWindow
+from merge_powerpoint.gui import MainUI
 
 # Register the pytest-qt plugin.
 pytest_plugins = "pytestqt"
@@ -35,16 +35,16 @@ def app_controller(qapp):
 @pytest.fixture
 def main_window(qtbot):
     """
-    Creates and returns an instance of the MainWindow.
+    Creates and returns an instance of the MainUI.
     This fixture is used for testing the GUI in isolation.
     """
-    # MainWindow no longer takes a controller argument - it creates its own PowerPointMerger
-    window = MainWindow()
+    # MainUI is a QWidget that creates its own PowerPointMerger
+    ui = MainUI()
 
     # Register the widget with qtbot for interaction and garbage collection
-    qtbot.addWidget(window)
+    qtbot.addWidget(ui)
 
-    # Show the window before the test runs
-    window.show()
+    # Show the widget before the test runs
+    ui.show()
 
-    return window
+    return ui

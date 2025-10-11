@@ -130,11 +130,11 @@ from gui import MainWindow
 ```python
 # New way (recommended)
 from merge_powerpoint.powerpoint_core import PowerPointMerger
-from merge_powerpoint.gui import MainWindow
+from merge_powerpoint.gui import MainUI
 
 # Old way (still works via compatibility shims)
 from powerpoint_core import PowerPointMerger
-from gui import MainWindow
+from gui import MainUI
 ```
 
 ## For Developers
