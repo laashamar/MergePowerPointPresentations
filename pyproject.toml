@@ -51,11 +51,8 @@ Homepage = "https://github.com/laashamar/MergePowerPointPresentations"
 Repository = "https://github.com/laashamar/MergePowerPointPresentations"
 Issues = "https://github.com/laashamar/MergePowerPointPresentations/issues"
 
-[tool.setuptools]
-# No package-dir needed since package is in root
-
 [tool.setuptools.packages.find]
-# Find packages in root directory
+where = ["src"]
 
 [tool.ruff]
 line-length = 100
@@ -96,6 +93,7 @@ known-first-party = ["merge_powerpoint"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-v --strict-markers"
+pythonpath = "src"
 
 [tool.coverage.run]
 source = ["."]
