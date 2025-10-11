@@ -16,6 +16,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     * Built-in progress bar for visual feedback during merge operations
     * Responsive UI that remains interactive during merge operations
 
+* **Refactored PySide6 GUI** (NEW - `gui_refactored.py`)
+    * Modern two-column layout with 3:1 stretch ratio
+    * Smart UI state management with empty state (drop zone) and active state (file list)
+    * Full drag-and-drop support for .pptx files
+    * Custom QStandardItemModel for scalable file list management
+    * QListView with FileItemDelegate for card-style items
+    * Signal-based architecture following Qt best practices
+    * QThread-based MergeWorker for truly non-blocking operations
+    * QSettings integration for persistent configuration (remembers last save location)
+    * Comprehensive i18n support via UI_STRINGS dictionary
+    * Full keyboard navigation and accessibility features
+    * Dependency injection pattern for improved testability
+
 * **Modern Package Structure**
     * Reorganized codebase using src layout pattern (PEP 518/621)
     * All code moved to `src/merge_powerpoint/` package
@@ -25,16 +38,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * **Enhanced Code Quality**
     * All code formatted with Black (100 char line length)
-    * Comprehensive docstrings following PEP 257
+    * Comprehensive docstrings following PEP 257 and Google style
     * Type hints ready structure
     * Zero linting violations with Ruff
 
 ### Added
 
+* **Qt Resources System**
+    * SVG icons for modern, scalable UI elements (plus, trash, close, powerpoint, folder)
+    * Compiled .qrc resources for efficient loading and high-DPI support
+    * Icon resource file at `src/merge_powerpoint/icons_rc.py`
+
+* **Comprehensive Testing**
+    * 29 new pytest-qt tests specifically for refactored GUI
+    * Model tests for FileListModel (9 tests)
+    * Widget tests for DropZoneWidget (3 tests)
+    * Integration tests for MainUI (14 tests)
+    * Worker tests for MergeWorker (2 tests)
+    * UI strings validation (1 test)
+    * Total test suite: 51 tests, 100% pass rate
+
+* **Documentation**
+    * New GUI_GUIDE.md with complete API reference and usage examples
+    * Updated README with refactored GUI features and architecture section
+    * Standalone example script (`examples/example_refactored_gui.py`)
+    * Examples directory with comprehensive documentation
+    * Migration guide for transitioning to refactored GUI
+
 * **Progress Tracking**
     * Visual progress bar shows merge progress in real-time
     * Progress callback system for detailed operation tracking
-    * Non-blocking merge operations
+    * Non-blocking merge operations with worker threads
 
 * **Modern Development Tools**
     * Added pytest for testing with pytest-qt for GUI tests
@@ -42,6 +76,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     * Added Ruff for fast linting
     * Added mypy for type checking
     * Development installation mode with `pip install -e ".[dev]"`
+
+### Technical Architecture
+
+* **Design Patterns**
+    * Dependency Injection: PowerPointMerger injected into MainUI
+    * Model-View: QStandardItemModel with QListView
+    * Signal-Slot: Type-safe Qt signal connections
+    * Worker Thread: QThread for background operations
+    * Settings Persistence: QSettings for cross-session state
 
 ### Removed
 

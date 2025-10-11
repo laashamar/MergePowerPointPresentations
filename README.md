@@ -6,11 +6,55 @@ A modern Python utility to merge multiple PowerPoint (.pptx) files into a single
 
 - **Merge multiple .pptx files** in a specified order
 - **Preserves original formatting**, transitions, and animations
-- **Simple graphical user interface (GUI)** to manage files
-- **Reorder files** before merging
-- **Responsive UI** that does not freeze during the merge process
+- **Modern PySide6 GUI** with drag-and-drop support
+- **Two-column interface** for intuitive file management
+- **Real-time progress tracking** during merge operations
+- **Responsive UI** with threaded merge operations (UI never freezes)
+- **File reordering** via drag-and-drop
+- **Settings persistence** - remembers last save location
+- **Comprehensive testing** with pytest-qt
 - **Modern package structure** for easy installation and development
 - **Command-line interface** for easy execution
+
+## New Refactored GUI (PySide6)
+
+The application now includes a modern, refactored GUI built with PySide6, featuring:
+
+### Two-Column Layout
+- **Left Column (3:1 ratio)**: Main interaction area with smart state management
+  - **Empty State**: Shows a drop zone with icon and "Browse for Files" button
+  - **Active State**: Displays file list with drag-and-drop reordering
+- **Right Column (1:1 ratio)**: Configuration and actions
+  - Clear list button with icon
+  - Output file configuration
+  - Save location selector
+  - Large, prominent "Merge Presentations" button
+
+### Key Features
+- **Drag-and-Drop**: Drop .pptx files directly onto the interface
+- **File Validation**: Only accepts .pptx files, prevents duplicates
+- **Signal-Based Architecture**: Follows Qt best practices with proper signal/slot connections
+- **Threaded Merge**: Background worker thread prevents UI freezing
+- **Progress Feedback**: Indeterminate progress bar during merge operations
+- **Keyboard Navigation**: Full keyboard accessibility with logical tab order
+- **Settings Persistence**: Remembers last save location between sessions
+- **Internationalization Ready**: All UI strings centralized for easy translation
+
+### Using the Refactored GUI
+
+```python
+from merge_powerpoint.gui_refactored import MainUI
+from merge_powerpoint.powerpoint_core import PowerPointMerger
+from PySide6.QtWidgets import QApplication
+import sys
+
+app = QApplication(sys.argv)
+merger = PowerPointMerger()
+window = MainUI(merger=merger)
+window.resize(1000, 600)
+window.show()
+sys.exit(app.exec())
+```
 
 ## Installation
 
@@ -83,19 +127,53 @@ This project uses modern Python development tools:
 
 - **Black**: Code formatting (PEP 8 compliant)
 - **Ruff**: Fast Python linter
-- **pytest**: Testing framework
+- **pytest**: Testing framework with pytest-qt for GUI testing
 - **mypy**: Static type checking
 
 ### Running Tests
 
+The project includes comprehensive test coverage:
+
 ```bash
+# Run all tests
 pytest tests/
+
+# Run with coverage report
+pytest --cov=src tests/
+
+# Run only GUI tests
+pytest tests/test_gui_refactored.py -v
+
+# Run with verbose output
+pytest -v tests/
 ```
+
+Test coverage includes:
+- **Model Tests**: FileListModel with file management logic (9 tests)
+- **Widget Tests**: DropZoneWidget and UI components (3 tests)
+- **Integration Tests**: MainUI with signal emissions and state management (14 tests)
+- **Worker Tests**: MergeWorker threading behavior (2 tests)
+- **Utility Tests**: UI strings and configuration (1 test)
+
+### Architecture
+
+The refactored GUI follows modern PySide6 best practices:
+
+1. **Dependency Injection**: Backend logic (PowerPointMerger) is injected into the UI
+2. **Model-View Pattern**: Uses QStandardItemModel for file list management
+3. **Signal-Slot Architecture**: UI events emit signals that can be connected to any backend
+4. **Threading**: Merge operations run in QThread to prevent UI freezing
+5. **Settings Persistence**: Uses QSettings for cross-session configuration
+6. **Resource Management**: Icons managed through Qt resource system (.qrc)
 
 ### Code Formatting
 
 ```bash
-black src/
+# Auto-format code
+ruff check --fix src/ tests/
+
+# Check formatting without changes
+ruff check src/ tests/
 ```
 
 ### Linting
