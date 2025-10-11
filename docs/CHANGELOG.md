@@ -7,42 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added - Phase 3 Features
+### Changed - Major Refactoring
 
-* **Drag-and-Drop File Addition**
-    * Users can now drag .pptx files directly onto the application window to add them to the merge list
-    * Only valid .pptx files are accepted; other file types are silently ignored
-    * Integrated tkinterdnd2 library for cross-platform drag-and-drop support
+* **Modern PySide6 GUI**
+    * Migrated from tkinter to PySide6 (Qt for Python) for a modern, professional interface
+    * Single-window application with intuitive file management
+    * File list with selection and reordering capabilities
+    * Built-in progress bar for visual feedback during merge operations
+    * Responsive UI that remains interactive during merge operations
 
-* **Drag-and-Drop List Reordering**
-    * File order in the list can be changed by clicking and dragging file labels
-    * Real-time visual feedback with numbered file list
-    * Changes to order are immediately reflected in the internal file list
+* **Modern Package Structure**
+    * Reorganized codebase using src layout pattern (PEP 518/621)
+    * All code moved to `src/merge_powerpoint/` package
+    * Created compatibility shims in root for backward compatibility
+    * Added proper package initialization and exports
+    * Implemented CLI entry point: `merge-powerpoint` command
 
-* **Dynamic Status Feedback During Merge**
-    * Merge process now runs in a separate thread to keep the GUI responsive
-    * Real-time progress updates showing current file and slide being processed
-    * Status messages: "Merging [filename] (slide X of Y)...", "Merge Complete!", or error details
-    * Thread-safe GUI updates using self.after() method
+* **Enhanced Code Quality**
+    * All code formatted with Black (100 char line length)
+    * Comprehensive docstrings following PEP 257
+    * Type hints ready structure
+    * Zero linting violations with Ruff
 
-* **Post-Merge Actions**
-    * Two new buttons appear after successful merge:
-        - "Open Presentation": Opens the merged file in the default application
-        - "Show in Explorer": Opens file explorer and highlights the merged file
-    * Cross-platform support for Windows, macOS, and Linux
-    * Buttons are hidden by default and only shown after successful merge
+### Added
 
-### Changed
+* **Progress Tracking**
+    * Visual progress bar shows merge progress in real-time
+    * Progress callback system for detailed operation tracking
+    * Non-blocking merge operations
 
-* Updated `powerpoint_core.merge_presentations()` to accept optional progress callback
-* Enhanced logging throughout the merge process for better debugging
-* All new code follows PEP8 standards with proper docstrings (PEP257)
+* **Modern Development Tools**
+    * Added pytest for testing with pytest-qt for GUI tests
+    * Added Black for code formatting
+    * Added Ruff for fast linting
+    * Added mypy for type checking
+    * Development installation mode with `pip install -e ".[dev]"`
 
-### Technical
+### Removed
 
-* Added tkinterdnd2>=0.3.0 to requirements.txt
-* Implemented threading module for non-blocking merge operations
-* Added subprocess module for cross-platform file operations
+* Removed tkinter dependencies
+* Removed tkinterdnd2 dependency
+* Removed modal window workflow in favor of single-window design
+* Removed legacy GUI implementation
 
 ## [1.0.0] - 2025-10-06
 

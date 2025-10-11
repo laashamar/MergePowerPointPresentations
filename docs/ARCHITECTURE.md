@@ -370,38 +370,42 @@ Root Logger (configured by app_logger.setup_logging())
 - Animation and embedded content support
 - Reliable slide copying mechanism
 
-### 2. Modal GUI Workflow
+### 2. Single-Window GUI Design
 
-**Decision**: Sequential modal windows instead of single complex interface
-
-**Rationale**:
-
-- Clear step-by-step progression
-- Simplified state management
-- Reduced user cognitive load
-- Easy validation at each step
-
-### 3. Move Up/Down vs. Drag-and-Drop
-
-**Decision**: Button-based reordering instead of drag-and-drop
+**Decision**: Single main window with integrated controls instead of multiple modal windows
 
 **Rationale**:
 
-- Eliminated unreliable `tkinterdnd2` dependency
-- More accessible interface
+- Modern application UX pattern
+- Better user visibility of all options
+- Simpler state management
+- More efficient workflow for users
+- Easier to implement with Qt framework
+
+### 3. Button-Based Reordering
+
+**Decision**: Move Up/Down buttons for file reordering
+
+**Rationale**:
+
+- Accessible interface for all users
 - Simpler implementation and maintenance
-- Better cross-platform compatibility
+- Clear, explicit user actions
+- Works reliably across platforms
+- No external drag-and-drop library dependencies
 
-### 4. Dual Entry Points
+### 4. PySide6 for GUI
 
-**Decision**: Separate entry points for standard and logging modes
+**Decision**: Use PySide6 (Qt for Python) instead of tkinter
 
 **Rationale**:
 
-- Clean separation of concerns
-- Optional debugging capabilities
-- User choice in interface complexity
-- Development vs. production usage patterns
+- Modern, professional appearance
+- Rich widget set and better styling options
+- Excellent documentation and community support
+- Better cross-platform consistency
+- More maintainable and extensible
+- Native-looking UI elements
 
 ## Future Enhancement Opportunities
 
