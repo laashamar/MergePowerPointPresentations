@@ -2,7 +2,9 @@
 
 ## Overview
 
-This directory contains comprehensive unit tests for the PowerPoint Presentation Merger application. All tests follow PEP8 standards and best practices.
+This directory contains comprehensive unit tests for the PowerPoint
+Presentation Merger application. All tests follow PEP8 standards and best
+practices.
 
 ## Test Structure
 
@@ -17,6 +19,7 @@ This directory contains comprehensive unit tests for the PowerPoint Presentation
 ### Quick Start
 
 ```bash
+
 # Run all tests
 pytest
 
@@ -25,6 +28,7 @@ pytest -v
 
 # Run with coverage
 pytest --cov=. --cov-report=html
+
 ```
 
 ### Test Categories
@@ -32,11 +36,13 @@ pytest --cov=. --cov-report=html
 Tests can be run by category using markers:
 
 ```bash
+
 # Run only unit tests
 pytest -m unit
 
 # Run GUI tests
 pytest tests/test_gui.py
+
 ```
 
 ## Test Statistics
@@ -59,20 +65,26 @@ pytest tests/test_gui.py
 All test dependencies are listed in `requirements-dev.txt`:
 
 ```bash
+
 pip install -r requirements-dev.txt
+
 ```
 
 ## Writing New Tests
 
 Follow the AAA pattern:
+
 1. **Arrange** - Set up test data and mocks
 2. **Act** - Execute the code being tested
 3. **Assert** - Verify the expected outcome
 
 Example:
+
 ```python
+
 def test_example(self):
     """Test that example works correctly."""
+
     # Arrange
     mock_data = Mock()
     
@@ -81,6 +93,7 @@ def test_example(self):
     
     # Assert
     self.assertEqual(result, expected_value)
+
 ```
 
 ## Mocking Strategy
@@ -92,6 +105,7 @@ def test_example(self):
 ## Continuous Integration
 
 Tests run automatically on:
+
 - Push to main, develop, tests, or copilot/** branches
 - Pull requests to main, develop, or tests branches
 

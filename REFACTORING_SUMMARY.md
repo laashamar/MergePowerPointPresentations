@@ -2,7 +2,9 @@
 
 ## Project Overview
 
-Successfully refactored the PowerPoint Presentation Merger from a flat Python script structure into a **modern, professional, installable Python package** following industry best practices.
+Successfully refactored the PowerPoint Presentation Merger from a flat Python
+script structure into a **modern, professional, installable Python package**
+following industry best practices.
 
 ---
 
@@ -12,7 +14,7 @@ Successfully refactored the PowerPoint Presentation Merger from a flat Python sc
 
 **Implemented PEP 518/621 compliant structure:**
 
-```
+```text
 MergePowerPointPresentations/
 ├── src/merge_powerpoint/          ← NEW: Main package
 │   ├── __init__.py                 ← Package exports
@@ -32,8 +34,8 @@ MergePowerPointPresentations/
     ├── ARCHITECTURE.md             ← UPDATED
     ├── CONTRIBUTING.md             ← UPDATED
     └── MIGRATION.md                ← NEW
-```
 
+```text
 ### ✅ 2. Package Configuration (pyproject.toml)
 
 **Created comprehensive modern configuration:**
@@ -58,6 +60,7 @@ MergePowerPointPresentations/
 | **Type-hint Ready** | Structure | ✅ Prepared |
 
 **Code Statistics:**
+
 - Modules refactored: 6
 - Total lines: 596 (src package)
 - Docstrings added: 25+
@@ -108,16 +111,18 @@ MergePowerPointPresentations/
 ### Installation
 
 ```bash
+
 # Standard installation
 pip install .
 
 # Development installation
 pip install -e ".[dev]"
-```
 
+```text
 ### Running the Application
 
 ```bash
+
 # Method 1: CLI command (NEW, recommended)
 merge-powerpoint
 
@@ -127,8 +132,8 @@ python -m merge_powerpoint
 # Method 3: Legacy scripts (still work)
 python main.py
 python run_with_logging.py
-```
 
+```text
 ---
 
 ## 🔧 Development Workflow
@@ -136,16 +141,18 @@ python run_with_logging.py
 ### Setup
 
 ```bash
+
 git clone https://github.com/laashamar/MergePowerPointPresentations.git
 cd MergePowerPointPresentations
 python -m venv venv
 source venv/bin/activate
 pip install -e ".[dev]"
-```
 
+```text
 ### Code Quality Commands
 
 ```bash
+
 # Format code
 black src/merge_powerpoint/
 
@@ -157,8 +164,8 @@ pytest tests/
 
 # Run with coverage
 pytest --cov=src/merge_powerpoint tests/
-```
 
+```text
 ---
 
 ## ✨ Key Improvements
@@ -214,23 +221,27 @@ pytest --cov=src/merge_powerpoint tests/
 ## 🎁 Deliverables
 
 ### Source Code
+
 - ✅ `src/merge_powerpoint/` - 6 refactored modules
 - ✅ `pyproject.toml` - Modern configuration
 - ✅ Compatibility shims for backward compatibility
 
 ### Documentation
+
 - ✅ README.md - User guide
 - ✅ ARCHITECTURE.md - Technical documentation
 - ✅ CONTRIBUTING.md - Developer guide
 - ✅ MIGRATION.md - Refactoring guide
 
 ### Configuration
+
 - ✅ Black configuration (100 char line length)
 - ✅ Ruff configuration (comprehensive linting)
 - ✅ pytest configuration
 - ✅ Coverage configuration
 
 ### Quality Assurance
+
 - ✅ All code Black formatted
 - ✅ Zero Ruff violations
 - ✅ Comprehensive docstrings
@@ -243,13 +254,14 @@ pytest --cov=src/merge_powerpoint tests/
 All quality checks pass:
 
 ```bash
+
 ✓ black --check src/merge_powerpoint/
 ✓ ruff check src/merge_powerpoint/
 ✓ Package structure verified
 ✓ Import patterns tested
 ✓ Backward compatibility confirmed
-```
 
+```text
 ---
 
 ## 📝 Commit History

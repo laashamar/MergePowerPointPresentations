@@ -44,7 +44,8 @@ Implemented a progress bar that displays during the merge process to provide rea
 
 #### Error Handling Description  
 
-Implement more specific and user-friendly error messages by catching detailed COM exceptions and providing actionable guidance.
+Implement more specific and user-friendly error messages by catching detailed
+COM exceptions and providing actionable guidance.
 
 #### Error Handling Technical Requirements
 
@@ -54,7 +55,8 @@ Implement more specific and user-friendly error messages by catching detailed CO
 
 #### Error Handling User Story
 
-As a user encountering an error, I want clear information about what went wrong and how to fix it, so I can resolve the issue quickly.
+As a user encountering an error, I want clear information about what went wrong
+and how to fix it, so I can resolve the issue quickly.
 
 #### Error Handling Benefits
 
@@ -71,7 +73,8 @@ As a user encountering an error, I want clear information about what went wrong 
 
 #### Cancel Functionality Description
 
-Add the ability to cancel operations at any point in the workflow, with safe cleanup of resources and COM objects.
+Add the ability to cancel operations at any point in the workflow, with safe
+cleanup of resources and COM objects.
 
 #### Cancel Functionality Technical Requirements
 
@@ -82,7 +85,9 @@ Add the ability to cancel operations at any point in the workflow, with safe cle
 
 #### Cancel Functionality User Story
 
-As a user who realizes I have made a mistake or needs to stop the process, I want to cancel the operation safely without having to force-quit the application.
+As a user who realizes I have made a mistake or needs to stop the process, I
+want to cancel the operation safely without having to force-quit the
+application.
 
 #### Cancel Functionality Benefits
 
@@ -109,7 +114,8 @@ Apply the existing application icon consistently across all windows and the comp
 
 #### Application Icon User Story
 
-As a user, I want the application to have a consistent, professional appearance with a recognizable icon across all windows.
+As a user, I want the application to have a consistent, professional appearance
+with a recognizable icon across all windows.
 
 #### Application Icon Benefits
 
@@ -126,7 +132,8 @@ As a user, I want the application to have a consistent, professional appearance 
 
 #### Drag-and-Drop Description
 
-Enable users to add PowerPoint files by dragging them from file explorer directly onto the application window.
+Enable users to add PowerPoint files by dragging them from file explorer
+directly onto the application window.
 
 #### Drag-and-Drop Technical Requirements
 
@@ -137,7 +144,8 @@ Enable users to add PowerPoint files by dragging them from file explorer directl
 
 #### Drag-and-Drop User Story
 
-As a user, I want to drag files from my file explorer directly onto the application window so I can quickly add files without using the file dialog.
+As a user, I want to drag files from my file explorer directly onto the
+application window so I can quickly add files without using the file dialog.
 
 #### Drag-and-Drop Benefits
 
@@ -150,15 +158,18 @@ As a user, I want to drag files from my file explorer directly onto the applicat
 
 ### Feature 5: Slide Preview Functionality
 
-Add ability to preview slides from selected presentations before merging, with thumbnail view and slide selection capabilities.
+Add ability to preview slides from selected presentations before merging, with
+thumbnail view and slide selection capabilities.
 
 ### Feature 6: Batch Processing
 
-Enable processing multiple merge operations in sequence, allowing users to set up several merge jobs and run them automatically.
+Enable processing multiple merge operations in sequence, allowing users to set
+up several merge jobs and run them automatically.
 
 ### Feature 7: Template and Theme Preservation
 
-Improve handling of presentation templates and themes during the merge process to maintain consistent formatting.
+Improve handling of presentation templates and themes during the merge process
+to maintain consistent formatting.
 
 ## Contributing
 

@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document provides detailed instructions for resolving pytest test failures in the PowerPoint Presentation Merger project. The test suite consists of four main test modules that validate core functionality across different components.
+This document provides detailed instructions for resolving pytest test failures
+in the PowerPoint Presentation Merger project. The test suite consists of four
+main test modules that validate core functionality across different components.
 
 ## Objective
 
@@ -30,18 +32,22 @@ Analyze the provided pytest output and apply necessary code corrections to ensur
 All six GUI tests are failing with the following error:
 
 ```python
+
 TypeError: MainWindow.__init__() missing 1 required positional argument: 'merger'
+
 ```
 
 #### GUI Root Cause
 
-The `main_app` fixture that sets up the `MainWindow` for testing is not passing the required `PowerPointMerger` instance to the constructor.
+The `main_app` fixture that sets up the `MainWindow` for testing is not passing
+the required `PowerPointMerger` instance to the constructor.
 
 #### GUI Solution
 
 Modify the `main_app` fixture to properly instantiate and pass the required `PowerPointMerger` object:
 
 ```python
+
 # In tests/test_gui.py
 from app import PowerPointMerger
 
@@ -53,6 +59,7 @@ def main_app(qtbot):
     qtbot.addWidget(window)
     yield window
     window.close()
+
 ```
 
 #### GUI Expected Outcome
@@ -77,7 +84,9 @@ Multiple tests are failing due to incorrect attribute references:
 
 #### App Logic Root Cause
 
-Tests incorrectly reference `merger.files` attribute, but the actual class attribute is named `merger.file_paths`. This causes methods to operate on empty lists, leading to `IndexError` and incorrect assertions.
+Tests incorrectly reference `merger.files` attribute, but the actual class
+attribute is named `merger.file_paths`. This causes methods to operate on empty
+lists, leading to `IndexError` and incorrect assertions.
 
 #### App Logic Solution
 
@@ -91,11 +100,13 @@ Perform a global find-and-replace operation in `tests/test_app.py`:
 Update all test methods to use the correct attribute name:
 
 ```python
+
 # Before (incorrect)
 assert len(merger.files) == 0
 
 # After (correct)
 assert len(merger.file_paths) == 0
+
 ```
 
 #### App Logic Expected Outcome
@@ -113,23 +124,28 @@ assert len(merger.file_paths) == 0
 The `test_setup_logging_configures_correctly` test fails with:
 
 ```python
+
 AssertionError: assert 20 == 10
+
 ```
 
 #### Logger Root Cause
 
-Test expects logging level to be `10` (DEBUG), but `app_logger.setup_logging` correctly configures it to `logging.INFO` (numerical value `20`).
+Test expects logging level to be `10` (DEBUG), but `app_logger.setup_logging`
+correctly configures it to `logging.INFO` (numerical value `20`).
 
 #### Logger Solution
 
 Update the assertion to expect the correct logging level:
 
 ```python
+
 # In tests/test_app_logger.py
 import logging
 
 # Inside test_setup_logging_configures_correctly
 assert call_args[1]['level'] == logging.INFO
+
 ```
 
 #### Logger Expected Outcome
@@ -151,9 +167,11 @@ assert call_args[1]['level'] == logging.INFO
 **Solution:** Update mock to simulate both connection attempt failures:
 
 ```python
+
 # In test_powerpoint_core_initialization_failure
 mock_comtypes_client.GetActiveObject.side_effect = OSError
 mock_comtypes_client.CreateObject.side_effect = OSError
+
 ```
 
 #### PowerPoint Problem 2: COM Error Handling Test
@@ -161,7 +179,9 @@ mock_comtypes_client.CreateObject.side_effect = OSError
 **Issue:** `test_merge_presentations_handles_error` fails with:
 
 ```python
+
 TypeError: COMError() takes exactly 3 arguments (0 given)
+
 ```
 
 **Root Cause:** Mock raises `comtypes.COMError` without required constructor arguments
@@ -169,10 +189,12 @@ TypeError: COMError() takes exactly 3 arguments (0 given)
 **Solution:** Properly instantiate `COMError` with required parameters:
 
 ```python
+
 # In test_merge_presentations_handles_error
 mock_powerpoint_app.Presentations.Add.return_value.Slides.InsertFromFile.side_effect = comtypes.COMError(
     "Mock COM Error", -1, "Mock description"
 )
+
 ```
 
 #### PowerPoint Core Expected Outcome
@@ -188,6 +210,7 @@ mock_powerpoint_app.Presentations.Add.return_value.Slides.InsertFromFile.side_ef
 ### Running Tests
 
 ```bash
+
 # Run all tests
 pytest tests/
 
@@ -199,6 +222,7 @@ pytest -v tests/
 
 # Run with coverage report
 pytest --cov=. tests/
+
 ```
 
 ### Test Environment Setup
@@ -233,6 +257,7 @@ pytest --cov=. tests/
 ### Debug Commands
 
 ```bash
+
 # Run tests with detailed output
 pytest -vv --tb=long tests/
 
@@ -241,6 +266,7 @@ pytest tests/test_gui.py::test_main_window_initialization -v
 
 # Show test coverage gaps
 pytest --cov=. --cov-report=html tests/
+
 ```
 
 ### Additional Resources

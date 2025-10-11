@@ -1,15 +1,18 @@
  copilot/implement-tests-structure-cicd
+
 # Test Environment Documentation
 
 ## Overview
 
-This document describes the testing structure and CI/CD setup for the PowerPoint Presentation Merger application. The testing infrastructure follows PEP8 standards rigorously and implements best practices for Python testing.
+This document describes the testing structure and CI/CD setup for the
+PowerPoint Presentation Merger application. The testing infrastructure follows
+PEP8 standards rigorously and implements best practices for Python testing.
 
 ## Test Structure
 
 ### Directory Layout
 
-```
+```text
 MergePowerPointPresentations/
 ├── src/
 │   └── merge_powerpoint/          # Main package
@@ -32,8 +35,8 @@ MergePowerPointPresentations/
 ├── pyproject.toml                # Modern Python project config
 ├── pytest.ini                    # Pytest configuration (if separate)
 └── requirements.txt              # Legacy compatibility
-```
 
+```text
 ### Test Categories
 
 Tests are organized using pytest markers:
@@ -48,17 +51,19 @@ Tests are organized using pytest markers:
 ### Install Test Dependencies
 
 ```bash
+
 # Install all dependencies including development tools
 pip install -e ".[dev]"
 
 # Or install from requirements.txt (legacy)
 pip install -r requirements.txt
 pip install pytest pytest-qt pytest-cov pytest-mock ruff black
-```
 
+```text
 ### Run All Tests
 
 ```bash
+
 # Run all tests with coverage
 pytest
 
@@ -67,11 +72,12 @@ pytest -v
 
 # Run with coverage report
 pytest --cov=. --cov-report=html
-```
 
+```text
 ### Run Specific Test Categories
 
 ```bash
+
 # Run only unit tests
 pytest -m unit
 
@@ -83,11 +89,12 @@ pytest tests/test_app.py::TestPowerPointMergerApp
 
 # Run specific test function
 pytest tests/test_app.py::TestPowerPointMergerApp::test_initialization
-```
 
+```text
 ### Run Tests with Different Options
 
 ```bash
+
 # Run tests and stop at first failure
 pytest -x
 
@@ -99,8 +106,8 @@ pytest -l
 
 # Run tests in parallel (requires pytest-xdist)
 pytest -n auto
-```
 
+```text
 ## Code Quality and Linting
 
 ### PEP8 Compliance
@@ -110,42 +117,46 @@ All Python code follows PEP8 standards strictly. Use the following tools to veri
 #### Ruff (Fast Modern Linter)
 
 ```bash
+
 # Check all Python files
 ruff check src/merge_powerpoint/
 
 # With auto-fix
 ruff check --fix src/merge_powerpoint/
-```
 
+```text
 #### Black (Code Formatter)
 
 ```bash
+
 # Check formatting without making changes
 black --check src/merge_powerpoint/
 
 # Format code automatically
 black src/merge_powerpoint/
-```
 
+```text
 #### isort (Import Sorting)
 
 ```bash
+
 # Check import ordering
 isort --check-only src/merge_powerpoint/
 
 # Fix import ordering
 isort src/merge_powerpoint/
-```
 
+```text
 ### Running All Quality Checks
 
 ```bash
+
 # Run all checks in sequence
 black --check src/merge_powerpoint/ && \
 isort --check-only src/merge_powerpoint/ && \
 ruff check src/merge_powerpoint/
-```
 
+```text
 ## CI/CD Pipeline
 
 ### GitHub Actions Workflow
@@ -188,6 +199,7 @@ The CI/CD pipeline (`.github/workflows/ci.yml`) runs automatically on:
 ### pytest.ini
 
 Configures pytest behavior:
+
 - Test discovery patterns
 - Coverage settings
 - Output formatting
@@ -196,6 +208,7 @@ Configures pytest behavior:
 ### .flake8
 
 Configures flake8 linting:
+
 - Maximum line length: 100 characters
 - Ignored files and directories
 - Ignored error codes (E203, W503 for Black compatibility)
@@ -203,6 +216,7 @@ Configures flake8 linting:
 ### .pylintrc
 
 Configures pylint:
+
 - Custom scoring thresholds
 - Disabled checks for external libraries
 - Code complexity limits
@@ -215,6 +229,7 @@ Configures pylint:
 Follow this structure when writing new tests:
 
 ```python
+
 """
 Unit tests for module_name.py module.
 
@@ -229,22 +244,27 @@ class TestClassName(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures before each test."""
+
         # Initialize test objects here
         pass
 
     def tearDown(self):
         """Clean up after each test."""
+
         # Clean up resources here
         pass
 
     def test_specific_behavior(self):
         """Test that specific behavior works as expected."""
+
         # Arrange
+
         # Act
+
         # Assert
         pass
-```
 
+```text
 ### Testing Best Practices
 
 1. **Use Descriptive Test Names**
@@ -287,26 +307,30 @@ class TestClassName(unittest.TestCase):
 Since the application uses Windows COM automation, tests mock these components:
 
 ```python
+
 @patch('powerpoint_core.comtypes.client.CreateObject')
 def test_function(self, mock_create_object):
     mock_powerpoint = MagicMock()
     mock_create_object.return_value = mock_powerpoint
-    # Test code here
-```
 
+    # Test code here
+
+```text
 ### GUI Components
 
 GUI tests mock PySide6 to avoid creating actual windows:
 
 ```python
+
 @patch('gui.QApplication')
 @patch('gui.MainWindow')
 def test_window(self, mock_window, mock_qapp):
     mock_app = MagicMock()
     mock_qapp.return_value = mock_app
-    # Test code here
-```
 
+    # Test code here
+
+```text
 ## Troubleshooting
 
 ### Common Issues
@@ -337,6 +361,7 @@ def test_window(self, mock_window, mock_qapp):
 Before committing code:
 
 ```bash
+
 # Format code
 black *.py
 isort *.py
@@ -347,21 +372,22 @@ pylint *.py
 
 # Run tests
 pytest -v
-```
 
+```text
 ### Commit Hooks (Optional)
 
 Consider setting up pre-commit hooks:
 
 ```bash
+
 # Install pre-commit
 pip install pre-commit
 
 # Create .pre-commit-config.yaml
 # Run pre-commit install
 pre-commit install
-```
 
+```text
 ## Additional Resources
 
 - [pytest documentation](https://docs.pytest.org/)
@@ -374,6 +400,7 @@ pre-commit install
 ### Updating Dependencies
 
 ```bash
+
 # Update test dependencies
 pip install --upgrade pytest pytest-cov pytest-mock
 
@@ -382,8 +409,8 @@ pip install --upgrade flake8 pylint black isort
 
 # Regenerate requirements-dev.txt
 pip freeze > requirements-dev.txt
-```
 
+```text
 ### Adding New Tests
 
 1. Create test file in `tests/` directory
@@ -410,6 +437,7 @@ All code changes should maintain or improve test coverage and pass all quality c
  Implement the Pytest Testing StructureObjective: Create a robust testing structure using pytest that is correctly configured for your project and is runnable from the root directory.1. Create the Test DirectoryIn the project's root directory, create a new folder named tests.Inside the tests/ folder, create an empty file named __init__.py to mark it as a Python package.
 
 2. Create Development Dependencies FileCreate a requirements-dev.txt file in the root directory. This separates testing and linting tools from the application's core dependencies.File: requirements-dev.txt# Development, testing, and linting dependencies
+
 pytest
 pytest-cov
 flake8
@@ -421,6 +449,7 @@ import powerpoint_core
 
 def test_merge_function_exists():
     """Verify that the core merge function can be imported and is callable."""
+
     # Note: The actual function in powerpoint_core.py is `merge_presentations`
     assert hasattr(powerpoint_core, "merge_presentations"), "merge_presentations function not found"
     assert callable(powerpoint_core.merge_presentations), "merge_presentations is not a callable function"
@@ -433,13 +462,18 @@ from gui import App
 
 def test_app_can_be_imported():
     """Verify that the App class can be imported without errors."""
+
     # This test confirms the file is syntactically correct and imports are valid.
+
     # A full instantiation `app = App()` is avoided here as it may require a
+
     # running Tkinter event loop, which can be handled in more advanced
+
     # tests using mocking or specific GUI testing libraries.
     assert App is not None, "The App class could not be imported from gui.py"
 
 5. Configure Pytest 
+
 Create a pytest.ini file in the root directory to define the test paths and file patterns, ensuring pytest discovers your tests correctly.File: pytest.ini[pytest]
 testpaths = tests
 python_files = test_*.py
@@ -451,6 +485,7 @@ Add a clear "Running Tests" section to your README.md file so anyone can run the
 To run the automated tests for this project, first install the necessary dependencies and then execute `pytest` from the project's root directory.
 
 ```bash
+
 # 1. Install core application dependencies
 pip install -r requirements.txt
 
@@ -473,7 +508,9 @@ Create the directory path `.github/workflows/` in your project root if it doesn'
 **Key Change:** The workflow is configured to run on `windows-latest`. This is critical because your application's core logic depends on `pywin32` and COM automation, which are only available on Windows.
 
 **File: `.github/workflows/python-ci.yml`**
+
 ```yaml
+
 name: Python CI Workflow
 
 on:
@@ -488,28 +525,36 @@ jobs:
     runs-on: windows-latest # CRITICAL: Must be windows-latest for pywin32 COM automation
 
     steps:
+
     - name: 🧾 Checkout repository
+
       uses: actions/checkout@v4
 
     - name: 🐍 Set up Python
+
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
     - name: 📦 Install dependencies
+
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         if (Test-Path -Path "requirements-dev.txt") { pip install -r requirements-dev.txt }
 
     - name: 🧹 Run flake8 linting
+
       run: |
+
         # Stop the build if there are critical Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
         # Treat all other issues as warnings and check for complexity and line length
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
     - name: 🧪 Run tests with coverage
+
       run: |
         pytest `
           --cov=powerpoint_core `
@@ -520,14 +565,18 @@ jobs:
           --junitxml=pytest-results.xml
 
     - name: 📊 Upload coverage to Codecov (Optional)
+
       uses: codecov/codecov-action@v4
       with:
         files: ./coverage.xml
         fail_ci_if_error: true
+
       # For this to work, a Codecov token must be set in the repository's secrets
+
       # with the name CODECOV_TOKEN
 
     - name: 📤 Upload test results
+
       if: always() # Ensures this step runs even if previous steps fail
       uses: actions/upload-artifact@v4
       with:

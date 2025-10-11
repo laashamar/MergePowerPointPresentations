@@ -7,17 +7,20 @@ This directory contains example scripts demonstrating how to use the PowerPoint 
 ### example_refactored_gui.py
 
 Demonstrates the refactored PySide6 GUI with all features:
+
 - Two-column layout with drag-and-drop
 - Signal-based architecture
 - Custom event handlers
 - Proper application configuration
 
 **Run:**
+
 ```bash
 python examples/example_refactored_gui.py
 ```
 
 **Features demonstrated:**
+
 - Application initialization with QApplication
 - Setting application metadata (name, organization, version)
 - Creating and injecting PowerPointMerger backend

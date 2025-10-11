@@ -2,14 +2,17 @@
 
 ## Overview
 
-This document explains the refactoring of the PowerPoint Merger from a flat Python script structure to a modern, installable Python package following best practices.
+This document explains the refactoring of the PowerPoint Merger from a flat
+Python script structure to a modern, installable Python package following best
+practices.
 
 ## What Changed?
 
 ### Project Structure
 
 **Before (Flat Structure):**
-```
+
+```text
 MergePowerPointPresentations/
 ├── main.py
 ├── app.py
@@ -19,10 +22,11 @@ MergePowerPointPresentations/
 ├── run_with_logging.py
 ├── requirements.txt
 └── tests/
-```
 
+```text
 **After (src Layout):**
-```
+
+```text
 MergePowerPointPresentations/
 ├── src/
 │   └── merge_powerpoint/          # Main package
@@ -41,8 +45,8 @@ MergePowerPointPresentations/
 ├── pyproject.toml                  # Modern config (NEW)
 ├── requirements.txt                # Still supported
 └── tests/                          # Unchanged
-```
 
+```text
 ## Key Improvements
 
 ### 1. Modern Package Configuration (`pyproject.toml`)
@@ -78,35 +82,41 @@ The src layout provides:
 New command-line interface after installation:
 
 ```bash
+
 # After: pip install .
 merge-powerpoint
 
 # Still works:
 python main.py
 python -m merge_powerpoint
-```
 
+```text
 ## For Users
 
 ### Installation Changes
 
 **Before:**
+
 ```bash
+
 pip install -r requirements.txt
 python main.py
-```
 
+```text
 **After:**
+
 ```bash
+
 pip install .
 merge-powerpoint  # New CLI command!
-```
 
+```text
 ### Running the Application
 
 **Multiple options now available:**
 
 ```bash
+
 # Option 1: CLI command (recommended after installation)
 merge-powerpoint
 
@@ -116,18 +126,22 @@ python -m merge_powerpoint
 # Option 3: Legacy scripts (still work)
 python main.py
 python run_with_logging.py
-```
 
+```text
 ### Imports (for programmatic use)
 
 **Before:**
+
 ```python
+
 from powerpoint_core import PowerPointMerger
 from gui import MainWindow
-```
 
+```text
 **After (both work):**
+
 ```python
+
 # New way (recommended)
 from merge_powerpoint.powerpoint_core import PowerPointMerger
 from merge_powerpoint.gui import MainUI
@@ -135,8 +149,8 @@ from merge_powerpoint.gui import MainUI
 # Old way (still works via compatibility shims)
 from powerpoint_core import PowerPointMerger
 from gui import MainUI
-```
 
+```text
 ## For Developers
 
 ### Setting Up Development Environment
@@ -144,6 +158,7 @@ from gui import MainUI
 **New approach:**
 
 ```bash
+
 # Clone repository
 git clone https://github.com/laashamar/MergePowerPointPresentations.git
 cd MergePowerPointPresentations
@@ -154,9 +169,10 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install in editable mode with dev tools
 pip install -e ".[dev]"
-```
 
+```text
 This installs:
+
 - The package in editable mode
 - All dependencies
 - Development tools (pytest, black, ruff, etc.)
@@ -166,6 +182,7 @@ This installs:
 **New tools and commands:**
 
 ```bash
+
 # Format code
 black src/merge_powerpoint/
 
@@ -183,8 +200,8 @@ pytest tests/
 
 # Run tests with coverage
 pytest --cov=src/merge_powerpoint tests/
-```
 
+```text
 ### Adding New Features
 
 When adding new code:
@@ -203,6 +220,7 @@ When adding new code:
 The root-level `.py` files are now "shims" that import from the new package:
 
 ```python
+
 # app.py (compatibility shim)
 import sys
 from pathlib import Path
@@ -212,9 +230,10 @@ if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 from merge_powerpoint.app import AppController  # noqa: E402, F401
-```
 
+```text
 This ensures:
+
 - ✅ Existing code continues to work
 - ✅ Tests don't need modification
 - ✅ Legacy scripts still function
@@ -231,12 +250,14 @@ This ensures:
 ## Benefits Summary
 
 ### For Users
+
 - ✅ Professional CLI command (`merge-powerpoint`)
 - ✅ Easy installation (`pip install .`)
 - ✅ Multiple ways to run (CLI, module, script)
 - ✅ All existing usage patterns still work
 
 ### For Developers
+
 - ✅ Modern package structure (src layout)
 - ✅ Comprehensive development tools
 - ✅ Automated code quality checks
@@ -244,6 +265,7 @@ This ensures:
 - ✅ Follows Python best practices
 
 ### For the Project
+
 - ✅ Professional, maintainable codebase
 - ✅ Ready for PyPI publication
 - ✅ Easier onboarding for contributors
@@ -257,41 +279,48 @@ This ensures:
 **Problem:** `ModuleNotFoundError: No module named 'merge_powerpoint'`
 
 **Solution:**
+
 ```bash
+
 # Install the package
 pip install -e .
-```
 
+```text
 ### CLI Command Not Found
 
 **Problem:** `merge-powerpoint: command not found`
 
 **Solution:**
+
 ```bash
+
 # Ensure package is installed
 pip install .
 
 # Or use alternative methods
 python -m merge_powerpoint
 python main.py
-```
 
+```text
 ### Tests Failing
 
 **Problem:** Tests can't import modules
 
 **Solution:** Tests should work without modification. If issues persist:
+
 ```bash
+
 # Ensure you're in the project root
 cd /path/to/MergePowerPointPresentations
 
 # Run tests from root
 pytest tests/
-```
 
+```text
 ## Questions?
 
 For questions about the refactoring:
+
 - Check the [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
 - See [README.md](../README.md) for usage instructions
 - Open an issue on GitHub for help
