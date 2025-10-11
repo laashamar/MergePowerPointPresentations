@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document explains the refactoring of the PowerPoint Merger from a flat Python script structure to a modern, installable Python package following best practices.
+This document explains the refactoring of the PowerPoint Merger from a flat
+Python script structure to a modern, installable Python package following best
+practices.
 
 ## What Changed?
 
@@ -10,8 +12,7 @@ This document explains the refactoring of the PowerPoint Merger from a flat Pyth
 
 **Before (Flat Structure):**
 
-```
-
+```text
 MergePowerPointPresentations/
 ├── main.py
 ├── app.py
@@ -22,12 +23,10 @@ MergePowerPointPresentations/
 ├── requirements.txt
 └── tests/
 
-```
-
+```text
 **After (src Layout):**
 
-```
-
+```text
 MergePowerPointPresentations/
 ├── src/
 │   └── merge_powerpoint/          # Main package
@@ -47,8 +46,7 @@ MergePowerPointPresentations/
 ├── requirements.txt                # Still supported
 └── tests/                          # Unchanged
 
-```
-
+```text
 ## Key Improvements
 
 ### 1. Modern Package Configuration (`pyproject.toml`)
@@ -92,8 +90,7 @@ merge-powerpoint
 python main.py
 python -m merge_powerpoint
 
-```
-
+```text
 ## For Users
 
 ### Installation Changes
@@ -105,8 +102,7 @@ python -m merge_powerpoint
 pip install -r requirements.txt
 python main.py
 
-```
-
+```text
 **After:**
 
 ```bash
@@ -114,8 +110,7 @@ python main.py
 pip install .
 merge-powerpoint  # New CLI command!
 
-```
-
+```text
 ### Running the Application
 
 **Multiple options now available:**
@@ -132,8 +127,7 @@ python -m merge_powerpoint
 python main.py
 python run_with_logging.py
 
-```
-
+```text
 ### Imports (for programmatic use)
 
 **Before:**
@@ -143,8 +137,7 @@ python run_with_logging.py
 from powerpoint_core import PowerPointMerger
 from gui import MainWindow
 
-```
-
+```text
 **After (both work):**
 
 ```python
@@ -157,8 +150,7 @@ from merge_powerpoint.gui import MainUI
 from powerpoint_core import PowerPointMerger
 from gui import MainUI
 
-```
-
+```text
 ## For Developers
 
 ### Setting Up Development Environment
@@ -178,8 +170,7 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 # Install in editable mode with dev tools
 pip install -e ".[dev]"
 
-```
-
+```text
 This installs:
 
 - The package in editable mode
@@ -210,8 +201,7 @@ pytest tests/
 # Run tests with coverage
 pytest --cov=src/merge_powerpoint tests/
 
-```
-
+```text
 ### Adding New Features
 
 When adding new code:
@@ -241,8 +231,7 @@ if str(src_path) not in sys.path:
 
 from merge_powerpoint.app import AppController  # noqa: E402, F401
 
-```
-
+```text
 This ensures:
 
 - ✅ Existing code continues to work
@@ -296,8 +285,7 @@ This ensures:
 # Install the package
 pip install -e .
 
-```
-
+```text
 ### CLI Command Not Found
 
 **Problem:** `merge-powerpoint: command not found`
@@ -313,8 +301,7 @@ pip install .
 python -m merge_powerpoint
 python main.py
 
-```
-
+```text
 ### Tests Failing
 
 **Problem:** Tests can't import modules
@@ -329,8 +316,7 @@ cd /path/to/MergePowerPointPresentations
 # Run tests from root
 pytest tests/
 
-```
-
+```text
 ## Questions?
 
 For questions about the refactoring:

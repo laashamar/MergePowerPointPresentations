@@ -4,7 +4,9 @@ This document provides guidance for using the new refactored PySide6 GUI interfa
 
 ## Overview
 
-The refactored GUI (`gui_refactored.py`) implements a modern, two-column interface following PySide6 best practices with comprehensive features including drag-and-drop, threading, and signal-based architecture.
+The refactored GUI (`gui_refactored.py`) implements a modern, two-column
+interface following PySide6 best practices with comprehensive features including
+drag-and-drop, threading, and signal-based architecture.
 
 ## Quick Start
 
@@ -30,8 +32,7 @@ window.show()
 
 sys.exit(app.exec())
 
-```
-
+```text
 ## Key Features
 
 ### 1. Two-Column Layout (3:1 Ratio)
@@ -61,8 +62,7 @@ window.order_changed.connect(handler)    # List[str] new order
 window.clear_requested.connect(handler)  # No parameters
 window.merge_requested.connect(handler)  # str output path
 
-```
-
+```text
 ### 3. Threading
 
 Merge operations run in a background QThread, keeping the UI responsive:
@@ -74,8 +74,7 @@ Merge operations run in a background QThread, keeping the UI responsive:
 worker.progress.connect(on_progress)     # (int current, int total)
 worker.finished.connect(on_finished)     # (bool success, str path, str error)
 
-```
-
+```text
 ### 4. Settings Persistence
 
 The UI remembers the last save location:
@@ -85,8 +84,7 @@ The UI remembers the last save location:
 # Automatic via QSettings
 # Uses application name and organization from QApplication
 
-```
-
+```text
 ## API Reference
 
 ### MainUI Class
@@ -112,8 +110,7 @@ class MainUI(QWidget):
             parent: Optional parent widget
         """
 
-```
-
+```text
 ### FileListModel Class
 
 ```python
@@ -136,8 +133,7 @@ class FileListModel(QStandardItemModel):
     def reorder_files(self, new_order: List[str]):
         """Update file order."""
 
-```
-
+```text
 ## Testing with pytest-qt
 
 ```python
@@ -171,8 +167,7 @@ def test_files_added_signal(main_ui, qtbot, mocker):
     # Verify
     assert spy.count() == 1
 
-```
-
+```text
 ## UI States
 
 ### Empty State
@@ -218,8 +213,7 @@ UI_STRINGS = {
     # ... etc
 }
 
-```
-
+```text
 To add a new language:
 
 1. Copy `UI_STRINGS` dict
@@ -237,8 +231,7 @@ Icons are managed through Qt resource system:
 cd resources
 pyside6-rcc icons.qrc -o ../src/merge_powerpoint/icons_rc.py
 
-```
-
+```text
 Icons are SVG format in `resources/icons/`:
 
 - `plus.svg` - Drop zone icon
@@ -266,8 +259,7 @@ Always inject the PowerPointMerger:
 merger = PowerPointMerger()
 ui = MainUI(merger=merger)
 
-```
-
+```text
 ### 2. Connect Before Show
 Connect signals before showing the window:
 
@@ -277,8 +269,7 @@ ui = MainUI(merger=merger)
 ui.files_added.connect(my_handler)
 ui.show()
 
-```
-
+```text
 ### 3. Set Application Identity
 Always set app name for QSettings:
 
@@ -288,8 +279,7 @@ app = QApplication(sys.argv)
 app.setApplicationName("PowerPoint Merger")
 app.setOrganizationName("MergePowerPoint")
 
-```
-
+```text
 ### 4. Handle Errors
 Connect to finished signal to handle errors:
 
@@ -299,8 +289,7 @@ def on_merge_finished(success, path, error):
     if not success:
         print(f"Error: {error}")
 
-```
-
+```text
 ## Troubleshooting
 
 ### Icons Not Showing
@@ -310,8 +299,7 @@ Compile the resource file:
 
 pyside6-rcc resources/icons.qrc -o src/merge_powerpoint/icons_rc.py
 
-```
-
+```text
 ### Settings Not Saving
 Set application identity before creating MainUI.
 
@@ -323,8 +311,7 @@ Set Qt platform for headless testing:
 export QT_QPA_PLATFORM=offscreen
 pytest tests/test_gui_refactored.py
 
-```
-
+```text
 ### UI Freezing
 The refactored UI uses threading - if it freezes, there may be an issue with the worker thread. Check logs for errors.
 

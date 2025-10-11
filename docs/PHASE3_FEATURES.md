@@ -32,7 +32,9 @@ All features were implemented following PEP8 coding standards with comprehensive
 ## 1. Drag-and-Drop File Addition
 
 ### Description
-Users can now add PowerPoint files by dragging them from their file explorer directly onto the application window.
+
+Users can now add PowerPoint files by dragging them from their file explorer
+directly onto the application window.
 
 ### How It Works
 
@@ -57,7 +59,9 @@ Users can now add PowerPoint files by dragging them from their file explorer dir
 ## 2. Drag-and-Drop List Reordering
 
 ### Description
-The order of files in the merge list can be changed by clicking and dragging file labels to new positions.
+
+The order of files in the merge list can be changed by clicking and dragging
+file labels to new positions.
 
 ### How It Works
 
@@ -87,7 +91,9 @@ The order of files in the merge list can be changed by clicking and dragging fil
 ## 3. Dynamic Status Feedback During Merge
 
 ### Description
-The merge process now provides real-time feedback about which file and slide is being processed, keeping users informed without blocking the GUI.
+
+The merge process now provides real-time feedback about which file and slide is
+being processed, keeping users informed without blocking the GUI.
 
 ### Status Messages
 
@@ -126,7 +132,9 @@ The merge process now provides real-time feedback about which file and slide is 
 ## 4. Post-Merge Actions
 
 ### Description
-After a successful merge, two action buttons appear to provide quick access to the merged file.
+
+After a successful merge, two action buttons appear to provide quick access to
+the merged file.
 
 ### Buttons
 
@@ -201,16 +209,14 @@ All Phase 3 code follows these standards:
 
 pip install tkinterdnd2>=0.3.0
 
-```
-
+```text
 Or install all requirements:
 
 ```bash
 
 pip install -r requirements.txt
 
-```
-
+```text
 ## Backward Compatibility
 
 All Phase 3 features are designed to be backward compatible:

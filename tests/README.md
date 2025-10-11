@@ -2,7 +2,9 @@
 
 ## Overview
 
-This directory contains comprehensive unit tests for the PowerPoint Presentation Merger application. All tests follow PEP8 standards and best practices.
+This directory contains comprehensive unit tests for the PowerPoint
+Presentation Merger application. All tests follow PEP8 standards and best
+practices.
 
 ## Test Structure
 

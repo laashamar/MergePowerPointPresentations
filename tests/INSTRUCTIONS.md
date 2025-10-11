@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document provides detailed instructions for resolving pytest test failures in the PowerPoint Presentation Merger project. The test suite consists of four main test modules that validate core functionality across different components.
+This document provides detailed instructions for resolving pytest test failures
+in the PowerPoint Presentation Merger project. The test suite consists of four
+main test modules that validate core functionality across different components.
 
 ## Objective
 
@@ -37,7 +39,8 @@ TypeError: MainWindow.__init__() missing 1 required positional argument: 'merger
 
 #### GUI Root Cause
 
-The `main_app` fixture that sets up the `MainWindow` for testing is not passing the required `PowerPointMerger` instance to the constructor.
+The `main_app` fixture that sets up the `MainWindow` for testing is not passing
+the required `PowerPointMerger` instance to the constructor.
 
 #### GUI Solution
 
@@ -81,7 +84,9 @@ Multiple tests are failing due to incorrect attribute references:
 
 #### App Logic Root Cause
 
-Tests incorrectly reference `merger.files` attribute, but the actual class attribute is named `merger.file_paths`. This causes methods to operate on empty lists, leading to `IndexError` and incorrect assertions.
+Tests incorrectly reference `merger.files` attribute, but the actual class
+attribute is named `merger.file_paths`. This causes methods to operate on empty
+lists, leading to `IndexError` and incorrect assertions.
 
 #### App Logic Solution
 
@@ -126,7 +131,8 @@ AssertionError: assert 20 == 10
 
 #### Logger Root Cause
 
-Test expects logging level to be `10` (DEBUG), but `app_logger.setup_logging` correctly configures it to `logging.INFO` (numerical value `20`).
+Test expects logging level to be `10` (DEBUG), but `app_logger.setup_logging`
+correctly configures it to `logging.INFO` (numerical value `20`).
 
 #### Logger Solution
 

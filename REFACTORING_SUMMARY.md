@@ -14,8 +14,7 @@ following industry best practices.
 
 **Implemented PEP 518/621 compliant structure:**
 
-```
-
+```text
 MergePowerPointPresentations/
 ├── src/merge_powerpoint/          ← NEW: Main package
 │   ├── __init__.py                 ← Package exports
@@ -36,8 +35,7 @@ MergePowerPointPresentations/
     ├── CONTRIBUTING.md             ← UPDATED
     └── MIGRATION.md                ← NEW
 
-```
-
+```text
 ### ✅ 2. Package Configuration (pyproject.toml)
 
 **Created comprehensive modern configuration:**
@@ -120,8 +118,7 @@ pip install .
 # Development installation
 pip install -e ".[dev]"
 
-```
-
+```text
 ### Running the Application
 
 ```bash
@@ -136,8 +133,7 @@ python -m merge_powerpoint
 python main.py
 python run_with_logging.py
 
-```
-
+```text
 ---
 
 ## 🔧 Development Workflow
@@ -152,8 +148,7 @@ python -m venv venv
 source venv/bin/activate
 pip install -e ".[dev]"
 
-```
-
+```text
 ### Code Quality Commands
 
 ```bash
@@ -170,8 +165,7 @@ pytest tests/
 # Run with coverage
 pytest --cov=src/merge_powerpoint tests/
 
-```
-
+```text
 ---
 
 ## ✨ Key Improvements
@@ -267,8 +261,7 @@ All quality checks pass:
 ✓ Import patterns tested
 ✓ Backward compatibility confirmed
 
-```
-
+```text
 ---
 
 ## 📝 Commit History

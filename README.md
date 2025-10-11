@@ -239,7 +239,8 @@ ruff check src/
 
 - 🏗️ [**ARCHITECTURE.md**](docs/ARCHITECTURE.md) - Technical architecture and design patterns
 - 📝 [**CHANGELOG.md**](docs/CHANGELOG.md) - Version history and release notes
-- 🚀 [**PLANNED_FEATURE_ENHANCEMENTS.md**](docs/PLANNED_FEATURE_ENHANCEMENTS.md) - Planned features and roadmap
+- 🚀 [**PLANNED_FEATURE_ENHANCEMENTS.md**](docs/PLANNED_FEATURE_ENHANCEMENTS.md) -
+  Planned features and roadmap
 - 🤝 [**CONTRIBUTING.md**](docs/CONTRIBUTING.md) - How to contribute to the project
 - 📜 [**CODE_OF_CONDUCT.md**](docs/CODE_OF_CONDUCT.md) - Community guidelines
 

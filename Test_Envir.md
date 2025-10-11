@@ -4,14 +4,15 @@
 
 ## Overview
 
-This document describes the testing structure and CI/CD setup for the PowerPoint Presentation Merger application. The testing infrastructure follows PEP8 standards rigorously and implements best practices for Python testing.
+This document describes the testing structure and CI/CD setup for the
+PowerPoint Presentation Merger application. The testing infrastructure follows
+PEP8 standards rigorously and implements best practices for Python testing.
 
 ## Test Structure
 
 ### Directory Layout
 
-```
-
+```text
 MergePowerPointPresentations/
 ├── src/
 │   └── merge_powerpoint/          # Main package
@@ -35,8 +36,7 @@ MergePowerPointPresentations/
 ├── pytest.ini                    # Pytest configuration (if separate)
 └── requirements.txt              # Legacy compatibility
 
-```
-
+```text
 ### Test Categories
 
 Tests are organized using pytest markers:
@@ -59,8 +59,7 @@ pip install -e ".[dev]"
 pip install -r requirements.txt
 pip install pytest pytest-qt pytest-cov pytest-mock ruff black
 
-```
-
+```text
 ### Run All Tests
 
 ```bash
@@ -74,8 +73,7 @@ pytest -v
 # Run with coverage report
 pytest --cov=. --cov-report=html
 
-```
-
+```text
 ### Run Specific Test Categories
 
 ```bash
@@ -92,8 +90,7 @@ pytest tests/test_app.py::TestPowerPointMergerApp
 # Run specific test function
 pytest tests/test_app.py::TestPowerPointMergerApp::test_initialization
 
-```
-
+```text
 ### Run Tests with Different Options
 
 ```bash
@@ -110,8 +107,7 @@ pytest -l
 # Run tests in parallel (requires pytest-xdist)
 pytest -n auto
 
-```
-
+```text
 ## Code Quality and Linting
 
 ### PEP8 Compliance
@@ -128,8 +124,7 @@ ruff check src/merge_powerpoint/
 # With auto-fix
 ruff check --fix src/merge_powerpoint/
 
-```
-
+```text
 #### Black (Code Formatter)
 
 ```bash
@@ -140,8 +135,7 @@ black --check src/merge_powerpoint/
 # Format code automatically
 black src/merge_powerpoint/
 
-```
-
+```text
 #### isort (Import Sorting)
 
 ```bash
@@ -152,8 +146,7 @@ isort --check-only src/merge_powerpoint/
 # Fix import ordering
 isort src/merge_powerpoint/
 
-```
-
+```text
 ### Running All Quality Checks
 
 ```bash
@@ -163,8 +156,7 @@ black --check src/merge_powerpoint/ && \
 isort --check-only src/merge_powerpoint/ && \
 ruff check src/merge_powerpoint/
 
-```
-
+```text
 ## CI/CD Pipeline
 
 ### GitHub Actions Workflow
@@ -272,8 +264,7 @@ class TestClassName(unittest.TestCase):
         # Assert
         pass
 
-```
-
+```text
 ### Testing Best Practices
 
 1. **Use Descriptive Test Names**
@@ -324,8 +315,7 @@ def test_function(self, mock_create_object):
 
     # Test code here
 
-```
-
+```text
 ### GUI Components
 
 GUI tests mock PySide6 to avoid creating actual windows:
@@ -340,8 +330,7 @@ def test_window(self, mock_window, mock_qapp):
 
     # Test code here
 
-```
-
+```text
 ## Troubleshooting
 
 ### Common Issues
@@ -384,8 +373,7 @@ pylint *.py
 # Run tests
 pytest -v
 
-```
-
+```text
 ### Commit Hooks (Optional)
 
 Consider setting up pre-commit hooks:
@@ -399,8 +387,7 @@ pip install pre-commit
 # Run pre-commit install
 pre-commit install
 
-```
-
+```text
 ## Additional Resources
 
 - [pytest documentation](https://docs.pytest.org/)
@@ -423,8 +410,7 @@ pip install --upgrade flake8 pylint black isort
 # Regenerate requirements-dev.txt
 pip freeze > requirements-dev.txt
 
-```
-
+```text
 ### Adding New Tests
 
 1. Create test file in `tests/` directory
