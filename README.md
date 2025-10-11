@@ -174,7 +174,7 @@ pytest tests/
 pytest --cov=src tests/
 
 # Run only GUI tests
-pytest tests/test_gui_refactored.py -v
+pytest tests/test_gui.py -v
 
 # Run with verbose output
 pytest -v tests/
@@ -191,7 +191,7 @@ Test coverage includes:
 
 ### Architecture
 
-The refactored GUI follows modern PySide6 best practices:
+The GUI follows modern PySide6 best practices:
 
 1. **Dependency Injection**: Backend logic (PowerPointMerger) is injected into the UI
 2. **Model-View Pattern**: Uses QStandardItemModel for file list management

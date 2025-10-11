@@ -1,10 +1,10 @@
-# GUI Migration Guide: Transitioning to the Refactored PySide6 UI
+# GUI Guide: PySide6 UI
 
-This document provides guidance for using the new refactored PySide6 GUI interface.
+This document provides guidance for using the PySide6 GUI interface.
 
 ## Overview
 
-The refactored GUI (`gui_refactored.py`) implements a modern, two-column
+The GUI (`gui.py`) implements a modern, two-column
 interface following PySide6 best practices with comprehensive features including
 drag-and-drop, threading, and signal-based architecture.
 
@@ -14,7 +14,7 @@ drag-and-drop, threading, and signal-based architecture.
 
 ```python
 
-from merge_powerpoint.gui_refactored import MainUI
+from merge_powerpoint.gui import MainUI
 from merge_powerpoint.powerpoint_core import PowerPointMerger
 from PySide6.QtWidgets import QApplication
 import sys
@@ -32,7 +32,7 @@ window.show()
 
 sys.exit(app.exec())
 
-```text
+```
 ## Key Features
 
 ### 1. Two-Column Layout (3:1 Ratio)
@@ -140,7 +140,7 @@ class FileListModel(QStandardItemModel):
 
 import pytest
 from PySide6.QtTest import QSignalSpy
-from merge_powerpoint.gui_refactored import MainUI
+from merge_powerpoint.gui import MainUI
 from merge_powerpoint.powerpoint_core import PowerPointMerger
 
 @pytest.fixture
@@ -167,7 +167,7 @@ def test_files_added_signal(main_ui, qtbot, mocker):
     # Verify
     assert spy.count() == 1
 
-```text
+```
 ## UI States
 
 ### Empty State
@@ -309,15 +309,15 @@ Set Qt platform for headless testing:
 ```bash
 
 export QT_QPA_PLATFORM=offscreen
-pytest tests/test_gui_refactored.py
+pytest tests/test_gui.py
 
-```text
+```
 ### UI Freezing
-The refactored UI uses threading - if it freezes, there may be an issue with the worker thread. Check logs for errors.
+The UI uses threading - if it freezes, there may be an issue with the worker thread. Check logs for errors.
 
-## Migration from Original GUI
+## PySide6 GUI
 
-The original `gui.py` remains available but new projects should use `gui_refactored.py`:
+The GUI follows modern Qt patterns for maintainability:
 
 **Advantages**:
 
@@ -328,4 +328,4 @@ The original `gui.py` remains available but new projects should use `gui_refacto
 - Comprehensive test coverage
 - Improved user experience
 
-See the full test suite in `tests/test_gui_refactored.py` for complete usage examples.
+See the full test suite in `tests/test_gui.py` for complete usage examples.

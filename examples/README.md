@@ -4,9 +4,9 @@ This directory contains example scripts demonstrating how to use the PowerPoint 
 
 ## Available Examples
 
-### example_refactored_gui.py
+### example_gui.py
 
-Demonstrates the refactored PySide6 GUI with all features:
+Demonstrates the PySide6 GUI with all features:
 
 - Two-column layout with drag-and-drop
 - Signal-based architecture
@@ -16,7 +16,7 @@ Demonstrates the refactored PySide6 GUI with all features:
 **Run:**
 
 ```bash
-python examples/example_refactored_gui.py
+python examples/example_gui.py
 ```
 
 **Features demonstrated:**
@@ -52,11 +52,11 @@ For testing on non-Windows platforms:
 
 ```bash
 export QT_QPA_PLATFORM=offscreen  # For headless testing
-python examples/example_refactored_gui.py
+python examples/example_gui.py
 ```
 
 ## Learn More
 
 - See [GUI_GUIDE.md](../docs/GUI_GUIDE.md) for API reference
 - See [ARCHITECTURE.md](../docs/ARCHITECTURE.md) for design details
-- See [tests/test_gui_refactored.py](../tests/test_gui_refactored.py) for testing examples
+- See [tests/test_gui.py](../tests/test_gui.py) for testing examples

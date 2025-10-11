@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Example script demonstrating the refactored PySide6 GUI.
+Example script demonstrating the PySide6 GUI.
 
 This standalone example shows how to:
 1. Initialize the application with proper configuration
@@ -9,7 +9,7 @@ This standalone example shows how to:
 4. Launch the modern two-column interface
 
 Run this file directly:
-    python examples/example_refactored_gui.py
+    python examples/example_gui.py
 """
 
 import logging
