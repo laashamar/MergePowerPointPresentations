@@ -28,12 +28,13 @@ This document provides comprehensive development instructions for the PowerPoint
 
 ### Key Components
 
-| Component | Purpose | Technology |
-|-----------|---------|------------|
-| `gui.py` | User interface | PySide6/Qt |
-| `app.py` | Application logic | Python |
-| `powerpoint_core.py` | PowerPoint automation | comtypes |
-| `app_logger.py` | Logging system | Python logging |
+| Component | Location | Purpose | Technology |
+|-----------|----------|---------|------------|
+| `gui.py` | `src/merge_powerpoint/` | User interface | PySide6/Qt |
+| `app.py` | `src/merge_powerpoint/` | Application controller | Python |
+| `powerpoint_core.py` | `src/merge_powerpoint/` | PowerPoint automation | comtypes |
+| `app_logger.py` | `src/merge_powerpoint/` | Logging system | Python logging |
+| `__main__.py` | `src/merge_powerpoint/` | CLI entry point | Python |
 
 ---
 
@@ -97,21 +98,34 @@ def robust_powerpoint_operation():
 
 ```text
 MergePowerPointPresentations/
+├── src/
+│   └── merge_powerpoint/    # Main package
+│       ├── __init__.py
+│       ├── __main__.py      # CLI entry point
+│       ├── app.py           # Application controller
+│       ├── gui.py           # User interface (PySide6)
+│       ├── powerpoint_core.py # PowerPoint automation
+│       └── app_logger.py    # Logging configuration
 ├── docs/                    # Documentation
 │   ├── ARCHITECTURE.md
 │   ├── INSTRUCTIONS.md
-│   └── CHANGELOG.md
+│   ├── CHANGELOG.md
+│   ├── CONTRIBUTING.md
+│   ├── MIGRATION.md
+│   └── PLANNED_FEATURE_ENHANCEMENTS.md
 ├── tests/                   # Test suite
 │   ├── test_gui.py
 │   ├── test_app.py
 │   ├── test_app_logger.py
 │   └── test_powerpoint_core.py
-├── app.py                   # Main application logic
-├── gui.py                   # User interface
-├── powerpoint_core.py       # PowerPoint automation
-├── app_logger.py           # Logging configuration
-├── main.py                 # Application entry point
-└── requirements.txt        # Dependencies
+├── main.py                  # Entry point (compatibility shim)
+├── run_with_logging.py      # Entry with logging
+├── app.py                   # Compatibility shim
+├── gui.py                   # Compatibility shim
+├── powerpoint_core.py       # Compatibility shim
+├── app_logger.py            # Compatibility shim
+├── pyproject.toml           # Modern Python project config
+└── requirements.txt         # Dependencies (legacy support)
 ```
 
 ---
@@ -124,15 +138,14 @@ MergePowerPointPresentations/
 
    ```bash
    python -m venv .venv
-   .venv\Scripts\activate  # Windows
-   pip install -r requirements.txt
+   .venv\Scripts\activate  # Windows (or source .venv/bin/activate on Unix)
+   pip install -e ".[dev]"  # Install package with dev dependencies
    ```
 
-2. **Development Dependencies**
+2. **Alternative: Legacy Requirements File**
 
    ```bash
-   pip install pytest pytest-qt pytest-mock
-   pip install flake8 pylint black isort
+   pip install -r requirements.txt  # If pyproject.toml is not used
    ```
 
 3. **Testing Setup**
@@ -147,16 +160,19 @@ MergePowerPointPresentations/
 
 ```bash
 # Format code with Black
-black --line-length=100 *.py
+black --line-length=100 src/merge_powerpoint/
 
 # Sort imports with isort
-isort --profile black *.py
+isort --profile black src/merge_powerpoint/
 
-# Lint with flake8
-flake8 *.py --max-line-length=100
+# Lint with Ruff (recommended)
+ruff check src/merge_powerpoint/
+
+# Alternative: Lint with flake8
+flake8 src/merge_powerpoint/ --max-line-length=100
 
 # Advanced linting with pylint
-pylint *.py --max-line-length=100
+pylint src/merge_powerpoint/ --max-line-length=100
 ```
 
 #### Testing
@@ -192,14 +208,20 @@ pytest tests/test_gui.py -v
 python --version
 pip list
 
+# Verify package installation
+pip show merge-powerpoint
+
 # Verify dependencies
 pip check
+
+# Run application in debug mode
+python run_with_logging.py
 
 # Run tests with verbose output
 pytest -vv --tb=long tests/
 
 # Check code quality
-flake8 --statistics *.py
+ruff check src/merge_powerpoint/ --statistics
 ```
 
 ---
@@ -270,6 +292,6 @@ flake8 --statistics *.py
 
 ---
 
-**Last Updated**: 2025-10-09  
-**Version**: 2.0  
+**Last Updated**: 2025-10-11  
+**Version**: 2.1  
 **Maintainer**: Development Team

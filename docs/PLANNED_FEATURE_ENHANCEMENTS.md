@@ -13,32 +13,28 @@ This document tracks planned features and enhancements for the PowerPoint Presen
 
 ## Planned Features and Enhancements
 
-### 🟡 Feature 1: Visual Progress Indicator During Merge
+### ✅ Feature 1: Visual Progress Indicator During Merge
 
-**Status**: 📋 Open
+**Status**: ✅ Completed (Version 1.0.0)
 **Priority**: High  
 **Complexity**: Medium
 
 #### Progress Indicator Description
 
-Implement a progress bar or status window that displays during the merge process to provide real-time feedback to users.
+Implemented a progress bar that displays during the merge process to provide real-time feedback to users.
 
-#### Progress Indicator Technical Requirements
+#### Implementation Details
 
-- Add progress tracking to powerpoint_core.py
-- Create progress dialog with progress bar, current file status, and cancel button
-- Update progress after each slide or file is processed
+- Progress tracking integrated in powerpoint_core.py with callback system
+- QProgressBar widget displays progress percentage
+- Progress updates after each file is processed
+- Non-blocking UI with responsive progress updates
 
-#### Progress Indicator User Story
-
-As a user merging large presentations, I want to see the merge progress so that I know the application is working and can estimate completion time.
-
-#### Progress Indicator Benefits
+#### Benefits Realized
 
 - **Improved User Experience**: Users get visual confirmation that the process is active
-- **Reduced Anxiety**: No more wondering if the application has frozen
-- **Better Control**: Users can see which files are being processed
-- **Professional Feel**: Progress indicators are expected in modern applications
+- **Reduced Anxiety**: Progress bar shows the application is working
+- **Professional Feel**: Modern progress indicator integrated into main window
 
 ### 🟡 Feature 2: Enhanced Error Messages and Exception Handling
 
@@ -107,7 +103,7 @@ Apply the existing application icon consistently across all windows and the comp
 
 #### Application Icon Technical Requirements
 
-- Add window.iconbitmap() to all tkinter windows in gui.py
+- Apply QIcon to main window in PySide6 GUI
 - Configure icon for compiled executable in build process
 - Ensure icon displays correctly in all GUI windows and system integration points
 
@@ -121,6 +117,34 @@ As a user, I want the application to have a consistent, professional appearance 
 - **Professional Appearance**: Polished, finished look
 - **User Experience**: Easier to identify the application
 - **Desktop Integration**: Better integration with Windows environment
+
+### 🔵 Feature 5: Drag-and-Drop File Addition
+
+**Status**: 📋 Open
+**Priority**: Low
+**Complexity**: Medium
+
+#### Drag-and-Drop Description
+
+Enable users to add PowerPoint files by dragging them from file explorer directly onto the application window.
+
+#### Drag-and-Drop Technical Requirements
+
+- Implement Qt drag-and-drop events (dragEnterEvent, dropEvent)
+- Validate dropped files are .pptx format
+- Add visual feedback during drag operation
+- Prevent duplicate files
+
+#### Drag-and-Drop User Story
+
+As a user, I want to drag files from my file explorer directly onto the application window so I can quickly add files without using the file dialog.
+
+#### Drag-and-Drop Benefits
+
+- **Faster Workflow**: Quick file addition without dialogs
+- **Modern UX**: Expected feature in contemporary applications
+- **Reduced Clicks**: More efficient file management
+- **Intuitive Interface**: Natural interaction pattern
 
 ## Future Considerations
 
@@ -160,13 +184,13 @@ We welcome contributions! Here is how you can help:
 
 ### Short Term
 
-1. **Progress Indicator** - Most requested feature
-2. **Enhanced Error Messages** - Improves user experience significantly
+1. **Enhanced Error Messages** - Improves user experience significantly
+2. **Application Icon** - Quick win for professional appearance (icon resource exists but not fully integrated)
 
 ### Medium Term
 
 1. **Cancel Functionality** - Improves application robustness
-2. **Application Icon** - Quick win for professional appearance
+2. **Drag-and-Drop Support** - Modern file management feature
 
 ### Long Term
 
@@ -176,7 +200,7 @@ We welcome contributions! Here is how you can help:
 
 ## Documentation References
 
-Last updated: 2025-10-05
+Last updated: 2025-10-11
 
 For technical implementation details: See ARCHITECTURE.md
 

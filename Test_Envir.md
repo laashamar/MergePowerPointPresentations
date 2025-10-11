@@ -11,20 +11,27 @@ This document describes the testing structure and CI/CD setup for the PowerPoint
 
 ```
 MergePowerPointPresentations/
+├── src/
+│   └── merge_powerpoint/          # Main package
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── app.py
+│       ├── gui.py
+│       ├── powerpoint_core.py
+│       └── app_logger.py
 ├── tests/
 │   ├── __init__.py
-│   ├── test_app.py              # Tests for app.py
-│   ├── test_gui.py              # Tests for gui.py
-│   ├── test_logger.py           # Tests for logger.py
-│   └── test_powerpoint_core.py  # Tests for powerpoint_core.py
+│   ├── conftest.py               # Shared fixtures
+│   ├── test_app.py               # Tests for app.py
+│   ├── test_gui.py               # Tests for gui.py
+│   ├── test_app_logger.py        # Tests for app_logger.py
+│   └── test_powerpoint_core.py   # Tests for powerpoint_core.py
 ├── .github/
 │   └── workflows/
-│       └── ci.yml               # GitHub Actions CI/CD pipeline
-├── pytest.ini                   # Pytest configuration
-├── .flake8                      # Flake8 linting configuration
-├── .pylintrc                    # Pylint configuration
-├── requirements.txt             # Production dependencies
-└── requirements-dev.txt         # Development dependencies
+│       └── ci.yml                # GitHub Actions CI/CD pipeline
+├── pyproject.toml                # Modern Python project config
+├── pytest.ini                    # Pytest configuration (if separate)
+└── requirements.txt              # Legacy compatibility
 ```
 
 ### Test Categories
@@ -41,11 +48,12 @@ Tests are organized using pytest markers:
 ### Install Test Dependencies
 
 ```bash
-# Install all development dependencies
-pip install -r requirements-dev.txt
+# Install all dependencies including development tools
+pip install -e ".[dev]"
 
-# Or install only testing tools
-pip install pytest pytest-cov pytest-mock
+# Or install from requirements.txt (legacy)
+pip install -r requirements.txt
+pip install pytest pytest-qt pytest-cov pytest-mock ruff black
 ```
 
 ### Run All Tests
@@ -99,54 +107,43 @@ pytest -n auto
 
 All Python code follows PEP8 standards strictly. Use the following tools to verify:
 
-#### Flake8
+#### Ruff (Fast Modern Linter)
 
 ```bash
 # Check all Python files
-flake8 *.py
+ruff check src/merge_powerpoint/
 
-# With custom configuration
-flake8 *.py --max-line-length=100
-```
-
-#### Pylint
-
-```bash
-# Check all Python files
-pylint *.py
-
-# Check specific module
-pylint app.py
+# With auto-fix
+ruff check --fix src/merge_powerpoint/
 ```
 
 #### Black (Code Formatter)
 
 ```bash
 # Check formatting without making changes
-black --check *.py
+black --check src/merge_powerpoint/
 
 # Format code automatically
-black *.py
+black src/merge_powerpoint/
 ```
 
 #### isort (Import Sorting)
 
 ```bash
 # Check import ordering
-isort --check-only *.py
+isort --check-only src/merge_powerpoint/
 
 # Fix import ordering
-isort *.py
+isort src/merge_powerpoint/
 ```
 
 ### Running All Quality Checks
 
 ```bash
 # Run all checks in sequence
-black --check *.py && \
-isort --check-only *.py && \
-flake8 *.py && \
-pylint *.py
+black --check src/merge_powerpoint/ && \
+isort --check-only src/merge_powerpoint/ && \
+ruff check src/merge_powerpoint/
 ```
 
 ## CI/CD Pipeline
@@ -283,29 +280,30 @@ class TestClassName(unittest.TestCase):
   - Error handling paths
   - Input validation
 
-## Mocking Strategy
+### Mocking Strategy
 
 ### Windows-Specific Dependencies
 
 Since the application uses Windows COM automation, tests mock these components:
 
 ```python
-@patch('powerpoint_core.win32com.client.Dispatch')
-def test_function(self, mock_dispatch):
+@patch('powerpoint_core.comtypes.client.CreateObject')
+def test_function(self, mock_create_object):
     mock_powerpoint = MagicMock()
-    mock_dispatch.return_value = mock_powerpoint
+    mock_create_object.return_value = mock_powerpoint
     # Test code here
 ```
 
 ### GUI Components
 
-GUI tests mock tkinter to avoid creating actual windows:
+GUI tests mock PySide6 to avoid creating actual windows:
 
 ```python
-@patch('gui.tk.Tk')
-def test_window(self, mock_tk):
-    mock_window = MagicMock()
-    mock_tk.return_value = mock_window
+@patch('gui.QApplication')
+@patch('gui.MainWindow')
+def test_window(self, mock_window, mock_qapp):
+    mock_app = MagicMock()
+    mock_qapp.return_value = mock_app
     # Test code here
 ```
 
