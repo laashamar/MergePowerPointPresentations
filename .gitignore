@@ -218,3 +218,6 @@ __marimo__/
 # Application logs directory
 logs/
 app.log
+
+# Development/test scripts
+run_refactored_ui.py
