@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from merge_powerpoint.gui_refactored import UI_STRINGS, MainUI
+from merge_powerpoint.gui import UI_STRINGS, MainUI
 from merge_powerpoint.powerpoint_core import PowerPointMerger
 
 # Set up logging
