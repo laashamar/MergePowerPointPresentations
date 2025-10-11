@@ -16,9 +16,9 @@ A modern Python utility to merge multiple PowerPoint (.pptx) files into a single
 - **Modern package structure** for easy installation and development
 - **Command-line interface** for easy execution
 
-## New Refactored GUI (PySide6)
+## Modern GUI (PySide6)
 
-The application now includes a modern, refactored GUI built with PySide6, featuring:
+The application features a modern GUI built with PySide6, offering an intuitive two-column layout:
 
 ### Two-Column Layout
 - **Left Column (3:1 ratio)**: Main interaction area with smart state management
@@ -40,19 +40,27 @@ The application now includes a modern, refactored GUI built with PySide6, featur
 - **Settings Persistence**: Remembers last save location between sessions
 - **Internationalization Ready**: All UI strings centralized for easy translation
 
-### Using the Refactored GUI
+### Using the GUI Programmatically
+
+The GUI can be embedded in your own applications. Usage example:
 
 ```python
-from merge_powerpoint.gui_refactored import MainUI
+from merge_powerpoint.gui import MainUI
 from merge_powerpoint.powerpoint_core import PowerPointMerger
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMainWindow
 import sys
 
 app = QApplication(sys.argv)
 merger = PowerPointMerger()
-window = MainUI(merger=merger)
-window.resize(1000, 600)
-window.show()
+
+# MainUI is a QWidget, so embed it in a QMainWindow
+main_window = QMainWindow()
+ui = MainUI(merger=merger)
+main_window.setCentralWidget(ui)
+main_window.setWindowTitle("PowerPoint Presentation Merger")
+main_window.resize(1000, 600)
+main_window.show()
+
 sys.exit(app.exec())
 ```
 
