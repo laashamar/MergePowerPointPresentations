@@ -7,6 +7,8 @@ merging, using CustomTkinter for a modern dark theme.
 import logging
 import os
 import customtkinter as ctk
+from PIL import Image
+from customtkinter import CTkImage
 from tkinter import filedialog, messagebox
 
 # PowerPoint-inspired Dark Mode Color Palette
@@ -296,22 +298,28 @@ class PowerPointMergerGUI:
         info_frame = ctk.CTkFrame(card, fg_color=COLORS['frame_bg'])
         info_frame.pack(side="left", fill="both", expand=True, padx=10, pady=5)
 
-        # PowerPoint icon (using emoji/text)
-        icon_label = ctk.CTkLabel(
-            info_frame,
-            text="📊",
-            font=(FONT_FAMILY, 16),
-            text_color=COLORS['primary_text']
-        )
-        icon_label.pack(side="left", padx=(0, 10))
+        # Load icon and define size
+        icon_path = os.path.join(os.path.dirname(__file__), "resources", "MergePowerPoint.ico")
+        if os.path.exists(icon_path):
+            icon_size = (24, 24)  # Adjusted for good visibility
+            icon_image = CTkImage(Image.open(icon_path), size=icon_size)
 
-        # Filename
+            # Ensure info_frame has enough height
+            info_frame.configure(height=icon_size[1] + 10)
+            info_frame.pack_propagate(False)
+
+            # Icon to the left
+            icon_label = ctk.CTkLabel(info_frame, image=icon_image, text="")
+            icon_label.image = icon_image  # Prevents garbage collection
+            icon_label.pack(side="left", padx=(0, 10))
+
+        # Filename with adjusted text size
         filename = os.path.basename(file_path)
         name_label = ctk.CTkLabel(
             info_frame,
             text=filename,
-            font=(FONT_FAMILY, FONT_SIZE_SMALL),
-            text_color=COLORS['primary_text'],
+            font=(FONT_FAMILY, 12),  # Increased from 10 for better balance with icon
+            text_color=COLORS['accent_hover'],  # #ba3416
             anchor="w"
         )
         name_label.pack(side="left", fill="x", expand=True)
@@ -331,9 +339,9 @@ class PowerPointMergerGUI:
             width=30,
             fg_color=COLORS['frame_bg'],
             hover_color=COLORS['accent_hover'],
-            text_color=COLORS['button_text'],
+            text_color=COLORS['accent_hover'],
             border_width=1,
-            border_color=COLORS['secondary_text']
+            border_color=COLORS['primary_accent']
         )
         up_btn.pack(side="left", padx=2)
 
@@ -345,9 +353,9 @@ class PowerPointMergerGUI:
             width=30,
             fg_color=COLORS['frame_bg'],
             hover_color=COLORS['accent_hover'],
-            text_color=COLORS['button_text'],
+            text_color=COLORS['accent_hover'],
             border_width=1,
-            border_color=COLORS['secondary_text']
+            border_color=COLORS['primary_accent']
         )
         down_btn.pack(side="left", padx=2)
 
