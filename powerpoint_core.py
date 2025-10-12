@@ -48,7 +48,10 @@ def merge_presentations(file_order, output_filename):
         # Process each source file in order
         for i, file_path in enumerate(file_order, 1):
             abs_path = os.path.abspath(file_path)
-            logging.info(f"--- Processing file {i}/{len(file_order)}: {os.path.basename(abs_path)} ---")
+            logging.info(
+                f"--- Processing file {i}/{len(file_order)}: "
+                f"{os.path.basename(abs_path)} ---"
+            )
             try:
                 # Open source presentation
                 logging.info(f"Opening source presentation: {abs_path}")
@@ -57,7 +60,7 @@ def merge_presentations(file_order, output_filename):
                     ReadOnly=True,
                     WithWindow=False
                 )
-                
+
                 num_slides = source_prs.Slides.Count
                 logging.info(f"Found {num_slides} slides in source presentation.")
 

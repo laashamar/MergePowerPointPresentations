@@ -206,6 +206,7 @@ run_with_logging.py
 ### State Management Pattern
 
 The application uses an **event-driven state pattern** where the `PowerPointMergerGUI` class maintains the merge queue state and communicates with the application through callback functions when a merge is requested. This ensures:
+
 - Real-time UI updates
 - Persistent queue state
 - Clean separation between presentation and business logic
