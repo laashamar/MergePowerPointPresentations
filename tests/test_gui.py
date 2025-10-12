@@ -318,7 +318,7 @@ class TestPowerPointMergerGUI:
                 gui_instance._on_merge()
             
             # Verify callback was called with correct path
-            expected_path = '/tmp/merged_output.pptx'
+            expected_path = os.path.join('/tmp', 'merged_output.pptx')
             mock_callback.assert_called_once()
             args = mock_callback.call_args[0]
             assert args[1] == expected_path
@@ -407,7 +407,7 @@ class TestPowerPointMergerGUI:
             assert len(file_list) == 2
             assert test_file1 in file_list
             assert test_file2 in file_list
-            assert output_path == '/tmp/output.pptx'
+            assert output_path == os.path.join('/tmp', 'output.pptx')
         finally:
             # Cleanup
             for f in [test_file1, test_file2]:
