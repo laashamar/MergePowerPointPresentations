@@ -257,11 +257,11 @@ class PowerPointMergerGUI:
             font=(FONT_FAMILY, 11),
             width=200,
             height=40,
-            fg_color=COLORS['frame_bg'],
+            fg_color=COLORS['primary_accent'],
             hover_color=COLORS['accent_hover'],
             text_color=COLORS['button_text'],
             border_width=1,
-            border_color=COLORS['secondary_text']
+            border_color=COLORS['primary_accent']
         )
         browse_btn.pack(pady=(20, 50))
 
