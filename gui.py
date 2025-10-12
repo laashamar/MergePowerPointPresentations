@@ -300,9 +300,20 @@ class PowerPointMergerGUI:
             
             icon_label.pack(side="left", padx=(0, 10))
         else:
-            # Fallback if icon loading failed
-            icon_label = ctk.CTkLabel(info_frame, text="🅿️", font=(FONT_FAMILY, 16))
-            icon_label.pack(side="left", padx=(0, 10))
+            # Fallback: Load pp.png and use CTkImage
+            try:
+                pp_png_path = os.path.join(os.path.dirname(__file__), "pp.png")
+                pil_image = Image.open(pp_png_path)
+                icon_image = ctk.CTkImage(light_image=pil_image,
+                                         dark_image=pil_image,
+                                         size=(24, 24))
+                icon_label = ctk.CTkLabel(info_frame, image=icon_image, text="")
+                icon_label.pack(side="left", padx=(0, 10))
+            except FileNotFoundError:
+                # Final fallback to text emoji if pp.png is not found
+                logging.warning("Icon 'pp.png' not found. Using text emoji as fallback.")
+                icon_label = ctk.CTkLabel(info_frame, text="🅿️", font=(FONT_FAMILY, 16))
+                icon_label.pack(side="left", padx=(0, 10))
 
         filename = os.path.basename(file_path)
         name_label = ctk.CTkLabel(
