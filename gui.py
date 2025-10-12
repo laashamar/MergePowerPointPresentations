@@ -2,11 +2,11 @@
 GUI module for PowerPoint Merger application.
 
 This module contains the modern two-column GUI with drag-and-drop
-support for PowerPoint file merging.
+support for PowerPoint file merging, using CustomTkinter for a modern dark theme.
 """
 import logging
 import os
-import tkinter as tk
+import customtkinter as ctk
 from tkinter import filedialog, messagebox
 try:
     from tkinterdnd2 import DND_FILES, TkinterDnD
@@ -15,9 +15,31 @@ except ImportError:
     HAS_DND = False
     logging.warning("tkinterdnd2 not available. Drag-and-drop will be disabled.")
 
+# PowerPoint-inspired Dark Mode Color Palette
+COLORS = {
+    'primary_accent': '#d35230',      # Main accent color for buttons and focus
+    'accent_hover': '#ba3416',        # Hover state and secondary elements
+    'window_bg': '#242424',           # Window background
+    'frame_bg': '#2b2b2b',            # Frame/widget background
+    'primary_text': '#e5e5e5',        # Primary text color
+    'secondary_text': '#a0a0a0',      # Secondary text color
+    'button_text': '#ffffff',         # Button text color
+    'error_color': '#FF0000',         # Color for buttons without commands
+}
+
+# Font settings
+FONT_FAMILY = "Helvetica"
+FONT_SIZE_LARGE = 14
+FONT_SIZE_MEDIUM = 12
+FONT_SIZE_SMALL = 10
+
+# Set CustomTkinter appearance mode and default color theme
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")  # We'll override with custom colors
+
 
 class PowerPointMergerGUI:
-    """Modern GUI for PowerPoint Merger with two-column layout."""
+    """Modern GUI for PowerPoint Merger with two-column layout using CustomTkinter."""
 
     def __init__(self, merge_callback):
         """
@@ -32,12 +54,17 @@ class PowerPointMergerGUI:
 
         # Create main window
         if HAS_DND:
-            self.root = TkinterDnD.Tk()
+            # Note: CustomTkinter doesn't support TkinterDnD directly, so we fall back
+            self.root = TkinterDnD.Tk() if HAS_DND else ctk.CTk()
+            logging.warning("Drag-and-drop may not work properly with CustomTkinter")
         else:
-            self.root = tk.Tk()
+            self.root = ctk.CTk()
 
         self.root.title("PowerPoint Merger")
         self.root.geometry("900x600")
+        
+        # Configure window colors
+        self.root.configure(fg_color=COLORS['window_bg'])
 
         # Set application icon
         icon_path = os.path.join(
@@ -57,117 +84,152 @@ class PowerPointMergerGUI:
     def _create_widgets(self):
         """Create and layout all GUI widgets."""
         # Main container with two columns
-        main_container = tk.Frame(self.root)
-        main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        main_container = ctk.CTkFrame(self.root, fg_color=COLORS['window_bg'])
+        main_container.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Column 1: Merge Queue (left side, wider)
-        self.queue_frame = tk.Frame(main_container, relief=tk.RIDGE, borderwidth=2)
-        self.queue_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
+        self.queue_frame = ctk.CTkFrame(main_container, fg_color=COLORS['frame_bg'], 
+                                        border_width=2, border_color=COLORS['secondary_text'])
+        self.queue_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
 
-        queue_label = tk.Label(
+        queue_label = ctk.CTkLabel(
             self.queue_frame,
             text="Merge Queue",
-            font=("Arial", 14, "bold")
+            font=(FONT_FAMILY, FONT_SIZE_LARGE, "bold"),
+            text_color=COLORS['primary_text']
         )
         queue_label.pack(pady=(10, 5))
 
         # Container for drop zone or file list
-        self.content_frame = tk.Frame(self.queue_frame)
-        self.content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        self.content_frame = ctk.CTkFrame(self.queue_frame, fg_color=COLORS['frame_bg'])
+        self.content_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Column 2: Configuration & Actions (right side)
-        config_frame = tk.Frame(main_container, relief=tk.RIDGE, borderwidth=2)
-        config_frame.pack(side=tk.RIGHT, fill=tk.BOTH, padx=(5, 0))
-        config_frame.config(width=300)
+        config_frame = ctk.CTkFrame(main_container, fg_color=COLORS['frame_bg'],
+                                    border_width=2, border_color=COLORS['secondary_text'])
+        config_frame.pack(side="right", fill="both", padx=(5, 0))
+        config_frame.configure(width=300)
 
-        config_label = tk.Label(
+        config_label = ctk.CTkLabel(
             config_frame,
             text="Configuration",
-            font=("Arial", 14, "bold")
+            font=(FONT_FAMILY, FONT_SIZE_LARGE, "bold"),
+            text_color=COLORS['primary_text']
         )
         config_label.pack(pady=(10, 5))
 
         # Output folder selector
-        folder_frame = tk.LabelFrame(
+        folder_frame = ctk.CTkFrame(
             config_frame,
-            text="Output Location",
-            font=("Arial", 10, "bold"),
-            padx=10,
-            pady=10
+            fg_color=COLORS['frame_bg'],
+            border_width=1,
+            border_color=COLORS['secondary_text']
         )
-        folder_frame.pack(fill=tk.X, padx=10, pady=10)
+        folder_frame.pack(fill="x", padx=10, pady=10)
+        
+        folder_label = ctk.CTkLabel(
+            folder_frame,
+            text="Output Location",
+            font=(FONT_FAMILY, FONT_SIZE_SMALL, "bold"),
+            text_color=COLORS['primary_text']
+        )
+        folder_label.pack(pady=(5, 0), padx=10, anchor="w")
 
-        self.output_folder_var = tk.StringVar(value=os.path.expanduser("~\\Desktop"))
+        self.output_folder_var = ctk.StringVar(value=os.path.expanduser("~\\Desktop"))
 
-        folder_entry = tk.Entry(
+        folder_entry = ctk.CTkEntry(
             folder_frame,
             textvariable=self.output_folder_var,
-            font=("Arial", 9),
-            state="readonly"
+            font=(FONT_FAMILY, 9),
+            state="readonly",
+            fg_color=COLORS['frame_bg'],
+            text_color=COLORS['primary_text'],
+            border_color=COLORS['secondary_text']
         )
-        folder_entry.pack(fill=tk.X, pady=(0, 5))
+        folder_entry.pack(fill="x", pady=(5, 5), padx=10)
 
-        browse_folder_btn = tk.Button(
+        browse_folder_btn = ctk.CTkButton(
             folder_frame,
             text="Browse",
             command=self._browse_output_folder,
-            font=("Arial", 10)
+            font=(FONT_FAMILY, FONT_SIZE_SMALL),
+            fg_color=COLORS['frame_bg'],
+            hover_color=COLORS['accent_hover'],
+            text_color=COLORS['button_text'],
+            border_width=1,
+            border_color=COLORS['secondary_text']
         )
-        browse_folder_btn.pack(fill=tk.X)
+        browse_folder_btn.pack(fill="x", padx=10, pady=(0, 5))
 
         # Output filename
-        filename_frame = tk.LabelFrame(
+        filename_frame = ctk.CTkFrame(
             config_frame,
-            text="Output Filename",
-            font=("Arial", 10, "bold"),
-            padx=10,
-            pady=10
+            fg_color=COLORS['frame_bg'],
+            border_width=1,
+            border_color=COLORS['secondary_text']
         )
-        filename_frame.pack(fill=tk.X, padx=10, pady=10)
+        filename_frame.pack(fill="x", padx=10, pady=10)
+        
+        filename_label = ctk.CTkLabel(
+            filename_frame,
+            text="Output Filename",
+            font=(FONT_FAMILY, FONT_SIZE_SMALL, "bold"),
+            text_color=COLORS['primary_text']
+        )
+        filename_label.pack(pady=(5, 0), padx=10, anchor="w")
 
-        self.output_filename_var = tk.StringVar(value="merged_presentation.pptx")
+        self.output_filename_var = ctk.StringVar(value="merged_presentation.pptx")
 
-        filename_entry = tk.Entry(
+        filename_entry = ctk.CTkEntry(
             filename_frame,
             textvariable=self.output_filename_var,
-            font=("Arial", 9)
+            font=(FONT_FAMILY, 9),
+            fg_color=COLORS['frame_bg'],
+            text_color=COLORS['primary_text'],
+            border_color=COLORS['primary_accent']
         )
-        filename_entry.pack(fill=tk.X)
+        filename_entry.pack(fill="x", pady=(5, 5), padx=10)
 
         # Action buttons
-        button_frame = tk.Frame(config_frame)
-        button_frame.pack(fill=tk.X, padx=10, pady=20)
+        button_frame = ctk.CTkFrame(config_frame, fg_color=COLORS['frame_bg'])
+        button_frame.pack(fill="x", padx=10, pady=20)
 
-        self.merge_btn = tk.Button(
+        self.merge_btn = ctk.CTkButton(
             button_frame,
             text="Merge Presentations",
             command=self._on_merge,
-            font=("Arial", 11, "bold"),
-            bg="#4CAF50",
-            fg="white",
-            height=2
+            font=(FONT_FAMILY, 11, "bold"),
+            fg_color=COLORS['primary_accent'],
+            hover_color=COLORS['accent_hover'],
+            text_color=COLORS['button_text'],
+            height=40
         )
-        self.merge_btn.pack(fill=tk.X, pady=(0, 10))
+        self.merge_btn.pack(fill="x", pady=(0, 10))
 
-        clear_btn = tk.Button(
+        clear_btn = ctk.CTkButton(
             button_frame,
             text="Clear Queue",
             command=self._clear_queue,
-            font=("Arial", 10)
+            font=(FONT_FAMILY, FONT_SIZE_SMALL),
+            fg_color=COLORS['frame_bg'],
+            hover_color=COLORS['accent_hover'],
+            text_color=COLORS['button_text'],
+            border_width=1,
+            border_color=COLORS['secondary_text']
         )
-        clear_btn.pack(fill=tk.X)
+        clear_btn.pack(fill="x")
 
         # Status label at bottom
-        self.status_var = tk.StringVar(value="Ready")
-        status_label = tk.Label(
+        self.status_var = ctk.StringVar(value="Ready")
+        status_label = ctk.CTkLabel(
             config_frame,
             textvariable=self.status_var,
-            font=("Arial", 9),
-            fg="blue",
+            font=(FONT_FAMILY, 9),
+            text_color=COLORS['primary_accent'],
             wraplength=280,
-            justify=tk.LEFT
+            anchor="w"
         )
-        status_label.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
+        status_label.pack(side="bottom", fill="x", padx=10, pady=10)
 
     def _create_drop_zone(self):
         """Create the initial drop zone interface."""
@@ -175,37 +237,40 @@ class PowerPointMergerGUI:
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-        drop_container = tk.Frame(self.content_frame, bg="#f0f0f0")
-        drop_container.pack(fill=tk.BOTH, expand=True)
+        drop_container = ctk.CTkFrame(self.content_frame, fg_color=COLORS['frame_bg'])
+        drop_container.pack(fill="both", expand=True)
 
         # Large plus sign icon (using label with large font)
-        plus_label = tk.Label(
+        plus_label = ctk.CTkLabel(
             drop_container,
             text="+",
-            font=("Arial", 72, "bold"),
-            bg="#f0f0f0",
-            fg="#888888"
+            font=(FONT_FAMILY, 72, "bold"),
+            text_color=COLORS['secondary_text']
         )
         plus_label.pack(expand=True, pady=(50, 10))
 
         # Instructional text
-        instruction_label = tk.Label(
+        instruction_label = ctk.CTkLabel(
             drop_container,
             text="Drag and drop PowerPoint files here",
-            font=("Arial", 12),
-            bg="#f0f0f0",
-            fg="#555555"
+            font=(FONT_FAMILY, FONT_SIZE_MEDIUM),
+            text_color=COLORS['secondary_text']
         )
         instruction_label.pack()
 
         # Browse button as alternative
-        browse_btn = tk.Button(
+        browse_btn = ctk.CTkButton(
             drop_container,
             text="Browse for Files",
             command=self._browse_files,
-            font=("Arial", 11),
-            width=20,
-            height=2
+            font=(FONT_FAMILY, 11),
+            width=200,
+            height=40,
+            fg_color=COLORS['frame_bg'],
+            hover_color=COLORS['accent_hover'],
+            text_color=COLORS['button_text'],
+            border_width=1,
+            border_color=COLORS['secondary_text']
         )
         browse_btn.pack(pady=(20, 50))
 
@@ -220,21 +285,14 @@ class PowerPointMergerGUI:
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-        # Scrollable canvas for file cards
-        canvas = tk.Canvas(self.content_frame)
-        scrollbar = tk.Scrollbar(self.content_frame, orient="vertical", command=canvas.yview)
-        self.file_list_frame = tk.Frame(canvas)
-
-        self.file_list_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        # Create a scrollable frame for file cards
+        scrollable_frame = ctk.CTkScrollableFrame(
+            self.content_frame,
+            fg_color=COLORS['frame_bg']
         )
-
-        canvas.create_window((0, 0), window=self.file_list_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollable_frame.pack(fill="both", expand=True)
+        
+        self.file_list_frame = scrollable_frame
 
         # Create file cards
         for i, file_path in enumerate(self.file_list):
@@ -242,73 +300,91 @@ class PowerPointMergerGUI:
 
     def _create_file_card(self, index, file_path):
         """Create a card widget for a file in the queue."""
-        card = tk.Frame(self.file_list_frame, relief=tk.RAISED, borderwidth=1, bg="white")
-        card.pack(fill=tk.X, padx=5, pady=2)
+        card = ctk.CTkFrame(
+            self.file_list_frame, 
+            fg_color=COLORS['frame_bg'],
+            border_width=1,
+            border_color=COLORS['secondary_text']
+        )
+        card.pack(fill="x", padx=5, pady=2)
 
         # File info frame
-        info_frame = tk.Frame(card, bg="white")
-        info_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=5)
+        info_frame = ctk.CTkFrame(card, fg_color=COLORS['frame_bg'])
+        info_frame.pack(side="left", fill="both", expand=True, padx=10, pady=5)
 
         # PowerPoint icon (using emoji/text)
-        icon_label = tk.Label(
+        icon_label = ctk.CTkLabel(
             info_frame,
             text="📊",
-            font=("Arial", 16),
-            bg="white"
+            font=(FONT_FAMILY, 16),
+            text_color=COLORS['primary_text']
         )
-        icon_label.pack(side=tk.LEFT, padx=(0, 10))
+        icon_label.pack(side="left", padx=(0, 10))
 
         # Filename
         filename = os.path.basename(file_path)
-        name_label = tk.Label(
+        name_label = ctk.CTkLabel(
             info_frame,
             text=filename,
-            font=("Arial", 10),
-            bg="white",
+            font=(FONT_FAMILY, FONT_SIZE_SMALL),
+            text_color=COLORS['primary_text'],
             anchor="w"
         )
-        name_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        name_label.pack(side="left", fill="x", expand=True)
 
         # Create tooltip showing full path
         self._create_tooltip(name_label, file_path)
 
         # Reorder buttons
-        button_frame = tk.Frame(card, bg="white")
-        button_frame.pack(side=tk.LEFT, padx=5)
+        button_frame = ctk.CTkFrame(card, fg_color=COLORS['frame_bg'])
+        button_frame.pack(side="left", padx=5)
 
-        up_btn = tk.Button(
+        up_btn = ctk.CTkButton(
             button_frame,
             text="↑",
             command=lambda idx=index: self._move_file_up(idx),
-            font=("Arial", 10),
-            width=2
+            font=(FONT_FAMILY, FONT_SIZE_SMALL),
+            width=30,
+            fg_color=COLORS['frame_bg'],
+            hover_color=COLORS['accent_hover'],
+            text_color=COLORS['button_text'],
+            border_width=1,
+            border_color=COLORS['secondary_text']
         )
-        up_btn.pack(side=tk.LEFT, padx=2)
+        up_btn.pack(side="left", padx=2)
 
-        down_btn = tk.Button(
+        down_btn = ctk.CTkButton(
             button_frame,
             text="↓",
             command=lambda idx=index: self._move_file_down(idx),
-            font=("Arial", 10),
-            width=2
+            font=(FONT_FAMILY, FONT_SIZE_SMALL),
+            width=30,
+            fg_color=COLORS['frame_bg'],
+            hover_color=COLORS['accent_hover'],
+            text_color=COLORS['button_text'],
+            border_width=1,
+            border_color=COLORS['secondary_text']
         )
-        down_btn.pack(side=tk.LEFT, padx=2)
+        down_btn.pack(side="left", padx=2)
 
         # Remove button
-        remove_btn = tk.Button(
+        remove_btn = ctk.CTkButton(
             card,
             text="✕",
             command=lambda idx=index: self._remove_file(idx),
-            font=("Arial", 10),
-            fg="red",
-            bg="white",
-            borderwidth=0,
-            width=2
+            font=(FONT_FAMILY, FONT_SIZE_SMALL),
+            text_color=COLORS['accent_hover'],
+            fg_color=COLORS['frame_bg'],
+            hover_color=COLORS['frame_bg'],
+            width=30,
+            border_width=0
         )
-        remove_btn.pack(side=tk.RIGHT, padx=5)
+        remove_btn.pack(side="right", padx=5)
 
     def _create_tooltip(self, widget, text):
         """Create a tooltip for a widget."""
+        import tkinter as tk
+        
         def show_tooltip(event):
             tooltip = tk.Toplevel()
             tooltip.wm_overrideredirect(True)
@@ -317,10 +393,11 @@ class PowerPointMergerGUI:
             label = tk.Label(
                 tooltip,
                 text=text,
-                background="#ffffe0",
+                background=COLORS['frame_bg'],
+                foreground=COLORS['primary_text'],
                 relief=tk.SOLID,
                 borderwidth=1,
-                font=("Arial", 9)
+                font=(FONT_FAMILY, 9)
             )
             label.pack()
 
@@ -338,10 +415,10 @@ class PowerPointMergerGUI:
         """Update the merge queue display based on file list state."""
         if not self.file_list:
             self._create_drop_zone()
-            self.merge_btn.config(state=tk.DISABLED)
+            self.merge_btn.configure(state="disabled")
         else:
             self._create_file_list()
-            self.merge_btn.config(state=tk.NORMAL)
+            self.merge_btn.configure(state="normal")
 
     def _browse_files(self):
         """Open file dialog to browse for PowerPoint files."""
@@ -509,7 +586,7 @@ class PowerPointMergerGUI:
 
         # Update status
         self.status_var.set(f"Merging {len(self.file_list)} presentations...")
-        self.merge_btn.config(state=tk.DISABLED)
+        self.merge_btn.configure(state="disabled")
         self.root.update()
 
         # Call merge callback
@@ -524,7 +601,7 @@ class PowerPointMergerGUI:
     def enable_merge_button(self):
         """Re-enable the merge button."""
         if self.file_list:
-            self.merge_btn.config(state=tk.NORMAL)
+            self.merge_btn.configure(state="normal")
 
     def run(self):
         """Start the GUI main loop."""
