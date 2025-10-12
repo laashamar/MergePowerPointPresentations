@@ -89,7 +89,7 @@ class PowerPointMergerGUI:
         )
         queue_label.pack(pady=(10, 5))
 
-        # Container for drop zone or file list
+        # Container for file selection or file list
         self.content_frame = ctk.CTkFrame(self.queue_frame, fg_color=COLORS['frame_bg'])
         self.content_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -220,18 +220,18 @@ class PowerPointMergerGUI:
         )
         status_label.pack(side="bottom", fill="x", padx=10, pady=10)
 
-    def _create_drop_zone(self):
+    def _create_file_selector(self):
         """Create the initial file selection interface."""
         # Clear content frame
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-        drop_container = ctk.CTkFrame(self.content_frame, fg_color=COLORS['frame_bg'])
-        drop_container.pack(fill="both", expand=True)
+        selector_container = ctk.CTkFrame(self.content_frame, fg_color=COLORS['frame_bg'])
+        selector_container.pack(fill="both", expand=True)
 
         # Large plus sign icon (using label with large font)
         plus_label = ctk.CTkLabel(
-            drop_container,
+            selector_container,
             text="+",
             font=(FONT_FAMILY, 72, "bold"),
             text_color=COLORS['secondary_text']
@@ -240,7 +240,7 @@ class PowerPointMergerGUI:
 
         # Instructional text
         instruction_label = ctk.CTkLabel(
-            drop_container,
+            selector_container,
             text="Add PowerPoint files using the button below",
             font=(FONT_FAMILY, FONT_SIZE_MEDIUM),
             text_color=COLORS['secondary_text']
@@ -249,7 +249,7 @@ class PowerPointMergerGUI:
 
         # Browse button
         browse_btn = ctk.CTkButton(
-            drop_container,
+            selector_container,
             text="Browse for Files",
             command=self._browse_files,
             font=(FONT_FAMILY, 11),
@@ -398,7 +398,7 @@ class PowerPointMergerGUI:
     def _update_merge_queue_display(self):
         """Update the merge queue display based on file list state."""
         if not self.file_list:
-            self._create_drop_zone()
+            self._create_file_selector()
             self.merge_btn.configure(state="disabled")
         else:
             self._create_file_list()
