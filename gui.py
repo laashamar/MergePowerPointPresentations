@@ -52,16 +52,9 @@ class PowerPointMergerGUI:
         # Create main window
         self.root = ctk.CTk()
         self.icon_image = None  # Prevents image garbage collection
-        
-        icon_path = os.path.join(os.path.dirname(__file__), "resources", "MergePowerPoint.ico")
-        if os.path.exists(icon_path):
-            try:
-                self.icon_image = CTkImage(Image.open(icon_path), size=(24, 24))
-                logging.info("Icon image loaded successfully.")
-            except Exception as e:
-                logging.warning(f"Failed to load icon image: {e}")
-        else:
-            logging.warning("Icon image not found.")
+
+        # Load icon after main loop starts to avoid Tkinter issues
+        self.root.after(0, self._load_icon_image)
 
         try:
             # Dummy call to trigger DPI tracker safely
@@ -89,30 +82,9 @@ class PowerPointMergerGUI:
 
         self._create_widgets()
         self._update_merge_queue_display()
-        def __init__(self, merge_callback):
-        self.merge_callback = merge_callback
-        self.file_list = []
-
-        self.root = ctk.CTk()
-        self.icon_image = None
-        self.root.after(0, self._load_icon_image)
-
-        self.root.title("PowerPoint Merger")
-        self.root.geometry("900x600")
-        self.root.configure(fg_color=COLORS['window_bg'])
-
-        # Set application icon
-        icon_path = os.path.join(os.path.dirname(__file__), "resources", "MergePowerPoint.ico")
-        if os.path.exists(icon_path):
-            try:
-                self.root.iconbitmap(icon_path)
-            except Exception as e:
-                logging.warning(f"Could not set application icon: {e}")
-
-        self._create_widgets()
-        self._update_merge_queue_display()
 
     def _load_icon_image(self):
+        """Load the icon image for file cards."""
         icon_path = os.path.join(os.path.dirname(__file__), "resources", "MergePowerPoint.ico")
         if os.path.exists(icon_path):
             try:
@@ -122,6 +94,7 @@ class PowerPointMergerGUI:
                 logging.warning(f"Failed to load icon image: {e}")
         else:
             logging.warning("Icon image not found.")
+
     def _create_widgets(self):
         """Create and layout all GUI widgets."""
         # Main container with two columns
