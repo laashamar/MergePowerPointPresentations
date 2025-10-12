@@ -7,7 +7,9 @@ import logging
 import os
 import threading
 import customtkinter as ctk
-# PIL/Image imports are removed as they are no longer needed
+import tkinter as tk
+# *** FIX: Import ImageTk to handle image objects robustly ***
+from PIL import Image, ImageTk
 from tkinter import filedialog, messagebox
 
 # PowerPoint-inspired Dark Mode Color Palette
@@ -38,10 +40,11 @@ class PowerPointMergerGUI:
     def __init__(self, merge_callback):
         self.merge_callback = merge_callback
         self.file_list = []
+        self.pil_powerpoint_icon = None
+        # This list is crucial to prevent garbage collection of image objects
+        self.file_card_icons = []
 
         self.root = ctk.CTk()
-        # self.icon_image has been removed
-
         self.root.title("PowerPoint Merger")
         self.root.geometry("900x600")
         self.root.configure(fg_color=COLORS['window_bg'])
@@ -57,10 +60,25 @@ class PowerPointMergerGUI:
             except Exception as e:
                 logging.warning(f"Could not set application icon: {e}")
 
+        self._load_powerpoint_icon_pil()
         self._create_widgets()
         self._update_merge_queue_display()
 
-    # The _load_icon_image method has been removed
+    def _load_powerpoint_icon_pil(self):
+        """Load the PowerPoint icon as a PIL Image object."""
+        icon_path = os.path.join(
+            os.path.dirname(__file__),
+            "resources",
+            "MergePowerPoint.ico"
+        )
+        if os.path.exists(icon_path):
+            try:
+                # Resize the icon for better display in the list
+                pil_image = Image.open(icon_path).resize((24, 24), Image.LANCZOS)
+                self.pil_powerpoint_icon = pil_image
+            except Exception as e:
+                logging.warning(f"Could not load powerpoint icon: {e}")
+                self.pil_powerpoint_icon = None
 
     def _create_widgets(self):
         """Create and layout all GUI widgets."""
@@ -253,6 +271,9 @@ class PowerPointMergerGUI:
         scrollable_frame.pack(fill="both", expand=True)
 
         self.file_list_frame = scrollable_frame
+        
+        # Clear the list of icon references before repopulating the frame
+        self.file_card_icons.clear()
 
         for i, file_path in enumerate(self.file_list):
             self._create_file_card(i, file_path)
@@ -268,10 +289,20 @@ class PowerPointMergerGUI:
 
         info_frame = ctk.CTkFrame(card, fg_color=COLORS['frame_bg'])
         info_frame.pack(side="left", fill="both", expand=True, padx=10, pady=5)
-
-        # --- FINAL FIX: Use the simple text placeholder ---
-        icon_label = ctk.CTkLabel(info_frame, text="🅿️", font=(FONT_FAMILY, 16))
-        icon_label.pack(side="left", padx=(0, 10))
+        
+        if self.pil_powerpoint_icon:
+            # *** FIX: Create a standard ImageTk.PhotoImage ***
+            powerpoint_icon = ImageTk.PhotoImage(self.pil_powerpoint_icon)
+            icon_label = ctk.CTkLabel(info_frame, image=powerpoint_icon, text="")
+            
+            # *** FIX: Store the reference in the instance list ***
+            self.file_card_icons.append(powerpoint_icon)
+            
+            icon_label.pack(side="left", padx=(0, 10))
+        else:
+            # Fallback if icon loading failed
+            icon_label = ctk.CTkLabel(info_frame, text="🅿️", font=(FONT_FAMILY, 16))
+            icon_label.pack(side="left", padx=(0, 10))
 
         filename = os.path.basename(file_path)
         name_label = ctk.CTkLabel(
@@ -330,8 +361,6 @@ class PowerPointMergerGUI:
         remove_btn.pack(side="right", padx=5)
 
     def _create_tooltip(self, widget, text):
-        import tkinter as tk
-
         def show_tooltip(event):
             tooltip = tk.Toplevel()
             tooltip.wm_overrideredirect(True)
@@ -357,6 +386,22 @@ class PowerPointMergerGUI:
 
         widget.bind('<Enter>', show_tooltip)
         widget.bind('<Leave>', hide_tooltip)
+
+    def _load_icon(self, filename, size=(20, 20)):
+        """Try to load and resize an icon image. Returns a PhotoImage or None."""
+        try:
+            icon_path = os.path.join(
+                os.path.dirname(__file__),
+                "Merge_PowerPoint",
+                "MergePowerPointPresentations",
+                filename
+            )
+            pil_image = Image.open(icon_path).resize(size, Image.LANCZOS)
+            tk_image = ImageTk.PhotoImage(pil_image)
+            return tk_image
+        except Exception as e:
+            logging.warning(f"Could not load icon {filename}: {e}")
+            return None
 
     def _update_merge_queue_display(self):
         if not self.file_list:
@@ -533,3 +578,4 @@ class PowerPointMergerGUI:
 def show_modern_gui(merge_callback):
     gui = PowerPointMergerGUI(merge_callback)
     gui.run()
+
