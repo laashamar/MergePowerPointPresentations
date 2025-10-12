@@ -6,7 +6,6 @@ merging, using CustomTkinter for a modern dark theme.
 """
 import logging
 import os
-import threading
 import customtkinter as ctk
 from PIL import Image
 from customtkinter import CTkImage
@@ -70,23 +69,8 @@ class PowerPointMergerGUI:
             except Exception as e:
                 logging.warning(f"Could not set application icon: {e}")
 
-        self._load_images()
         self._create_widgets()
         self._update_merge_queue_display()
-
-    def _load_images(self):
-        """Load and store images used in the GUI."""
-        icon_path = os.path.join(
-            os.path.dirname(__file__),
-            "resources",
-            "MergePowerPoint.ico"
-        )
-        if os.path.exists(icon_path):
-            icon_size = (24, 24)
-            self.icon_image = CTkImage(Image.open(icon_path), size=icon_size)
-        else:
-            self.icon_image = None
-            logging.warning("Application icon not found in resources folder.")
 
     def _create_widgets(self):
         """Create and layout all GUI widgets."""
@@ -273,11 +257,11 @@ class PowerPointMergerGUI:
             font=(FONT_FAMILY, 11),
             width=200,
             height=40,
-            fg_color=COLORS['primary_accent'],
+            fg_color=COLORS['frame_bg'],
             hover_color=COLORS['accent_hover'],
             text_color=COLORS['button_text'],
             border_width=1,
-            border_color=COLORS['primary_accent']
+            border_color=COLORS['secondary_text']
         )
         browse_btn.pack(pady=(20, 50))
 
@@ -314,13 +298,19 @@ class PowerPointMergerGUI:
         info_frame = ctk.CTkFrame(card, fg_color=COLORS['frame_bg'])
         info_frame.pack(side="left", fill="both", expand=True, padx=10, pady=5)
 
-        if self.icon_image:
+        # Load icon and define size
+        icon_path = os.path.join(os.path.dirname(__file__), "resources", "MergePowerPoint.ico")
+        if os.path.exists(icon_path):
+            icon_size = (24, 24)  # Adjusted for good visibility
+            icon_image = CTkImage(Image.open(icon_path), size=icon_size)
+
             # Ensure info_frame has enough height
-            info_frame.configure(height=self.icon_image._size[1] + 10)
+            info_frame.configure(height=icon_size[1] + 10)
             info_frame.pack_propagate(False)
-            
+
             # Icon to the left
-            icon_label = ctk.CTkLabel(info_frame, image=self.icon_image, text="")
+            icon_label = ctk.CTkLabel(info_frame, image=icon_image, text="")
+            icon_label.image = icon_image  # Prevents garbage collection
             icon_label.pack(side="left", padx=(0, 10))
 
         # Filename with adjusted text size
@@ -546,51 +536,48 @@ class PowerPointMergerGUI:
             logging.info(f"Output folder set to: {folder}")
 
     def _on_merge(self):
-    """Handle merge button click with background thread and GUI-safe updates."""
+        """Handle merge button click."""
         if not self.file_list:
-        messagebox.showwarning(
-            "No Files",
-            "Please add at least one PowerPoint file to the merge queue."
-        )
-        return
-
-    filename = self.output_filename_var.get().strip()
-    if not filename:
-        messagebox.showerror("Invalid Filename", "Please enter a valid output filename.")
-        return
-
-    if not filename.lower().endswith('.pptx'):
-        filename += '.pptx'
-        self.output_filename_var.set(filename)
-
-    output_path = os.path.join(self.output_folder_var.get(), filename)
-
-    if os.path.exists(output_path):
-        if not messagebox.askyesno(
-            "File Exists",
-            f"The file '{filename}' already exists.\n\nDo you want to overwrite it?"
-        ):
+            messagebox.showwarning(
+                "No Files",
+                "Please add at least one PowerPoint file to the merge queue."
+            )
             return
 
-    # Disable button and update status safely
-    self.merge_btn.configure(state="disabled")
-    self.status_var.set(f"Merging {len(self.file_list)} presentations...")
-    self.root.update()
+        # Validate output filename
+        filename = self.output_filename_var.get().strip()
+        if not filename:
+            messagebox.showerror(
+                "Invalid Filename",
+                "Please enter a valid output filename."
+            )
+            return
 
-    # Start merge in background thread
-    def merge_task():
-        success, final_path, error = self.merge_callback(self.file_list.copy(), output_path)
+        # Ensure .pptx extension
+        if not filename.lower().endswith('.pptx'):
+            filename += '.pptx'
+            self.output_filename_var.set(filename)
 
-        if success:
-            self.run_in_main_thread(self.update_status, f"Merge complete: {final_path}")
-        else:
-            self.run_in_main_thread(self.update_status, f"Merge failed: {error}")
+        # Build full output path
+        output_path = os.path.join(self.output_folder_var.get(), filename)
 
-        self.run_in_main_thread(self.enable_merge_button)
+        # Check if output file already exists
+        if os.path.exists(output_path):
+            if not messagebox.askyesno(
+                "File Exists",
+                f"The file '{filename}' already exists.\n\n"
+                f"Do you want to overwrite it?"
+            ):
+                return
 
-    threading.Thread(target=merge_task, daemon=True).start()
+        # Update status
+        self.status_var.set(f"Merging {len(self.file_list)} presentations...")
+        self.merge_btn.configure(state="disabled")
+        self.root.update()
 
-
+        # Call merge callback
+        logging.info(f"Starting merge of {len(self.file_list)} files to {output_path}")
+        self.merge_callback(self.file_list.copy(), output_path)
 
     def update_status(self, message):
         """Update the status label."""
@@ -601,10 +588,6 @@ class PowerPointMergerGUI:
         """Re-enable the merge button."""
         if self.file_list:
             self.merge_btn.configure(state="normal")
-            
-    def run_in_main_thread(self, func, *args, **kwargs):
-    """Ensure GUI updates run in the main thread."""
-    self.root.after(0, lambda: func(*args, **kwargs))        
 
     def run(self):
         """Start the GUI main loop."""
@@ -622,4 +605,3 @@ def show_modern_gui(merge_callback):
     """
     gui = PowerPointMergerGUI(merge_callback)
     gui.run()
-
