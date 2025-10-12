@@ -6,6 +6,7 @@ merging, using CustomTkinter for a modern dark theme.
 """
 import logging
 import os
+import threading
 import customtkinter as ctk
 from PIL import Image
 from customtkinter import CTkImage
@@ -536,7 +537,7 @@ class PowerPointMergerGUI:
             logging.info(f"Output folder set to: {folder}")
 
     def _on_merge(self):
-        """Handle merge button click."""
+        """Handle merge button click with background thread and GUI-safe updates."""
         if not self.file_list:
             messagebox.showwarning(
                 "No Files",
@@ -544,40 +545,41 @@ class PowerPointMergerGUI:
             )
             return
 
-        # Validate output filename
         filename = self.output_filename_var.get().strip()
         if not filename:
-            messagebox.showerror(
-                "Invalid Filename",
-                "Please enter a valid output filename."
-            )
+            messagebox.showerror("Invalid Filename", "Please enter a valid output filename.")
             return
 
-        # Ensure .pptx extension
         if not filename.lower().endswith('.pptx'):
             filename += '.pptx'
             self.output_filename_var.set(filename)
 
-        # Build full output path
         output_path = os.path.join(self.output_folder_var.get(), filename)
 
-        # Check if output file already exists
         if os.path.exists(output_path):
             if not messagebox.askyesno(
                 "File Exists",
-                f"The file '{filename}' already exists.\n\n"
-                f"Do you want to overwrite it?"
+                f"The file '{filename}' already exists.\n\nDo you want to overwrite it?"
             ):
                 return
 
-        # Update status
-        self.status_var.set(f"Merging {len(self.file_list)} presentations...")
+        # Disable button and update status safely
         self.merge_btn.configure(state="disabled")
+        self.status_var.set(f"Merging {len(self.file_list)} presentations...")
         self.root.update()
 
-        # Call merge callback
-        logging.info(f"Starting merge of {len(self.file_list)} files to {output_path}")
-        self.merge_callback(self.file_list.copy(), output_path)
+        # Start merge in background thread
+        def merge_task():
+            success, final_path, error = self.merge_callback(self.file_list.copy(), output_path)
+
+            if success:
+                self.run_in_main_thread(self.update_status, f"Merge complete: {final_path}")
+            else:
+                self.run_in_main_thread(self.update_status, f"Merge failed: {error}")
+
+            self.run_in_main_thread(self.enable_merge_button)
+
+        threading.Thread(target=merge_task, daemon=True).start()
 
     def update_status(self, message):
         """Update the status label."""
@@ -588,6 +590,10 @@ class PowerPointMergerGUI:
         """Re-enable the merge button."""
         if self.file_list:
             self.merge_btn.configure(state="normal")
+            
+    def run_in_main_thread(self, func, *args, **kwargs):
+        """Ensure GUI updates run in the main thread."""
+        self.root.after(0, lambda: func(*args, **kwargs))        
 
     def run(self):
         """Start the GUI main loop."""
