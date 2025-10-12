@@ -115,6 +115,141 @@ A powerful Python GUI application for merging multiple PowerPoint (.pptx) files 
   * Log file saved to Downloads/merge\_powerpoint.log.  
 * **Command**: python run\_with\_logging.py
 
+## **Testing**
+
+### **Windows-Only Application**
+
+⚠️ **Important**: This application and its test suite are designed exclusively for Windows environments. The application relies on Windows COM automation to interact with Microsoft PowerPoint, and all testing infrastructure assumes a Windows platform.
+
+### **Running Tests Locally**
+
+#### **Install Development Dependencies**
+
+```powershell
+pip install -r requirements-dev.txt
+```
+
+This installs:
+* `pytest` - Testing framework
+* `pytest-cov` - Coverage reporting
+* `pre-commit` - Git hook framework
+
+#### **Run the Test Suite**
+
+Execute all tests from the project root directory:
+
+```powershell
+pytest
+```
+
+For detailed output with coverage report:
+
+```powershell
+pytest tests/ --cov=. --cov-report=term-missing --cov-report=html -v
+```
+
+This generates:
+* Terminal coverage report showing line-by-line coverage
+* HTML coverage report in the `htmlcov/` directory (open `htmlcov/index.html` in a browser)
+
+### **Pre-Commit Quality Checks**
+
+The project uses the **pre-commit** framework to automatically enforce quality standards before commits are finalized.
+
+#### **Install Pre-Commit Hooks**
+
+```powershell
+pre-commit install
+```
+
+#### **How It Works**
+
+Every time you attempt to commit code, the pre-commit hook automatically:
+
+1. ✅ **Runs the entire test suite** using pytest
+2. 🔁 **Measures code coverage** across all modules
+3. 🚫 **Blocks the commit** if either requirement fails:
+   * **100% Test Pass Rate** - All tests must pass
+   * **80% Minimum Coverage** - Total coverage must be ≥80%
+
+If the requirements are not met, the commit will be rejected with a clear error message showing which tests failed or what coverage percentage was achieved.
+
+#### **Bypass Pre-Commit Hooks (Not Recommended)**
+
+In rare cases, you may need to commit without running hooks:
+
+```powershell
+git commit --no-verify -m "Your commit message"
+```
+
+⚠️ This should only be used in exceptional circumstances, as it bypasses quality checks.
+
+### **Continuous Integration (CI)**
+
+#### **GitHub Actions Workflow**
+
+The project uses **GitHub Actions** to automatically test all code changes on a Windows environment.
+
+#### **Workflow Triggers**
+
+The CI pipeline runs automatically on:
+* Every `push` to the `main` branch
+* Every `pull_request` targeting the `main` branch
+
+#### **Pipeline Requirements**
+
+The workflow runs on a **Windows-latest** runner and performs:
+
+1. Checkout code from the repository
+2. Set up Python 3.12
+3. Install all project dependencies
+4. Run the complete test suite with coverage reporting
+5. Upload HTML coverage report as a build artifact
+
+#### **Pass/Fail Criteria**
+
+The pipeline will **fail** if:
+* ❌ Any test fails (100% pass rate required)
+* ❌ Code coverage falls below 80%
+
+#### **Viewing Results**
+
+* **Test Results**: Visible in the GitHub Actions tab for each commit/PR
+* **Coverage Report**: Download the `coverage-report` artifact from the workflow run to view detailed HTML coverage analysis
+
+### **Test Coverage**
+
+The test suite currently achieves **82% code coverage** across:
+
+#### **Core Logic Tests (`test_powerpoint_core.py`)**
+
+* ✅ Successful merge of multiple PowerPoint files
+* ✅ Error handling for corrupt files
+* ✅ Error handling for missing PowerPoint installation
+* ✅ Error handling for save/permission errors
+* ✅ Edge case: merging a single file
+* ✅ Edge case: files with special characters and spaces
+* ✅ Edge case: empty file lists
+* ✅ Edge case: presentations with no slides
+
+#### **GUI Logic Tests (`test_gui.py`)**
+
+* ✅ File queue management (add, remove, reorder)
+* ✅ File type validation (.pptx/.ppsx only)
+* ✅ Duplicate file prevention
+* ✅ Output path construction and validation
+* ✅ Automatic .pptx extension appending
+* ✅ Merge callback invocation with correct parameters
+* ✅ Button state management (enabled/disabled)
+* ✅ Empty queue and filename validation
+
+### **Test Strategy**
+
+* **Unit Testing**: All tests are isolated unit tests that validate individual components
+* **Mocking**: External dependencies (tkinter, win32com) are mocked to enable fast, reliable tests
+* **No GUI Testing**: Visual GUI testing is explicitly out of scope - tests focus on logic validation
+* **Windows Platform**: All automation assumes Windows environment (no cross-platform concerns)
+
 ## **Documentation**
 
 * 🏗️ [**ARCHITECTURE.md**](https://www.google.com/search?q=docs/ARCHITECTURE.md) \- Technical architecture and design patterns  
