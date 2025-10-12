@@ -4,12 +4,14 @@ A powerful Python GUI application for merging multiple PowerPoint (.pptx) files 
 
 ## **Features**
 
-* **Step-by-Step GUI Workflow**: Intuitive 4-step process for merging presentations  
-* **Perfect Slide Copying**: COM automation preserves all formatting, animations, and embedded content  
-* **File Management**: Easy file selection with validation and reordering capabilities  
-* **Automatic Slideshow**: Launches merged presentation immediately after creation  
-* **Comprehensive Logging**: Optional live logging for debugging and troubleshooting  
-* **Error Handling**: Robust error management with clear user feedback  
+* **Modern Two-Column GUI**: Intuitive single-window interface with drag-and-drop support
+* **Perfect Slide Copying**: COM automation preserves all formatting, animations, and embedded content
+* **File Management**: Easy file selection with validation, reordering, and drag-and-drop capabilities
+* **Smart File Validation**: Automatic detection of invalid file types, duplicates, and permission issues
+* **Flexible Output**: Choose output location and filename
+* **Automatic Slideshow**: Launches merged presentation immediately after creation
+* **Comprehensive Logging**: Optional live logging for debugging and troubleshooting
+* **Error Handling**: Robust error management with clear user feedback
 * **Dual Entry Points**: Choose between standard mode or debug mode with live logging
 
 ## **System Requirements**
@@ -57,43 +59,44 @@ A powerful Python GUI application for merging multiple PowerPoint (.pptx) files 
 
 ### **Quick Start**
 
-1. **Launch the application** using one of the methods above.  
-2. **Follow the 4-step workflow** described below.  
-3. **Enjoy your merged presentation** with automatic slideshow launch.
+1. **Launch the application** using one of the methods above.
+2. **Add PowerPoint files** by dragging and dropping them or using the "Browse for Files" button.
+3. **Arrange the files** in the desired merge order using the up/down arrow buttons.
+4. **Select output location** and enter a filename.
+5. **Click "Merge Presentations"** to create your merged file.
+6. **Enjoy your merged presentation** with automatic slideshow launch.
 
 ### **Detailed Workflow**
 
-#### **Step 1: Number of Files**
+#### **Adding Files to the Merge Queue**
 
-* Enter the number of PowerPoint files you want to merge.  
-* Must be a positive integer.  
-* Press **Enter** or click **Next** to continue.
+* **Drag and Drop**: Simply drag PowerPoint files from your file explorer and drop them into the merge queue area.
+* **Browse Button**: Click "Browse for Files" to select files using a file dialog.
+* **Supported Formats**: Only .pptx and .ppsx files are accepted.
+* **Duplicate Prevention**: The application automatically detects and prevents duplicate file additions.
+* **Permission Checking**: Files are validated for read access before being added.
 
-#### **Step 2: File Selection**
+#### **Managing the Merge Queue**
 
-* Click **"Add Files from Disk"** to browse for .pptx files.  
-* Select exactly the number of files specified in Step 1\.  
-* Only PowerPoint (.pptx) files are accepted.  
-* Duplicate selections are automatically prevented.
+* **Reorder Files**: Use the ↑ and ↓ buttons on each file card to change the merge order.
+* **Remove Files**: Click the ✕ button on any file card to remove it from the queue.
+* **View Full Path**: Hover over a filename to see its complete file path in a tooltip.
+* **Clear Queue**: Use the "Clear Queue" button to remove all files at once.
 
-#### **Step 3: Output Filename**
+#### **Configuring Output Settings**
 
-* Enter a name for your merged presentation.  
-* The .pptx extension is added automatically if omitted.  
-* Press **Enter** or click **Next** to continue.
+* **Output Location**: Click "Browse" to select the folder where the merged file will be saved.
+* **Output Filename**: Enter a name for your merged presentation (the .pptx extension is added automatically if omitted).
+* **File Overwrite**: If a file with the same name exists, you'll be prompted to confirm overwriting.
 
-#### **Step 4: File Ordering**
+#### **Merging Presentations**
 
-* Use **"Move Up"** and **"Move Down"** buttons to arrange files.  
-* Files will be merged in the order shown (top to bottom).  
-* Select a file in the list before using move buttons.  
-* Click **"Create New File"** to start the merge process.
-
-#### **Step 5: Merge and Launch**
-
-* The application automatically merges your presentations.  
-* Merged presentation is saved to your specified location.  
-* Slideshow launches automatically upon completion.
+* Click **"Merge Presentations"** when you're ready.
+* The status label will show progress during the merge operation.
+* Upon successful completion:
+  * A success message displays the saved file location.
+  * The merged presentation automatically opens in slideshow mode.
+* If any errors occur, detailed error messages will guide you to resolve them.
 
 ## **Application Modes**
 

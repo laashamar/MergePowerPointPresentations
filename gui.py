@@ -1,376 +1,544 @@
 """
 GUI module for PowerPoint Merger application.
 
-This module contains all the GUI components and windows for the
-step-by-step PowerPoint merging workflow.
+This module contains the modern two-column GUI with drag-and-drop
+support for PowerPoint file merging.
 """
 import logging
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
+try:
+    from tkinterdnd2 import DND_FILES, TkinterDnD
+    HAS_DND = True
+except ImportError:
+    HAS_DND = False
+    logging.warning("tkinterdnd2 not available. Drag-and-drop will be disabled.")
 
 
-def show_number_of_files_window(callback):
-    """
-    Display Step 1: Window for entering number of files to merge.
+class PowerPointMergerGUI:
+    """Modern GUI for PowerPoint Merger with two-column layout."""
 
-    Args:
-        callback: Function to call with the number of files when Next is clicked
-    """
-    logging.info("Showing 'Number of files' window (Step 1).")
-    window = tk.Tk()
-    window.title("Step 1: Number of Files")
-    window.geometry("400x150")
+    def __init__(self, merge_callback):
+        """
+        Initialize the GUI.
 
-    # Label
-    label = tk.Label(
-        window,
-        text="How many files should be merged?",
-        font=("Arial", 12)
-    )
-    label.pack(pady=20)
+        Args:
+            merge_callback: Function to call when merge is requested
+                           Should accept (file_list, output_path) parameters
+        """
+        self.merge_callback = merge_callback
+        self.file_list = []  # List of file paths in merge order
 
-    # Entry box
-    entry = tk.Entry(window, font=("Arial", 12), width=10)
-    entry.pack(pady=10)
-    entry.focus_set()
+        # Create main window
+        if HAS_DND:
+            self.root = TkinterDnD.Tk()
+        else:
+            self.root = tk.Tk()
 
-    def on_next():
-        """Handle Next button click."""
-        num_str = entry.get()
-        logging.info(f"User clicked 'Next' with input: '{num_str}'.")
-        try:
-            # Validate input is a positive integer
-            num = int(num_str)
-            if num <= 0:
-                raise ValueError("Number must be positive")
-            logging.info(f"Input validated. Number of files: {num}.")
-            window.destroy()
-            callback(num)
-        except ValueError:
-            error_msg = "Please enter a valid positive integer."
-            logging.error(f"Invalid input for number of files: '{num_str}'. Showing error message.")
-            messagebox.showerror(
-                "Invalid Input",
-                error_msg
+        self.root.title("PowerPoint Merger")
+        self.root.geometry("900x600")
+
+        # Set application icon
+        icon_path = os.path.join(
+            os.path.dirname(__file__),
+            "resources",
+            "MergePowerPoint.ico"
+        )
+        if os.path.exists(icon_path):
+            try:
+                self.root.iconbitmap(icon_path)
+            except Exception as e:
+                logging.warning(f"Could not set application icon: {e}")
+
+        self._create_widgets()
+        self._update_merge_queue_display()
+
+    def _create_widgets(self):
+        """Create and layout all GUI widgets."""
+        # Main container with two columns
+        main_container = tk.Frame(self.root)
+        main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Column 1: Merge Queue (left side, wider)
+        self.queue_frame = tk.Frame(main_container, relief=tk.RIDGE, borderwidth=2)
+        self.queue_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
+
+        queue_label = tk.Label(
+            self.queue_frame,
+            text="Merge Queue",
+            font=("Arial", 14, "bold")
+        )
+        queue_label.pack(pady=(10, 5))
+
+        # Container for drop zone or file list
+        self.content_frame = tk.Frame(self.queue_frame)
+        self.content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Column 2: Configuration & Actions (right side)
+        config_frame = tk.Frame(main_container, relief=tk.RIDGE, borderwidth=2)
+        config_frame.pack(side=tk.RIGHT, fill=tk.BOTH, padx=(5, 0))
+        config_frame.config(width=300)
+
+        config_label = tk.Label(
+            config_frame,
+            text="Configuration",
+            font=("Arial", 14, "bold")
+        )
+        config_label.pack(pady=(10, 5))
+
+        # Output folder selector
+        folder_frame = tk.LabelFrame(
+            config_frame,
+            text="Output Location",
+            font=("Arial", 10, "bold"),
+            padx=10,
+            pady=10
+        )
+        folder_frame.pack(fill=tk.X, padx=10, pady=10)
+
+        self.output_folder_var = tk.StringVar(value=os.path.expanduser("~\\Desktop"))
+
+        folder_entry = tk.Entry(
+            folder_frame,
+            textvariable=self.output_folder_var,
+            font=("Arial", 9),
+            state="readonly"
+        )
+        folder_entry.pack(fill=tk.X, pady=(0, 5))
+
+        browse_folder_btn = tk.Button(
+            folder_frame,
+            text="Browse",
+            command=self._browse_output_folder,
+            font=("Arial", 10)
+        )
+        browse_folder_btn.pack(fill=tk.X)
+
+        # Output filename
+        filename_frame = tk.LabelFrame(
+            config_frame,
+            text="Output Filename",
+            font=("Arial", 10, "bold"),
+            padx=10,
+            pady=10
+        )
+        filename_frame.pack(fill=tk.X, padx=10, pady=10)
+
+        self.output_filename_var = tk.StringVar(value="merged_presentation.pptx")
+
+        filename_entry = tk.Entry(
+            filename_frame,
+            textvariable=self.output_filename_var,
+            font=("Arial", 9)
+        )
+        filename_entry.pack(fill=tk.X)
+
+        # Action buttons
+        button_frame = tk.Frame(config_frame)
+        button_frame.pack(fill=tk.X, padx=10, pady=20)
+
+        self.merge_btn = tk.Button(
+            button_frame,
+            text="Merge Presentations",
+            command=self._on_merge,
+            font=("Arial", 11, "bold"),
+            bg="#4CAF50",
+            fg="white",
+            height=2
+        )
+        self.merge_btn.pack(fill=tk.X, pady=(0, 10))
+
+        clear_btn = tk.Button(
+            button_frame,
+            text="Clear Queue",
+            command=self._clear_queue,
+            font=("Arial", 10)
+        )
+        clear_btn.pack(fill=tk.X)
+
+        # Status label at bottom
+        self.status_var = tk.StringVar(value="Ready")
+        status_label = tk.Label(
+            config_frame,
+            textvariable=self.status_var,
+            font=("Arial", 9),
+            fg="blue",
+            wraplength=280,
+            justify=tk.LEFT
+        )
+        status_label.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
+
+    def _create_drop_zone(self):
+        """Create the initial drop zone interface."""
+        # Clear content frame
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+
+        drop_container = tk.Frame(self.content_frame, bg="#f0f0f0")
+        drop_container.pack(fill=tk.BOTH, expand=True)
+
+        # Large plus sign icon (using label with large font)
+        plus_label = tk.Label(
+            drop_container,
+            text="+",
+            font=("Arial", 72, "bold"),
+            bg="#f0f0f0",
+            fg="#888888"
+        )
+        plus_label.pack(expand=True, pady=(50, 10))
+
+        # Instructional text
+        instruction_label = tk.Label(
+            drop_container,
+            text="Drag and drop PowerPoint files here",
+            font=("Arial", 12),
+            bg="#f0f0f0",
+            fg="#555555"
+        )
+        instruction_label.pack()
+
+        # Browse button as alternative
+        browse_btn = tk.Button(
+            drop_container,
+            text="Browse for Files",
+            command=self._browse_files,
+            font=("Arial", 11),
+            width=20,
+            height=2
+        )
+        browse_btn.pack(pady=(20, 50))
+
+        # Enable drag-and-drop if available
+        if HAS_DND:
+            drop_container.drop_target_register(DND_FILES)
+            drop_container.dnd_bind('<<Drop>>', self._on_drop)
+
+    def _create_file_list(self):
+        """Create the file list interface with reordering capability."""
+        # Clear content frame
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+
+        # Scrollable canvas for file cards
+        canvas = tk.Canvas(self.content_frame)
+        scrollbar = tk.Scrollbar(self.content_frame, orient="vertical", command=canvas.yview)
+        self.file_list_frame = tk.Frame(canvas)
+
+        self.file_list_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=self.file_list_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Create file cards
+        for i, file_path in enumerate(self.file_list):
+            self._create_file_card(i, file_path)
+
+    def _create_file_card(self, index, file_path):
+        """Create a card widget for a file in the queue."""
+        card = tk.Frame(self.file_list_frame, relief=tk.RAISED, borderwidth=1, bg="white")
+        card.pack(fill=tk.X, padx=5, pady=2)
+
+        # File info frame
+        info_frame = tk.Frame(card, bg="white")
+        info_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+        # PowerPoint icon (using emoji/text)
+        icon_label = tk.Label(
+            info_frame,
+            text="📊",
+            font=("Arial", 16),
+            bg="white"
+        )
+        icon_label.pack(side=tk.LEFT, padx=(0, 10))
+
+        # Filename
+        filename = os.path.basename(file_path)
+        name_label = tk.Label(
+            info_frame,
+            text=filename,
+            font=("Arial", 10),
+            bg="white",
+            anchor="w"
+        )
+        name_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        # Create tooltip showing full path
+        self._create_tooltip(name_label, file_path)
+
+        # Reorder buttons
+        button_frame = tk.Frame(card, bg="white")
+        button_frame.pack(side=tk.LEFT, padx=5)
+
+        up_btn = tk.Button(
+            button_frame,
+            text="↑",
+            command=lambda idx=index: self._move_file_up(idx),
+            font=("Arial", 10),
+            width=2
+        )
+        up_btn.pack(side=tk.LEFT, padx=2)
+
+        down_btn = tk.Button(
+            button_frame,
+            text="↓",
+            command=lambda idx=index: self._move_file_down(idx),
+            font=("Arial", 10),
+            width=2
+        )
+        down_btn.pack(side=tk.LEFT, padx=2)
+
+        # Remove button
+        remove_btn = tk.Button(
+            card,
+            text="✕",
+            command=lambda idx=index: self._remove_file(idx),
+            font=("Arial", 10),
+            fg="red",
+            bg="white",
+            borderwidth=0,
+            width=2
+        )
+        remove_btn.pack(side=tk.RIGHT, padx=5)
+
+    def _create_tooltip(self, widget, text):
+        """Create a tooltip for a widget."""
+        def show_tooltip(event):
+            tooltip = tk.Toplevel()
+            tooltip.wm_overrideredirect(True)
+            tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+
+            label = tk.Label(
+                tooltip,
+                text=text,
+                background="#ffffe0",
+                relief=tk.SOLID,
+                borderwidth=1,
+                font=("Arial", 9)
             )
+            label.pack()
 
-    # Next button
-    next_btn = tk.Button(
-        window,
-        text="Next",
-        command=on_next,
-        font=("Arial", 12),
-        width=10
-    )
-    next_btn.pack(pady=10)
-    window.bind('<Return>', lambda event=None: next_btn.invoke())
+            widget.tooltip = tooltip
 
-    window.mainloop()
+        def hide_tooltip(event):
+            if hasattr(widget, 'tooltip'):
+                widget.tooltip.destroy()
+                delattr(widget, 'tooltip')
 
+        widget.bind('<Enter>', show_tooltip)
+        widget.bind('<Leave>', hide_tooltip)
 
-def show_file_selection_window(num_files, callback):
-    """
-    Display Step 2: Window for selecting files via file dialog.
+    def _update_merge_queue_display(self):
+        """Update the merge queue display based on file list state."""
+        if not self.file_list:
+            self._create_drop_zone()
+            self.merge_btn.config(state=tk.DISABLED)
+        else:
+            self._create_file_list()
+            self.merge_btn.config(state=tk.NORMAL)
 
-    Args:
-        num_files: Expected number of files to select
-        callback: Function to call with the selected files list when OK is clicked
-    """
-    logging.info(f"Showing 'Select files' window (Step 2). Expecting {num_files} files.")
-    window = tk.Tk()
-    window.title("Step 2: Select Files")
-    window.geometry("600x400")
-
-    selected_files = []
-
-    # Label
-    label = tk.Label(
-        window,
-        text=f"Select {num_files} PowerPoint file(s):",
-        font=("Arial", 12)
-    )
-    label.pack(pady=10)
-
-    # Listbox for displaying files
-    listbox_frame = tk.Frame(window)
-    listbox_frame.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
-
-    scrollbar = tk.Scrollbar(listbox_frame)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-    listbox = tk.Listbox(
-        listbox_frame,
-        font=("Arial", 10),
-        yscrollcommand=scrollbar.set
-    )
-    listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-    scrollbar.config(command=listbox.yview)
-
-    def add_files_from_disk():
-        """Handle Add Files button click."""
-        logging.info("Opening file dialog to select files.")
+    def _browse_files(self):
+        """Open file dialog to browse for PowerPoint files."""
         files = filedialog.askopenfilenames(
             title="Select PowerPoint Files",
-            filetypes=[("PowerPoint Files", "*.pptx")]
+            filetypes=[
+                ("PowerPoint Files", "*.pptx *.ppsx"),
+                ("All Files", "*.*")
+            ]
         )
-        if not files:
-            logging.info("No files were selected in the file dialog.")
+
+        if files:
+            self._add_files(list(files))
+
+    def _add_files(self, file_paths):
+        """
+        Add files to the merge queue with validation.
+
+        Args:
+            file_paths: List of file paths to add
+        """
+        added_count = 0
+
+        for file_path in file_paths:
+            # Validate file type
+            if not file_path.lower().endswith(('.pptx', '.ppsx')):
+                messagebox.showwarning(
+                    "Invalid File Type",
+                    f"Only PowerPoint files (.pptx and .ppsx) are supported.\n\n"
+                    f"Invalid file: {os.path.basename(file_path)}"
+                )
+                continue
+
+            # Check if file already exists in queue
+            if file_path in self.file_list:
+                messagebox.showinfo(
+                    "Duplicate File",
+                    f"This file has already been added.\n\n{os.path.basename(file_path)}"
+                )
+                continue
+
+            # Check file access
+            if not os.path.exists(file_path):
+                messagebox.showerror(
+                    "File Not Found",
+                    f"The specified file does not exist.\n\n{file_path}"
+                )
+                continue
+
+            try:
+                # Try to open the file to check permissions
+                with open(file_path, 'rb'):
+                    pass
+
+                # File is valid and accessible, add to queue
+                self.file_list.append(file_path)
+                added_count += 1
+                logging.info(f"Added file to queue: {file_path}")
+
+            except PermissionError:
+                messagebox.showerror(
+                    "Access Denied",
+                    f"Access denied. Unable to open the file.\n\n"
+                    f"{os.path.basename(file_path)}\n\n"
+                    f"The file may be in use by another application or you may "
+                    f"lack the necessary permissions."
+                )
+            except Exception as e:
+                messagebox.showerror(
+                    "File Access Error",
+                    f"Could not access file: {os.path.basename(file_path)}\n\n"
+                    f"Error: {str(e)}"
+                )
+
+        if added_count > 0:
+            self._update_merge_queue_display()
+            self.status_var.set(f"Added {added_count} file(s) to queue")
+
+    def _on_drop(self, event):
+        """Handle drag-and-drop event."""
+        # Parse dropped files
+        files = self.root.tk.splitlist(event.data)
+        self._add_files(files)
+
+    def _move_file_up(self, index):
+        """Move file up in the queue."""
+        if index > 0:
+            self.file_list[index], self.file_list[index-1] = \
+                self.file_list[index-1], self.file_list[index]
+            self._update_merge_queue_display()
+            logging.info(f"Moved file up: {os.path.basename(self.file_list[index])}")
+
+    def _move_file_down(self, index):
+        """Move file down in the queue."""
+        if index < len(self.file_list) - 1:
+            self.file_list[index], self.file_list[index+1] = \
+                self.file_list[index+1], self.file_list[index]
+            self._update_merge_queue_display()
+            logging.info(f"Moved file down: {os.path.basename(self.file_list[index])}")
+
+    def _remove_file(self, index):
+        """Remove file from the queue."""
+        removed_file = self.file_list.pop(index)
+        logging.info(f"Removed file from queue: {removed_file}")
+        self._update_merge_queue_display()
+        self.status_var.set(f"Removed: {os.path.basename(removed_file)}")
+
+    def _clear_queue(self):
+        """Clear all files from the queue."""
+        if self.file_list:
+            if messagebox.askyesno(
+                "Clear Queue",
+                "Are you sure you want to remove all files from the queue?"
+            ):
+                self.file_list.clear()
+                self._update_merge_queue_display()
+                self.status_var.set("Queue cleared")
+                logging.info("Merge queue cleared")
+
+    def _browse_output_folder(self):
+        """Open folder dialog to select output location."""
+        folder = filedialog.askdirectory(
+            title="Select Output Folder",
+            initialdir=self.output_folder_var.get()
+        )
+
+        if folder:
+            self.output_folder_var.set(folder)
+            logging.info(f"Output folder set to: {folder}")
+
+    def _on_merge(self):
+        """Handle merge button click."""
+        if not self.file_list:
+            messagebox.showwarning(
+                "No Files",
+                "Please add at least one PowerPoint file to the merge queue."
+            )
             return
 
-        logging.info(f"{len(files)} file(s) selected: {files}")
-        for file in files:
-            if file not in selected_files:
-                selected_files.append(file)
-                listbox.insert(tk.END, file)
-                logging.info(f"Added file to list: {file}")
-            else:
-                logging.warning(f"File is already in the list and was ignored: {file}")
-
-    # Add Files button
-    add_btn = tk.Button(
-        window,
-        text="Add Files from Disk",
-        command=add_files_from_disk,
-        font=("Arial", 12)
-    )
-    add_btn.pack(pady=5)
-
-    def on_ok():
-        """Handle OK button click."""
-        logging.info("User clicked 'OK' in file selection window.")
-        if len(selected_files) != num_files:
-            error_msg = (f"Please select exactly {num_files} file(s). "
-                         f"You have selected {len(selected_files)} file(s).")
-            logging.error(f"Wrong number of files selected. {error_msg}")
-            messagebox.showerror("Invalid Selection", error_msg)
-        else:
-            logging.info("Correct number of files selected. Validating file paths.")
-            for file in selected_files:
-                if not os.path.exists(file):
-                    error_msg = f"File does not exist: {file}"
-                    logging.error(error_msg)
-                    messagebox.showerror("File Not Found", error_msg)
-                    return
-                if not file.lower().endswith('.pptx'):
-                    error_msg = f"File is not a .pptx file: {file}"
-                    logging.error(error_msg)
-                    messagebox.showerror("Invalid File", error_msg)
-                    return
-            logging.info("All file paths are validated. Continuing to next step.")
-            window.destroy()
-            callback(selected_files)
-
-    # OK button
-    ok_btn = tk.Button(
-        window,
-        text="OK",
-        command=on_ok,
-        font=("Arial", 12),
-        width=10
-    )
-    ok_btn.pack(pady=10)
-
-    window.mainloop()
-
-
-def show_filename_window(callback):
-    """
-    Display Step 3: Window for entering the output filename.
-
-    Args:
-        callback: Function to call with the filename when Next is clicked
-    """
-    logging.info("Showing 'New filename' window (Step 3).")
-    window = tk.Tk()
-    window.title("New Filename")
-    window.geometry("400x150")
-
-    # Label
-    label = tk.Label(
-        window,
-        text="New file name:",
-        font=("Arial", 12)
-    )
-    label.pack(pady=20)
-
-    # Entry box
-    entry = tk.Entry(window, font=("Arial", 12), width=30)
-    entry.pack(pady=10)
-    entry.focus_set()
-
-    def on_next():
-        """Handle Next button click."""
-        filename = entry.get().strip()
-        logging.info(f"User clicked 'Next' with filename: '{filename}'.")
+        # Validate output filename
+        filename = self.output_filename_var.get().strip()
         if not filename:
-            error_msg = "Please enter a filename."
-            logging.error("Filename input was empty.")
-            messagebox.showerror("Invalid Input", error_msg)
+            messagebox.showerror(
+                "Invalid Filename",
+                "Please enter a valid output filename."
+            )
             return
 
         # Ensure .pptx extension
         if not filename.lower().endswith('.pptx'):
-            original_filename = filename
             filename += '.pptx'
-            logging.info(f"Added '.pptx' to filename. From '{original_filename}' to '{filename}'.")
+            self.output_filename_var.set(filename)
 
-        logging.info(f"Filename validated: '{filename}'. Continuing to next step.")
-        window.destroy()
-        callback(filename)
+        # Build full output path
+        output_path = os.path.join(self.output_folder_var.get(), filename)
 
-    # Next button
-    next_btn = tk.Button(
-        window,
-        text="Next",
-        command=on_next,
-        font=("Arial", 12),
-        width=10
-    )
-    next_btn.pack(pady=10)
-    window.bind('<Return>', lambda event=None: next_btn.invoke())
+        # Check if output file already exists
+        if os.path.exists(output_path):
+            if not messagebox.askyesno(
+                "File Exists",
+                f"The file '{filename}' already exists.\n\n"
+                f"Do you want to overwrite it?"
+            ):
+                return
 
-    window.mainloop()
+        # Update status
+        self.status_var.set(f"Merging {len(self.file_list)} presentations...")
+        self.merge_btn.config(state=tk.DISABLED)
+        self.root.update()
+
+        # Call merge callback
+        logging.info(f"Starting merge of {len(self.file_list)} files to {output_path}")
+        self.merge_callback(self.file_list.copy(), output_path)
+
+    def update_status(self, message):
+        """Update the status label."""
+        self.status_var.set(message)
+        self.root.update()
+
+    def enable_merge_button(self):
+        """Re-enable the merge button."""
+        if self.file_list:
+            self.merge_btn.config(state=tk.NORMAL)
+
+    def run(self):
+        """Start the GUI main loop."""
+        logging.info("Starting PowerPoint Merger GUI")
+        self.root.mainloop()
 
 
-def show_reorder_window(selected_files, callback):
+def show_modern_gui(merge_callback):
     """
-    Display Step 4: Window for reordering files using Move Up/Down buttons.
+    Display the modern PowerPoint Merger GUI.
 
     Args:
-        selected_files: List of file paths to reorder
-        callback: Function to call with the reordered files list when Create is clicked
+        merge_callback: Function to call when merge is requested.
+                       Should accept (file_list, output_path) parameters.
     """
-    logging.info("Showing 'Change order' window (Step 4).")
-    window = tk.Tk()
-    window.title("Step 4: Set Merge Order")
-    window.geometry("600x450")
-
-    # Label
-    label = tk.Label(
-        window,
-        text="In what order should the presentations be merged?",
-        font=("Arial", 12),
-        wraplength=550
-    )
-    label.pack(pady=10)
-
-    # Initialize file order
-    file_order = selected_files.copy()
-    logging.info(f"Initial file order: {[os.path.basename(f) for f in file_order]}")
-
-    # Listbox for displaying files
-    listbox_frame = tk.Frame(window)
-    listbox_frame.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
-
-    scrollbar = tk.Scrollbar(listbox_frame)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-    listbox = tk.Listbox(
-        listbox_frame,
-        font=("Arial", 10),
-        yscrollcommand=scrollbar.set
-    )
-    listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
-    # Populate listbox with filenames (not full paths for readability)
-    for file in file_order:
-        listbox.insert(tk.END, os.path.basename(file))
-    
-    if listbox.size() > 0:
-        listbox.selection_set(0) # Select first item by default
-
-    def move_up():
-        """Move selected item up in the list."""
-        selection = listbox.curselection()
-        if not selection:
-            logging.warning("Move Up button clicked without an element being selected.")
-            messagebox.showinfo("No Selection", "Please select an item to move.")
-            return
-
-        index = selection[0]
-        if index == 0:
-            logging.info("Ignoring 'Move Up' as element is already at the top.")
-            return
-
-        logging.info(f"Moving '{os.path.basename(file_order[index])}' up from position {index}.")
-        # Swap items in file_order list
-        file_order[index], file_order[index - 1] = file_order[index - 1], file_order[index]
-
-        # Update listbox
-        listbox.delete(0, tk.END)
-        for file in file_order:
-            listbox.insert(tk.END, os.path.basename(file))
-
-        # Reselect the moved item
-        listbox.selection_set(index - 1)
-        logging.info(f"New order: {[os.path.basename(f) for f in file_order]}")
-
-    def move_down():
-        """Move selected item down in the list."""
-        selection = listbox.curselection()
-        if not selection:
-            logging.warning("Move Down button clicked without an element being selected.")
-            messagebox.showinfo("No Selection", "Please select an item to move.")
-            return
-
-        index = selection[0]
-        if index == len(file_order) - 1:
-            logging.info("Ignoring 'Move Down' as element is already at the bottom.")
-            return
-
-        logging.info(f"Moving '{os.path.basename(file_order[index])}' down from position {index}.")
-        # Swap items in file_order list
-        file_order[index], file_order[index + 1] = file_order[index + 1], file_order[index]
-
-        # Update listbox
-        listbox.delete(0, tk.END)
-        for file in file_order:
-            listbox.insert(tk.END, os.path.basename(file))
-
-        # Reselect the moved item
-        listbox.selection_set(index + 1)
-        logging.info(f"New order: {[os.path.basename(f) for f in file_order]}")
-
-    # Button frame for Move Up and Move Down buttons
-    button_frame = tk.Frame(window)
-    button_frame.pack(pady=5)
-
-    move_up_btn = tk.Button(
-        button_frame,
-        text="Move Up",
-        command=move_up,
-        font=("Arial", 12),
-        width=12
-    )
-    move_up_btn.pack(side=tk.LEFT, padx=5)
-
-    move_down_btn = tk.Button(
-        button_frame,
-        text="Move Down",
-        command=move_down,
-        font=("Arial", 12),
-        width=12
-    )
-    move_down_btn.pack(side=tk.LEFT, padx=5)
-
-    def on_create():
-        """Handle Create New File button click."""
-        logging.info("User clicked 'Create New File'.")
-        logging.info(f"Final file order for merging: {file_order}")
-        window.destroy()
-        callback(file_order)
-
-    # Create New File button
-    create_btn = tk.Button(
-        window,
-        text="Create New File",
-        command=on_create,
-        font=("Arial", 12),
-        width=15,
-        bg="#4CAF50",
-        fg="white"
-    )
-    create_btn.pack(pady=10)
-
-    window.mainloop()
+    gui = PowerPointMergerGUI(merge_callback)
+    gui.run()

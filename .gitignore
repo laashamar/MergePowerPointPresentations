@@ -212,3 +212,7 @@ __marimo__/
 # Log files and logging scripts
 *.txt
 
+# Backup files
+*_old.py
+gui_old.py
+
