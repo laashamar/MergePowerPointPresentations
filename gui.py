@@ -1,7 +1,7 @@
 """
 GUI module for PowerPoint Merger application.
 
-This module contains the modern two-column GUI for PowerPoint file 
+This module contains the modern two-column GUI for PowerPoint file
 merging, using CustomTkinter for a modern dark theme.
 """
 import logging
@@ -51,10 +51,27 @@ class PowerPointMergerGUI:
 
         # Create main window
         self.root = ctk.CTk()
+        self.icon_image = None  # Prevents image garbage collection
+        
+        icon_path = os.path.join(os.path.dirname(__file__), "resources", "MergePowerPoint.ico")
+        if os.path.exists(icon_path):
+            try:
+                self.icon_image = CTkImage(Image.open(icon_path), size=(24, 24))
+                logging.info("Icon image loaded successfully.")
+            except Exception as e:
+                logging.warning(f"Failed to load icon image: {e}")
+        else:
+            logging.warning("Icon image not found.")
+
+        try:
+            # Dummy call to trigger DPI tracker safely
+            self.root.after(100, lambda: self.root.winfo_exists())
+        except RuntimeError:
+            logging.warning("DPI scaling check triggered outside main loop.")
 
         self.root.title("PowerPoint Merger")
         self.root.geometry("900x600")
-        
+
         # Configure window colors
         self.root.configure(fg_color=COLORS['window_bg'])
 
@@ -72,7 +89,39 @@ class PowerPointMergerGUI:
 
         self._create_widgets()
         self._update_merge_queue_display()
+        def __init__(self, merge_callback):
+        self.merge_callback = merge_callback
+        self.file_list = []
 
+        self.root = ctk.CTk()
+        self.icon_image = None
+        self.root.after(0, self._load_icon_image)
+
+        self.root.title("PowerPoint Merger")
+        self.root.geometry("900x600")
+        self.root.configure(fg_color=COLORS['window_bg'])
+
+        # Set application icon
+        icon_path = os.path.join(os.path.dirname(__file__), "resources", "MergePowerPoint.ico")
+        if os.path.exists(icon_path):
+            try:
+                self.root.iconbitmap(icon_path)
+            except Exception as e:
+                logging.warning(f"Could not set application icon: {e}")
+
+        self._create_widgets()
+        self._update_merge_queue_display()
+
+    def _load_icon_image(self):
+        icon_path = os.path.join(os.path.dirname(__file__), "resources", "MergePowerPoint.ico")
+        if os.path.exists(icon_path):
+            try:
+                self.icon_image = CTkImage(Image.open(icon_path), size=(24, 24))
+                logging.info("Icon image loaded successfully.")
+            except Exception as e:
+                logging.warning(f"Failed to load icon image: {e}")
+        else:
+            logging.warning("Icon image not found.")
     def _create_widgets(self):
         """Create and layout all GUI widgets."""
         # Main container with two columns
@@ -80,7 +129,7 @@ class PowerPointMergerGUI:
         main_container.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Column 1: Merge Queue (left side, wider)
-        self.queue_frame = ctk.CTkFrame(main_container, fg_color=COLORS['frame_bg'], 
+        self.queue_frame = ctk.CTkFrame(main_container, fg_color=COLORS['frame_bg'],
                                         border_width=2, border_color=COLORS['secondary_text'])
         self.queue_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
 
@@ -118,7 +167,7 @@ class PowerPointMergerGUI:
             border_color=COLORS['secondary_text']
         )
         folder_frame.pack(fill="x", padx=10, pady=10)
-        
+
         folder_label = ctk.CTkLabel(
             folder_frame,
             text="Output Location",
@@ -161,7 +210,7 @@ class PowerPointMergerGUI:
             border_color=COLORS['secondary_text']
         )
         filename_frame.pack(fill="x", padx=10, pady=10)
-        
+
         filename_label = ctk.CTkLabel(
             filename_frame,
             text="Output Filename",
@@ -278,7 +327,7 @@ class PowerPointMergerGUI:
             fg_color=COLORS['frame_bg']
         )
         scrollable_frame.pack(fill="both", expand=True)
-        
+
         self.file_list_frame = scrollable_frame
 
         # Create file cards
@@ -288,7 +337,7 @@ class PowerPointMergerGUI:
     def _create_file_card(self, index, file_path):
         """Create a card widget for a file in the queue."""
         card = ctk.CTkFrame(
-            self.file_list_frame, 
+            self.file_list_frame,
             fg_color=COLORS['frame_bg'],
             border_width=1,
             border_color=COLORS['secondary_text']
@@ -299,19 +348,12 @@ class PowerPointMergerGUI:
         info_frame = ctk.CTkFrame(card, fg_color=COLORS['frame_bg'])
         info_frame.pack(side="left", fill="both", expand=True, padx=10, pady=5)
 
-        # Load icon and define size
-        icon_path = os.path.join(os.path.dirname(__file__), "resources", "MergePowerPoint.ico")
-        if os.path.exists(icon_path):
-            icon_size = (24, 24)  # Adjusted for good visibility
-            icon_image = CTkImage(Image.open(icon_path), size=icon_size)
-
-            # Ensure info_frame has enough height
-            info_frame.configure(height=icon_size[1] + 10)
+        if self.icon_image:
+            info_frame.configure(height=self.icon_image._size[1] + 10)
             info_frame.pack_propagate(False)
 
-            # Icon to the left
-            icon_label = ctk.CTkLabel(info_frame, image=icon_image, text="")
-            icon_label.image = icon_image  # Prevents garbage collection
+            icon_label = ctk.CTkLabel(info_frame, image=self.icon_image, text="")
+            icon_label.image = self.icon_image  # Prevent garbage collection
             icon_label.pack(side="left", padx=(0, 10))
 
         # Filename with adjusted text size
@@ -377,7 +419,7 @@ class PowerPointMergerGUI:
     def _create_tooltip(self, widget, text):
         """Create a tooltip for a widget."""
         import tkinter as tk
-        
+
         def show_tooltip(event):
             tooltip = tk.Toplevel()
             tooltip.wm_overrideredirect(True)
@@ -590,10 +632,10 @@ class PowerPointMergerGUI:
         """Re-enable the merge button."""
         if self.file_list:
             self.merge_btn.configure(state="normal")
-            
+
     def run_in_main_thread(self, func, *args, **kwargs):
         """Ensure GUI updates run in the main thread."""
-        self.root.after(0, lambda: func(*args, **kwargs))        
+        self.root.after(0, lambda: func(*args, **kwargs))
 
     def run(self):
         """Start the GUI main loop."""
