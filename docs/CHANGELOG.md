@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * **Initial Release**
-    * Intuitive 4-step GUI for merging PowerPoint presentations.
-    * Uses COM automation for perfect fidelity copying of slides, including animations and formatting.
-    * Features file reordering, automatic slideshow launch, and robust error handling.
-    * Includes standard and debug (`run_with_logging.py`) entry points with live logging.
-    * Comprehensive documentation for users and developers.
+  * Intuitive 4-step GUI for merging PowerPoint presentations.
+  * Uses COM automation for perfect fidelity copying of slides, including animations and formatting.
+  * Features file reordering, automatic slideshow launch, and robust error handling.
+  * Includes standard and debug (`run_with_logging.py`) entry points with live logging.
+  * Comprehensive documentation for users and developers.
