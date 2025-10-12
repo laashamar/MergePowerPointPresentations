@@ -423,7 +423,7 @@ class TestPowerPointMergerGUI:
         
         # Create a mock button with proper config method
         mock_button = MagicMock()
-        mock_button.config = MagicMock()
+        mock_button.configure = MagicMock()
         
         gui_instance = gui.PowerPointMergerGUI(mock_callback)
         gui_instance.merge_btn = mock_button
@@ -432,7 +432,7 @@ class TestPowerPointMergerGUI:
         gui_instance._update_merge_queue_display()
         
         # Verify button was configured to be disabled
-        mock_button.config.assert_called_with(state='disabled')
+        mock_button.configure.assert_called_with(state='disabled')
 
     @patch('gui.ctk.CTk')
     @patch('gui.HAS_DND', False)
@@ -442,7 +442,7 @@ class TestPowerPointMergerGUI:
         
         # Create a mock button with proper config method
         mock_button = MagicMock()
-        mock_button.config = MagicMock()
+        mock_button.configure = MagicMock()
         
         gui_instance = gui.PowerPointMergerGUI(mock_callback)
         gui_instance.merge_btn = mock_button
@@ -457,7 +457,7 @@ class TestPowerPointMergerGUI:
             gui_instance._add_files([test_file])
             
             # Verify button was configured to be enabled
-            mock_button.config.assert_called_with(state='normal')
+            mock_button.configure.assert_called_with(state='normal')
         finally:
             # Cleanup
             if os.path.exists(test_file):
@@ -471,7 +471,7 @@ class TestPowerPointMergerGUI:
         
         # Create a mock button with proper config method
         mock_button = MagicMock()
-        mock_button.config = MagicMock()
+        mock_button.configure = MagicMock()
         
         gui_instance = gui.PowerPointMergerGUI(mock_callback)
         gui_instance.merge_btn = mock_button
@@ -490,8 +490,8 @@ class TestPowerPointMergerGUI:
             
             # Verify merge button is disabled
             # Last call should be to disable
-            calls = mock_button.config.call_args_list
-            assert any(call[1].get('state') == tk.DISABLED for call in calls)
+            calls = mock_button.configure.call_args_list
+            assert any(call[1].get('state') == 'disabled' for call in calls)
         finally:
             # Cleanup
             if os.path.exists(test_file):
@@ -579,7 +579,7 @@ class TestPowerPointMergerGUI:
         
         # Create a mock button with proper config method
         mock_button = MagicMock()
-        mock_button.config = MagicMock()
+        mock_button.configure = MagicMock()
         
         gui_instance = gui.PowerPointMergerGUI(mock_callback)
         gui_instance.merge_btn = mock_button
@@ -603,8 +603,8 @@ class TestPowerPointMergerGUI:
             assert len(gui_instance.file_list) == 0
             
             # Verify merge button was disabled (check call list)
-            calls = mock_button.config.call_args_list
-            assert any(call[1].get('state') == tk.DISABLED for call in calls)
+            calls = mock_button.configure.call_args_list
+            assert any(call[1].get('state') == 'disabled' for call in calls)
             
             # Verify confirmation was requested
             mock_askyesno.assert_called_once()
