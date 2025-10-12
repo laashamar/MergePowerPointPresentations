@@ -4,7 +4,7 @@
 
 ### Overview
 
-The PowerPoint Presentation Merger is a Python desktop application built with a **modular architecture** that provides a step-by-step GUI workflow for merging multiple PowerPoint presentations. The application uses COM automation for reliable slide copying and includes comprehensive logging capabilities.
+The PowerPoint Presentation Merger is a Python desktop application built with a **modular architecture** that provides a modern two-column GUI with drag-and-drop support for merging multiple PowerPoint presentations. The application uses COM automation for reliable slide copying and includes comprehensive logging capabilities.
 
 ### Design Principles
 
@@ -12,7 +12,8 @@ The PowerPoint Presentation Merger is a Python desktop application built with a 
 - **Modular Structure**: Clear boundaries between GUI, business logic, and infrastructure
 - **COM Integration**: Native PowerPoint automation for perfect fidelity
 - **Comprehensive Logging**: Full observability for debugging and monitoring
-- **User-Centric Design**: Step-by-step workflow with clear validation
+- **User-Centric Design**: Modern single-window interface with real-time feedback
+- **Robust Validation**: Comprehensive file validation and error handling
 
 ## Module Architecture
 
@@ -86,18 +87,18 @@ run_with_logging.py
 
 #### `app.py` - Application Orchestration
 
-- **Purpose**: Central workflow coordination and state management
+- **Purpose**: Central workflow coordination and merge operation handling
 - **Key Class**: `PowerPointMergerApp`
-- **State Variables**:
-  - `num_files`: Expected number of files to merge
-  - `selected_files`: List of selected file paths
-  - `output_filename`: Name for merged presentation
-  - `file_order`: Final order after user reordering
-- **Workflow Methods**:
-  - `_on_number_of_files_entered()`: Handle Step 1 completion
-  - `_on_files_selected()`: Handle Step 2 completion
-  - `_on_filename_entered()`: Handle Step 3 completion
-  - `_on_files_reordered()`: Handle Step 4 completion
+- **Responsibilities**:
+  - Launch the modern GUI
+  - Handle merge requests from GUI
+  - Coordinate with powerpoint_core for merge operations
+  - Handle success/failure callbacks
+  - Launch slideshow after successful merge
+- **Key Methods**:
+  - `run()`: Initialize and display the GUI
+  - `_on_merge_requested()`: Process merge request with file validation
+  - Integration with COM automation layer
   - `_merge_and_launch()`: Execute merge and slideshow
 
 #### `logger.py` - Logging Infrastructure
@@ -118,19 +119,27 @@ run_with_logging.py
 
 #### `gui.py` - User Interface Components
 
-- **Purpose**: All GUI windows and user interactions
-- **Window Functions**:
-  - `show_number_of_files_window()`: Step 1 - Number input
-  - `show_file_selection_window()`: Step 2 - File selection
-  - `show_filename_window()`: Step 3 - Output filename
-  - `show_reorder_window()`: Step 4 - File ordering
+- **Purpose**: Modern two-column GUI with drag-and-drop support
+- **Key Class**: `PowerPointMergerGUI`
+- **GUI Components**:
+  - **Column 1: Merge Queue**
+    - Drop zone with visual feedback
+    - File card display with tooltips
+    - Up/Down reordering buttons
+    - Remove file functionality
+  - **Column 2: Configuration & Actions**
+    - Output folder selector
+    - Output filename input
+    - Merge button
+    - Clear queue button
+    - Status label for real-time feedback
 - **Features**:
-  - Modal window progression
-  - Input validation and error handling
-  - File dialog integration
-  - Move Up/Down file reordering
-  - Keyboard shortcuts (Enter key support)
-  - Visual feedback and styling
+  - Drag-and-drop file addition (with tkinterdnd2 when available)
+  - File validation (type, access, duplicates)
+  - Dynamic UI state management
+  - Comprehensive tooltips
+  - Application icon integration
+  - Real-time status updates
 
 ### 4. Business Logic Layer
 
@@ -152,44 +161,55 @@ run_with_logging.py
 
 ## Application Workflow
 
-### Sequential Process Flow
+### Single-Window Process Flow
 
 ```text
 1. Application Startup
    ├── Entry point selection (main.py or run_with_logging.py)
    ├── Logging configuration (if using run_with_logging.py)
-   └── PowerPointMergerApp instantiation
+   ├── PowerPointMergerApp instantiation
+   └── Modern GUI window display
 
-2. Step 1: Number of Files
-   ├── User inputs expected file count
-   ├── Input validation (positive integer)
-   └── State update: num_files
+2. File Management
+   ├── Drag-and-drop files OR browse for files
+   ├── Automatic validation:
+   │   ├── File type (.pptx, .ppsx)
+   │   ├── Duplicate detection
+   │   ├── File accessibility check
+   │   └── Permission validation
+   └── Dynamic queue display update
 
-3. Step 2: File Selection
-   ├── File dialog for .pptx selection
-   ├── File existence and type validation
-   └── State update: selected_files
+3. File Ordering
+   ├── Use ↑/↓ buttons on file cards
+   ├── Real-time queue reordering
+   └── Visual feedback
 
-4. Step 3: Output Filename
-   ├── User inputs filename
-   ├── Automatic .pptx extension addition
-   └── State update: output_filename
+4. Output Configuration
+   ├── Select output folder
+   ├── Enter output filename
+   └── Validation and .pptx extension auto-addition
 
-5. Step 4: File Ordering
-   ├── Display selected files
-   ├── Move Up/Down reordering
-   └── State update: file_order
-
-6. Merge and Launch
+5. Merge Operation
+   ├── Click "Merge Presentations"
+   ├── Status updates during merge
    ├── COM PowerPoint automation
    ├── Sequential slide copying
    ├── File saving
    └── Slideshow launch
+
+6. Post-Merge
+   ├── Success/error notification
+   ├── Queue preservation for next merge
+   └── Ready for new operations
 ```
 
 ### State Management Pattern
 
-The application uses a **centralized state pattern** where the `PowerPointMergerApp` class maintains all workflow state. Each GUI window communicates back to the application through callback functions, ensuring unidirectional data flow and preventing state inconsistencies.
+The application uses an **event-driven state pattern** where the `PowerPointMergerGUI` class maintains the merge queue state and communicates with the application through callback functions when a merge is requested. This ensures:
+- Real-time UI updates
+- Persistent queue state
+- Clean separation between presentation and business logic
+- Unidirectional data flow
 
 ## Technical Implementation Details
 
@@ -282,27 +302,30 @@ Root Logger
 - Animation and embedded content support
 - Reliable slide copying mechanism
 
-### 2. Modal GUI Workflow
+### 2. Modern Two-Column GUI
 
-**Decision**: Sequential modal windows instead of single complex interface
-
-**Rationale**:
-
-- Clear step-by-step progression
-- Simplified state management
-- Reduced user cognitive load
-- Easy validation at each step
-
-### 3. Move Up/Down vs. Drag-and-Drop
-
-**Decision**: Button-based reordering instead of drag-and-drop
+**Decision**: Single-window two-column interface with drag-and-drop support
 
 **Rationale**:
 
-- Eliminated unreliable `tkinterdnd2` dependency
-- More accessible interface
-- Simpler implementation and maintenance
-- Better cross-platform compatibility
+- More modern and intuitive user experience
+- All controls visible at once - no navigation needed
+- Real-time feedback and status updates
+- Flexible workflow - add/remove files at any time
+- Better discoverability of features
+- Supports both drag-and-drop and traditional file selection
+
+### 3. File Validation Strategy
+
+**Decision**: Comprehensive validation before adding to queue
+
+**Rationale**:
+
+- Early error detection prevents merge failures
+- Clear error messages guide users to solutions
+- Permission checking prevents COM errors
+- Duplicate detection improves user experience
+- Type validation ensures compatible files
 
 ### 4. Dual Entry Points
 

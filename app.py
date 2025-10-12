@@ -33,7 +33,7 @@ class PowerPointMergerApp:
         """
         logging.info(f"Merge requested for {len(file_list)} files")
         logging.info(f"Output path: {output_path}")
-        
+
         # Merge presentations using COM automation
         success, saved_path, error_msg = powerpoint_core.merge_presentations(
             file_list,
@@ -73,5 +73,3 @@ def start_app():
     logging.info("Creating and running a new instance of PowerPointMergerApp.")
     app = PowerPointMergerApp()
     app.run()
-
-
