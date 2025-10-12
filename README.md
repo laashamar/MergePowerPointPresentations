@@ -4,9 +4,9 @@ A powerful Python GUI application for merging multiple PowerPoint (.pptx) files 
 
 ## **Features**
 
-* **Modern Two-Column GUI**: Intuitive single-window interface with drag-and-drop support
+* **Modern Two-Column GUI**: Intuitive single-window interface
 * **Perfect Slide Copying**: COM automation preserves all formatting, animations, and embedded content
-* **File Management**: Easy file selection with validation, reordering, and drag-and-drop capabilities
+* **File Management**: Easy file selection with validation and reordering
 * **Smart File Validation**: Automatic detection of invalid file types, duplicates, and permission issues
 * **Flexible Output**: Choose output location and filename
 * **Automatic Slideshow**: Launches merged presentation immediately after creation
@@ -60,7 +60,7 @@ A powerful Python GUI application for merging multiple PowerPoint (.pptx) files 
 ### **Quick Start**
 
 1. **Launch the application** using one of the methods above.
-2. **Add PowerPoint files** by dragging and dropping them or using the "Browse for Files" button.
+2. **Add PowerPoint files** using the "Browse for Files" button.
 3. **Arrange the files** in the desired merge order using the up/down arrow buttons.
 4. **Select output location** and enter a filename.
 5. **Click "Merge Presentations"** to create your merged file.
@@ -70,7 +70,6 @@ A powerful Python GUI application for merging multiple PowerPoint (.pptx) files 
 
 #### **Adding Files to the Merge Queue**
 
-* **Drag and Drop**: Simply drag PowerPoint files from your file explorer and drop them into the merge queue area.
 * **Browse Button**: Click "Browse for Files" to select files using a file dialog.
 * **Supported Formats**: Only .pptx and .ppsx files are accepted.
 * **Duplicate Prevention**: The application automatically detects and prevents duplicate file additions.

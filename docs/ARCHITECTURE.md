@@ -4,7 +4,7 @@
 
 ### Overview
 
-The PowerPoint Presentation Merger is a Python desktop application built with a **modular architecture** that provides a modern two-column GUI with drag-and-drop support for merging multiple PowerPoint presentations. The application uses COM automation for reliable slide copying and includes comprehensive logging capabilities.
+The PowerPoint Presentation Merger is a Python desktop application built with a **modular architecture** that provides a modern two-column GUI for merging multiple PowerPoint presentations. The application uses COM automation for reliable slide copying and includes comprehensive logging capabilities.
 
 ### Design Principles
 
@@ -119,11 +119,11 @@ run_with_logging.py
 
 #### `gui.py` - User Interface Components
 
-- **Purpose**: Modern two-column GUI with drag-and-drop support
+- **Purpose**: Modern two-column GUI
 - **Key Class**: `PowerPointMergerGUI`
 - **GUI Components**:
   - **Column 1: Merge Queue**
-    - Drop zone with visual feedback
+    - File selection with visual feedback
     - File card display with tooltips
     - Up/Down reordering buttons
     - Remove file functionality
@@ -134,7 +134,6 @@ run_with_logging.py
     - Clear queue button
     - Status label for real-time feedback
 - **Features**:
-  - Drag-and-drop file addition (with tkinterdnd2 when available)
   - File validation (type, access, duplicates)
   - Dynamic UI state management
   - Comprehensive tooltips
@@ -171,7 +170,7 @@ run_with_logging.py
    └── Modern GUI window display
 
 2. File Management
-   ├── Drag-and-drop files OR browse for files
+   ├── Browse for files
    ├── Automatic validation:
    │   ├── File type (.pptx, .ppsx)
    │   ├── Duplicate detection
@@ -305,7 +304,7 @@ Root Logger
 
 ### 2. Modern Two-Column GUI
 
-**Decision**: Single-window two-column interface with drag-and-drop support
+**Decision**: Single-window two-column interface
 
 **Rationale**:
 
@@ -314,7 +313,7 @@ Root Logger
 - Real-time feedback and status updates
 - Flexible workflow - add/remove files at any time
 - Better discoverability of features
-- Supports both drag-and-drop and traditional file selection
+- Traditional file selection via browse button
 
 ### 3. File Validation Strategy
 

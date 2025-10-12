@@ -1,19 +1,13 @@
 """
 GUI module for PowerPoint Merger application.
 
-This module contains the modern two-column GUI with drag-and-drop
-support for PowerPoint file merging, using CustomTkinter for a modern dark theme.
+This module contains the modern two-column GUI for PowerPoint file 
+merging, using CustomTkinter for a modern dark theme.
 """
 import logging
 import os
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
-try:
-    from tkinterdnd2 import DND_FILES, TkinterDnD
-    HAS_DND = True
-except ImportError:
-    HAS_DND = False
-    logging.warning("tkinterdnd2 not available. Drag-and-drop will be disabled.")
 
 # PowerPoint-inspired Dark Mode Color Palette
 COLORS = {
@@ -53,12 +47,7 @@ class PowerPointMergerGUI:
         self.file_list = []  # List of file paths in merge order
 
         # Create main window
-        if HAS_DND:
-            # Note: CustomTkinter doesn't support TkinterDnD directly, so we fall back
-            self.root = TkinterDnD.Tk() if HAS_DND else ctk.CTk()
-            logging.warning("Drag-and-drop may not work properly with CustomTkinter")
-        else:
-            self.root = ctk.CTk()
+        self.root = ctk.CTk()
 
         self.root.title("PowerPoint Merger")
         self.root.geometry("900x600")
@@ -100,7 +89,7 @@ class PowerPointMergerGUI:
         )
         queue_label.pack(pady=(10, 5))
 
-        # Container for drop zone or file list
+        # Container for file selection or file list
         self.content_frame = ctk.CTkFrame(self.queue_frame, fg_color=COLORS['frame_bg'])
         self.content_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -231,18 +220,18 @@ class PowerPointMergerGUI:
         )
         status_label.pack(side="bottom", fill="x", padx=10, pady=10)
 
-    def _create_drop_zone(self):
-        """Create the initial drop zone interface."""
+    def _create_file_selector(self):
+        """Create the initial file selection interface."""
         # Clear content frame
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-        drop_container = ctk.CTkFrame(self.content_frame, fg_color=COLORS['frame_bg'])
-        drop_container.pack(fill="both", expand=True)
+        selector_container = ctk.CTkFrame(self.content_frame, fg_color=COLORS['frame_bg'])
+        selector_container.pack(fill="both", expand=True)
 
         # Large plus sign icon (using label with large font)
         plus_label = ctk.CTkLabel(
-            drop_container,
+            selector_container,
             text="+",
             font=(FONT_FAMILY, 72, "bold"),
             text_color=COLORS['secondary_text']
@@ -251,16 +240,16 @@ class PowerPointMergerGUI:
 
         # Instructional text
         instruction_label = ctk.CTkLabel(
-            drop_container,
-            text="Drag and drop PowerPoint files here",
+            selector_container,
+            text="Add PowerPoint files using the button below",
             font=(FONT_FAMILY, FONT_SIZE_MEDIUM),
             text_color=COLORS['secondary_text']
         )
         instruction_label.pack()
 
-        # Browse button as alternative
+        # Browse button
         browse_btn = ctk.CTkButton(
-            drop_container,
+            selector_container,
             text="Browse for Files",
             command=self._browse_files,
             font=(FONT_FAMILY, 11),
@@ -273,11 +262,6 @@ class PowerPointMergerGUI:
             border_color=COLORS['secondary_text']
         )
         browse_btn.pack(pady=(20, 50))
-
-        # Enable drag-and-drop if available
-        if HAS_DND:
-            drop_container.drop_target_register(DND_FILES)
-            drop_container.dnd_bind('<<Drop>>', self._on_drop)
 
     def _create_file_list(self):
         """Create the file list interface with reordering capability."""
@@ -414,7 +398,7 @@ class PowerPointMergerGUI:
     def _update_merge_queue_display(self):
         """Update the merge queue display based on file list state."""
         if not self.file_list:
-            self._create_drop_zone()
+            self._create_file_selector()
             self.merge_btn.configure(state="disabled")
         else:
             self._create_file_list()
@@ -496,12 +480,6 @@ class PowerPointMergerGUI:
         if added_count > 0:
             self._update_merge_queue_display()
             self.status_var.set(f"Added {added_count} file(s) to queue")
-
-    def _on_drop(self, event):
-        """Handle drag-and-drop event."""
-        # Parse dropped files
-        files = self.root.tk.splitlist(event.data)
-        self._add_files(files)
 
     def _move_file_up(self, index):
         """Move file up in the queue."""

@@ -56,7 +56,6 @@ All buttons have been verified to have callable commands:
 ## Features Preserved
 
 - ✅ Two-column layout (Merge Queue + Configuration)
-- ✅ File drag-and-drop support (where available)
 - ✅ File reordering with up/down buttons
 - ✅ Output folder and filename configuration
 - ✅ Clear visual hierarchy with dark theme
