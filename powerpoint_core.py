@@ -93,7 +93,8 @@ def merge_presentations(file_order, output_filename):
         # Save the merged presentation
         output_path = os.path.abspath(output_filename)
         logging.info(f"Saving merged presentation to: {output_path}")
-        destination_prs.SaveAs(output_path)
+        # The value 11 corresponds to the 'ppSaveAsDefault' format (.pptx)
+        destination_prs.SaveAs(output_path, FileFormat=11)
         logging.info("Save successful.")
 
         return True, output_path, None
