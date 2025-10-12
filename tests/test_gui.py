@@ -14,7 +14,6 @@ sys.modules['customtkinter'] = MagicMock()
 sys.modules['tkinter'] = MagicMock()
 sys.modules['tkinter.filedialog'] = MagicMock()
 sys.modules['tkinter.messagebox'] = MagicMock()
-sys.modules['tkinterdnd2'] = MagicMock()
 
 import customtkinter as ctk
 import gui
@@ -24,7 +23,6 @@ class TestPowerPointMergerGUI:
     """Tests for the PowerPointMergerGUI class."""
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)  # Disable drag-and-drop for testing
     def test_initialization(self, mock_tk):
         """Test GUI initialization with callback."""
         mock_callback = Mock()
@@ -38,7 +36,6 @@ class TestPowerPointMergerGUI:
         assert gui_instance.root is not None
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_add_valid_pptx_file(self, mock_tk):
         """Test adding a valid .pptx file to the queue."""
         mock_callback = Mock()
@@ -62,7 +59,6 @@ class TestPowerPointMergerGUI:
                 os.remove(test_file)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_add_valid_ppsx_file(self, mock_tk):
         """Test adding a valid .ppsx file to the queue."""
         mock_callback = Mock()
@@ -87,7 +83,6 @@ class TestPowerPointMergerGUI:
 
     @patch('gui.messagebox.showwarning')
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_reject_invalid_file_type(self, mock_tk, mock_showwarning):
         """Test that invalid file types are rejected."""
         mock_callback = Mock()
@@ -105,7 +100,6 @@ class TestPowerPointMergerGUI:
 
     @patch('gui.messagebox.showinfo')
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_reject_duplicate_files(self, mock_tk, mock_showinfo):
         """Test that duplicate files are rejected."""
         mock_callback = Mock()
@@ -133,7 +127,6 @@ class TestPowerPointMergerGUI:
                 os.remove(test_file)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_remove_file_from_queue(self, mock_tk):
         """Test removing a file from the queue."""
         mock_callback = Mock()
@@ -165,7 +158,6 @@ class TestPowerPointMergerGUI:
                     os.remove(f)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_move_file_up(self, mock_tk):
         """Test moving a file up in the queue."""
         mock_callback = Mock()
@@ -197,7 +189,6 @@ class TestPowerPointMergerGUI:
                     os.remove(f)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_move_file_down(self, mock_tk):
         """Test moving a file down in the queue."""
         mock_callback = Mock()
@@ -229,7 +220,6 @@ class TestPowerPointMergerGUI:
                     os.remove(f)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_move_file_up_at_boundary(self, mock_tk):
         """Test moving first file up (should not move)."""
         mock_callback = Mock()
@@ -259,7 +249,6 @@ class TestPowerPointMergerGUI:
                     os.remove(f)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_move_file_down_at_boundary(self, mock_tk):
         """Test moving last file down (should not move)."""
         mock_callback = Mock()
@@ -289,7 +278,6 @@ class TestPowerPointMergerGUI:
                     os.remove(f)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_output_path_construction(self, mock_tk):
         """Test that output path is constructed correctly."""
         mock_callback = Mock()
@@ -329,7 +317,6 @@ class TestPowerPointMergerGUI:
                 os.remove(test_file)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_output_path_appends_pptx_extension(self, mock_tk):
         """Test that .pptx extension is appended if missing."""
         mock_callback = Mock()
@@ -370,7 +357,6 @@ class TestPowerPointMergerGUI:
                 os.remove(test_file)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_merge_callback_invocation(self, mock_tk):
         """Test that merge callback is called with correct parameters."""
         mock_callback = Mock()
@@ -416,7 +402,6 @@ class TestPowerPointMergerGUI:
                     os.remove(f)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_merge_button_disabled_when_queue_empty(self, mock_tk):
         """Test that merge button is disabled when queue is empty."""
         mock_callback = Mock()
@@ -435,7 +420,6 @@ class TestPowerPointMergerGUI:
         mock_button.configure.assert_called_with(state='disabled')
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_merge_button_enabled_when_files_added(self, mock_tk):
         """Test that merge button is enabled when files are added."""
         mock_callback = Mock()
@@ -464,7 +448,6 @@ class TestPowerPointMergerGUI:
                 os.remove(test_file)
 
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_merge_button_disabled_after_removing_all_files(self, mock_tk):
         """Test that merge button is disabled after removing all files."""
         mock_callback = Mock()
@@ -499,7 +482,6 @@ class TestPowerPointMergerGUI:
 
     @patch('gui.messagebox.showwarning')
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_merge_with_empty_queue_shows_warning(self, mock_tk, mock_showwarning):
         """Test that merging with empty queue shows warning."""
         mock_callback = Mock()
@@ -517,7 +499,6 @@ class TestPowerPointMergerGUI:
 
     @patch('gui.messagebox.showerror')
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_merge_with_empty_filename_shows_error(self, mock_tk, mock_showerror):
         """Test that merging with empty filename shows error."""
         mock_callback = Mock()
@@ -554,7 +535,6 @@ class TestPowerPointMergerGUI:
 
     @patch('gui.messagebox.showerror')
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_reject_nonexistent_file(self, mock_tk, mock_showerror):
         """Test that nonexistent files are rejected."""
         mock_callback = Mock()
@@ -572,7 +552,6 @@ class TestPowerPointMergerGUI:
 
     @patch('gui.messagebox.askyesno', return_value=True)
     @patch('gui.ctk.CTk')
-    @patch('gui.HAS_DND', False)
     def test_clear_queue(self, mock_tk, mock_askyesno):
         """Test clearing the queue."""
         mock_callback = Mock()
