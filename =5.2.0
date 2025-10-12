@@ -1,0 +1,14 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting customtkinter
+  Downloading customtkinter-5.2.2-py3-none-any.whl.metadata
+     - 677 bytes ? 0:00:00
+Collecting darkdetect (from customtkinter)
+  Downloading darkdetect-0.8.0-py3-none-any.whl.metadata
+     - 3.6 kB ? 0:00:00
+Requirement already satisfied: packaging in /usr/lib/python3/dist-packages (from customtkinter) (24.0)
+Downloading customtkinter-5.2.2-py3-none-any.whl
+   - 296.1 kB 16.9 MB/s 0:00:00
+Downloading darkdetect-0.8.0-py3-none-any.whl
+   - 9.0 kB ? 0:00:00
+Installing collected packages: darkdetect, customtkinter
+Successfully installed customtkinter-5.2.2 darkdetect-0.8.0

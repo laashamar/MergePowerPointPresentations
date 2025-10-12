@@ -11,7 +11,7 @@ LOG_FILE_PATH = os.path.join(os.path.expanduser("~"), "Downloads", "merge_powerp
 error_list = []
 
 class TkinterLogHandler(Handler):
-    """A custom log handler that sends records to a tkinter Text widget."""
+    """A custom log handler that sends records to a tkinter Text widget or CustomTkinter CTkTextbox."""
     def __init__(self, text_widget):
         super().__init__()
         self.text_widget = text_widget
@@ -19,10 +19,18 @@ class TkinterLogHandler(Handler):
     def emit(self, record):
         """Writes the log message to the Text widget."""
         msg = self.format(record)
-        self.text_widget.configure(state='normal')
-        self.text_widget.insert(tk.END, msg + '\n')
-        self.text_widget.configure(state='disabled')
-        self.text_widget.see(tk.END) # Auto-scroll
+        # Check if this is a CustomTkinter widget or regular tkinter Text widget
+        try:
+            # Try CustomTkinter method first
+            if hasattr(self.text_widget, 'configure'):
+                self.text_widget.configure(state='normal')
+            self.text_widget.insert(tk.END, msg + '\n')
+            if hasattr(self.text_widget, 'configure'):
+                self.text_widget.configure(state='disabled')
+            self.text_widget.see(tk.END) # Auto-scroll
+        except Exception as e:
+            # Fallback for any issues
+            print(f"Error writing to log widget: {e}")
 
 class ErrorListHandler(Handler):
     """A handler that collects all ERROR and CRITICAL messages in a list."""

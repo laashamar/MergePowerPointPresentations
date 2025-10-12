@@ -1,4 +1,4 @@
-import tkinter as tk
+import customtkinter as ctk
 from tkinter import messagebox
 import logging
 import threading
@@ -7,6 +7,25 @@ import sys
 # Import the new logger configuration and application starter
 from logger import setup_logging, write_log_summary
 from app import start_app
+
+# PowerPoint-inspired Dark Mode Color Palette
+COLORS = {
+    'primary_accent': '#d35230',
+    'accent_hover': '#ba3416',
+    'window_bg': '#242424',
+    'frame_bg': '#2b2b2b',
+    'primary_text': '#e5e5e5',
+    'secondary_text': '#a0a0a0',
+    'button_text': '#ffffff',
+}
+
+# Font settings
+FONT_FAMILY = "Helvetica"
+FONT_SIZE_MEDIUM = 12
+FONT_SIZE_SMALL = 10
+
+# Set CustomTkinter appearance mode
+ctk.set_appearance_mode("dark")
 
 def run_main_application():
     """Runs the main application and catches any unknown errors."""
@@ -20,7 +39,7 @@ def run_main_application():
             "An unhandled error occurred in the application!", exc_info=True
         )
         # Show error message in a messagebox too, since GUI might be gone
-        root = tk.Tk()
+        root = ctk.CTk()
         root.withdraw()
         messagebox.showerror(
             "Critical Error",
@@ -37,31 +56,32 @@ def run_main_application():
 def main():
     """Main function to set up the log window and start the application."""
     # Main window for the logger
-    log_window = tk.Tk()
+    log_window = ctk.CTk()
     log_window.title("Live Log - PowerPoint Merger")
     log_window.geometry("900x600")
+    log_window.configure(fg_color=COLORS['window_bg'])
 
     # Set up a frame for better layout
-    main_frame = tk.Frame(log_window, padx=10, pady=10)
-    main_frame.pack(fill=tk.BOTH, expand=True)
+    main_frame = ctk.CTkFrame(log_window, fg_color=COLORS['window_bg'])
+    main_frame.pack(fill="both", expand=True, padx=10, pady=10)
     
-    info_label = tk.Label(
+    info_label = ctk.CTkLabel(
         main_frame, 
         text="This window shows a live log of the script. Close this window to exit.",
-        pady=5
+        font=(FONT_FAMILY, FONT_SIZE_SMALL),
+        text_color=COLORS['primary_text']
     )
-    info_label.pack(fill=tk.X)
+    info_label.pack(fill="x", pady=5)
 
-    # Log widget with scrollbar
-    log_frame = tk.Frame(main_frame)
-    log_frame.pack(fill=tk.BOTH, expand=True)
-
-    log_text = tk.Text(log_frame, state='disabled', wrap='word', font=("Courier New", 10), bg="#f0f0f0", fg="black")
-    log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
-    scrollbar = tk.Scrollbar(log_frame, command=log_text.yview)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    log_text['yscrollcommand'] = scrollbar.set
+    # Log widget with scrollbar - using CTkTextbox for CustomTkinter
+    log_text = ctk.CTkTextbox(
+        main_frame,
+        font=("Courier New", 10),
+        fg_color=COLORS['frame_bg'],
+        text_color=COLORS['primary_text'],
+        wrap="word"
+    )
+    log_text.pack(fill="both", expand=True)
 
     # Configure logging to point to the Text widget
     setup_logging(log_text)
